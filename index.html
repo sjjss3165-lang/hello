@@ -3,38 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧校園班級助手</title>
+    <title>智慧校園班級助手 v5</title>
     <style>
-        body { font-family: 'Microsoft JhengHei', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; background-color: #f4f7f6; }
+        body { font-family: 'Microsoft JhengHei', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; background-color: #f0f4f8; transition: background 0.5s; }
+        .alarm-active { background-color: #ffeb3b !important; }
         
-        /* 1. 跑馬燈提醒 */
         .marquee { width: 100%; background: #e74c3c; color: white; padding: 12px 0; font-weight: bold; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .marquee span { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; font-size: 1.2rem; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; margin-top: 30px; }
-        
-        /* 2. 時鐘與倒數 */
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 90%; max-width: 450px; text-align: center; margin-top: 30px; position: relative; }
         #clock { font-size: 3.5em; color: #2c3e50; font-weight: bold; margin: 10px 0; }
         .timer-label { font-size: 1.1em; color: #7f8c8d; margin-top: 10px; }
         #timer { font-size: 1.8em; font-weight: bold; color: #e67e22; margin-bottom: 20px; padding: 10px; background: #fef5e7; border-radius: 10px; }
 
-        /* 3. 點名系統 */
+        .alarm-info { color: #d35400; font-weight: bold; margin-bottom: 10px; font-size: 0.9em; }
+
         .search-box { border-top: 2px solid #ecf0f1; padding-top: 25px; }
-        h3 { color: #34495e; margin-bottom: 15px; }
         input { width: 75%; padding: 12px; margin: 10px 0; border: 2px solid #bdc3c7; border-radius: 10px; font-size: 1rem; }
-        button { background-color: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-size: 1rem; transition: 0.3s; }
-        button:hover { background-color: #2980b9; }
+        button { background-color: #3498db; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-size: 1rem; }
         #result { margin-top: 20px; font-size: 1.4em; font-weight: bold; color: #2ecc71; min-height: 40px; }
     </style>
 </head>
 <body>
 
     <div class="marquee">
-        <span>📢 班務提醒：請各位同學立即繳交手機！聯絡簿請確實交齊至講桌！ 📢</span>
+        <span>📢 班務提醒：請立即繳交手機！聯絡簿請確實交齊至講桌！ 📢</span>
     </div>
 
     <div class="container">
+        <div class="alarm-info">⏰ 已設定每日 07:00 起床鬧鐘</div>
         <div class="timer-label">現在時刻</div>
         <div id="clock">00:00:00</div>
 
@@ -51,31 +49,30 @@
     </div>
 
     <script>
-        // 設定學校下課時間 (24小時制，可自行增刪)
         const breakTimes = ["09:00", "10:00", "11:00", "12:00", "13:50", "14:50", "15:50", "16:40"];
+        let alarmTriggered = false;
 
         function update() {
             const now = new Date();
-            const h = now.getHours();
-            const m = now.getMinutes();
-            const s = now.getSeconds();
+            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+            document.getElementById('clock').innerText = timeStr;
             
-            // 更新時鐘
-            document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
-            
-            // 更新倒數
-            let nextBreak = null;
-            const currentTotalSeconds = (h * 3600) + (m * 60) + s;
+            if (timeStr.startsWith("07:00:00") && !alarmTriggered) {
+                alarmTriggered = true;
+                document.body.classList.add('alarm-active');
+                alert("⏰ 早上 7:00 了！大家起床囉！");
+                setTimeout(() => { document.body.classList.remove('alarm-active'); }, 5000);
+            }
+            if (timeStr === "00:00:00") alarmTriggered = false;
 
+            let nextBreak = null;
+            const currentSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
             for (let t of breakTimes) {
                 const [bh, bm] = t.split(':').map(Number);
-                const breakTotalSeconds = (bh * 3600) + (bm * 60);
-                
-                if (breakTotalSeconds > currentTotalSeconds) {
-                    const diffSeconds = breakTotalSeconds - currentTotalSeconds;
-                    const displayM = Math.floor(diffSeconds / 60);
-                    const displayS = diffSeconds % 60;
-                    document.getElementById('timer').innerText = `${displayM} 分 ${displayS} 秒`;
+                const bSecs = (bh * 3600) + (bm * 60);
+                if (bSecs > currentSecs) {
+                    const diff = bSecs - currentSecs;
+                    document.getElementById('timer').innerText = `${Math.floor(diff/60)} 分 ${diff%60} 秒`;
                     nextBreak = t;
                     break;
                 }
@@ -85,26 +82,24 @@
         setInterval(update, 1000);
         update();
 
-        // 學生資料 (你可以繼續往下加)
+        // 班級名單資料庫 (41位同學)
         const students = {
-             "1": "林湘玲", 
-             "2": "邱婉琳",           
-             "3": "駱昱彣", 
-             "4": "施雅萱",           
-             "5": "項睿廷"         };
+            "1": "林湘凌", "2": "邱婉琳", "3": "駱昱彣", "4": "施雅瑄", "5": "項睿廷",
+            "6": "杜柏昂", "7": "陳志倫", "8": "顏銘徵", "9": "林尚廷", "10": "徐得軒",
+            "11": "蔡丞恩", "12": "邱宥睿", "13": "石浩文", "14": "王品堯", "15": "周辰旭",
+            "16": "王淮謙", "17": "林易澄", "18": "黃存豪", "19": "柳凱博", "20": "孫沂鈞",
+            "21": "馮靖富", "22": "陳佑瑜", "23": "施邦佑", "24": "范舜為", "25": "許翔硯",
+            "26": "陳敬恩", "27": "陳學洋", "28": "江郁昌", "29": "鄭閎楷", "30": "江承恩",
+            "31": "洪畯楷", "32": "鄭聿廷", "33": "何承恩", "34": "張議澧", "35": "蔡品宇",
+            "36": "曾柏諺", "37": "詹詠全", "38": "方廷祐", "39": "陳傳叡", "40": "周彥成",
+            "41": "吳柏諺"
+        };
 
         function checkName() {
             const id = document.getElementById('stuId').value;
             const res = document.getElementById('result');
-            if (students[id]) {
-                res.style.color = "#2ecc71";
-                res.innerText = `座號 ${id}：${students[id]}`;
-            } else if (id === "") {
-                res.innerText = "";
-            } else {
-                res.style.color = "#e74c3c";
-                res.innerText = "找不到該座號！";
-            }
+            res.style.color = students[id] ? "#2ecc71" : "#e74c3c";
+            res.innerText = students[id] ? `座號 ${id}：${students[id]}` : (id==="" ? "" : "找不到該座號！");
         }
     </script>
 </body>
