@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>我的數學小測驗</title>
+    <style>
+        /* 這裡負責美化網頁 */
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; padding: 20px; background-color: #f4f4f4; }
+        .box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h1 { color: #333; text-align: center; font-size: 20px; }
+        .q { margin-bottom: 15px; }
+        input { width: 60px; padding: 5px; margin-left: 10px; border: 1px solid #ccc; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h1>📝 高點智商數學練習</h1>
+    
+    <div class="q">
+        1. $Z = -1 + \sqrt{3}i$，主幅角？<br>
+        答案：<input type="number" id="ans1"> 度
+    </div>
+
+    <div class="q">
+        2. $2^{100}$ 乘開後是幾位數？<br>
+        答案：<input type="number" id="ans2"> 位
+    </div>
+
+    <button onclick="check()">送出對答案</button>
+    <p id="msg" style="text-align:center; font-weight:bold; color:blue;"></p>
+</div>
+
+<script>
+    // 這裡負責計算對錯
+    function check() {
+        let score = 0;
+        if (document.getElementById('ans1').value == "120") score++;
+        if (document.getElementById('ans2').value == "31") score++;
+        
+        let msg = document.getElementById('msg');
+        if (score === 2) {
+            msg.innerHTML = "全對！發揮高點智商了！🌟";
+            msg.style.color = "green";
+        } else {
+            msg.innerHTML = "還差一點，再檢查看看唷！";
+            msg.style.color = "red";
+        }
+    }
+</script>
+
+</body>
+</html>
