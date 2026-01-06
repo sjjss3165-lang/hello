@@ -3,94 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧校園 - 深色科技版 v6</title>
+    <title>校園智慧管理系統 - 登入</title>
     <style>
-        body { font-family: 'Microsoft JhengHei', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 0; margin: 0; background-color: #1a1a2e; color: #e0e0e0; transition: background 0.5s; }
-        .alarm-active { background-color: #4a0e0e !important; }
+        :root { --primary: #4cc9f0; --bg: #0f172a; --card: rgba(30, 41, 59, 0.7); }
+        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: radial-gradient(circle at top right, #1e293b, #0f172a); color: white; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }
         
-        .marquee { width: 100%; background: #c0392b; color: white; padding: 12px 0; font-weight: bold; overflow: hidden; white-space: nowrap; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
-        .marquee span { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; font-size: 1.2rem; }
+        /* 登入牆樣式 */
+        #login-wall { background: var(--card); backdrop-filter: blur(10px); padding: 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 350px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); z-index: 100; transition: 0.5s; }
+        .logo { font-size: 2rem; font-weight: 800; margin-bottom: 30px; background: linear-gradient(to right, #4cc9f0, #4361ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.8); color: white; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 12px; margin-top: 20px; border-radius: 12px; border: none; background: linear-gradient(45deg, #4361ee, #4cc9f0); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3); }
+
+        /* 主內容頁面 (預設隱藏) */
+        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 20px; }
+        .marquee { position: fixed; top: 0; width: 100%; background: rgba(231, 76, 60, 0.9); padding: 10px 0; z-index: 1000; }
+        .marquee span { display: inline-block; padding-left: 100%; animation: marquee 15s linear infinite; font-weight: bold; }
         @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
 
-        .container { background: #16213e; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); width: 90%; max-width: 450px; text-align: center; margin-top: 30px; border: 1px solid #0f3460; }
-        
-        #clock { font-size: 3.8em; color: #4cc9f0; font-weight: bold; margin: 10px 0; text-shadow: 0 0 10px rgba(76, 201, 240, 0.5); }
-        .timer-label { font-size: 1.1em; color: #94a3b8; margin-top: 10px; }
-        #timer { font-size: 1.8em; font-weight: bold; color: #f72585; margin-bottom: 20px; padding: 10px; background: #1b262c; border-radius: 10px; border: 1px solid #f72585; }
-
-        .alarm-info { color: #f39c12; font-weight: bold; margin-bottom: 10px; font-size: 0.9em; }
-
-        .search-box { border-top: 1px solid #0f3460; padding-top: 25px; }
-        h3 { color: #4cc9f0; }
-        input { width: 75%; padding: 12px; margin: 10px 0; border: 1px solid #0f3460; border-radius: 10px; font-size: 1rem; background: #0f3460; color: white; outline: none; }
-        input:focus { border-color: #4cc9f0; }
-        button { background-color: #4361ee; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-size: 1rem; font-weight: bold; transition: 0.3s; }
-        button:hover { background-color: #3f37c9; transform: scale(1.05); }
-        #result { margin-top: 20px; font-size: 1.6em; font-weight: bold; color: #4cc9f0; min-height: 40px; text-shadow: 0 0 5px rgba(76, 201, 240, 0.3); }
+        .container { background: var(--card); backdrop-filter: blur(10px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 450px; text-align: center; margin-top: 60px; }
+        #clock { font-size: 4rem; font-weight: 900; color: var(--primary); margin: 10px 0; letter-spacing: -2px; }
+        #timer { font-size: 1.5rem; color: #f72585; background: rgba(247, 37, 133, 0.1); padding: 10px; border-radius: 12px; margin: 15px 0; border: 1px solid rgba(247, 37, 133, 0.3); }
+        .search-box { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="marquee">
-        <span>📢 班務提醒：請立即繳交手機！聯絡簿請確實交齊至講桌！ 📢</span>
+    <div id="login-wall">
+        <div class="logo">SMART CAMPUS</div>
+        <p style="color: #94a3b8; font-size: 0.9rem;">請輸入權限帳密以繼續</p>
+        <input type="text" id="user" placeholder="帳號">
+        <input type="password" id="pass" placeholder="密碼">
+        <button class="btn-login" onclick="doLogin()">登入系統</button>
+        <p id="login-msg" style="color: #f72585; font-size: 0.8rem; margin-top: 10px;"></p>
     </div>
 
-    <div class="container">
-        <div class="alarm-info">⏰ 每日 07:00 起床鬧鐘已啟動</div>
-        <div class="timer-label">現在時刻</div>
-        <div id="clock">00:00:00</div>
-
-        <div class="timer-label">🔔 下課倒數</div>
-        <div id="timer">計算中...</div>
-
-        <div class="search-box">
-            <h3>班級名單查詢</h3>
-            <input type="number" id="stuId" placeholder="輸入學生座號...">
-            <br>
-            <button onclick="checkName()">搜尋姓名</button>
-            <div id="result"></div>
+    <div id="main-content">
+        <div class="marquee">
+            <span>📢 系統提醒：請立即繳交手機！聯絡簿請確實交齊至講桌！ 📢</span>
+        </div>
+        <div class="container">
+            <div style="color: #94a3b8;">現在時刻</div>
+            <div id="clock">00:00:00</div>
+            <div style="color: #94a3b8;">🔔 下課倒數</div>
+            <div id="timer">計算中...</div>
+            <div class="search-box">
+                <h3 style="color: var(--primary);">班級名單查詢</h3>
+                <input type="number" id="stuId" placeholder="輸入座號..." style="width: 60%;">
+                <button class="btn-login" style="width: 30%; margin:0; padding: 10px;" onclick="checkName()">搜尋</button>
+                <div id="result" style="margin-top:20px; font-size: 1.5rem; color: var(--primary); font-weight: bold;"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        // 設定新的下課時間點 (根據您的需求調整)
-        const breakTimes = [
-            "08:50", "09:50", "10:50", "11:50", // 上午 50 分下課
-            "13:05",                            // 1點05分下課
-            "14:00", "15:00", "16:00", "17:00"  // 每整點下課到 5 點放學
-        ];
+        // 設定帳號密碼 (你可以自己改)
+        const AUTH = { user: "admin", pass: "1234" };
 
-        let alarmTriggered = false;
-
-        function update() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
-            document.getElementById('clock').innerText = timeStr;
-            
-            if (timeStr.startsWith("07:00:00") && !alarmTriggered) {
-                alarmTriggered = true;
-                document.body.classList.add('alarm-active');
-                alert("⏰ 早上 7:00 了！大家起床囉！");
-                setTimeout(() => { document.body.classList.remove('alarm-active'); }, 5000);
+        function doLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            if(u === AUTH.user && p === AUTH.pass) {
+                document.getElementById('login-wall').style.display = 'none';
+                document.getElementById('main-content').style.display = 'flex';
+                initSystem();
+            } else {
+                document.getElementById('login-msg').innerText = "帳號或密碼錯誤！";
             }
-            if (timeStr === "00:00:00") alarmTriggered = false;
-
-            let nextBreak = null;
-            const currentSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-            for (let t of breakTimes) {
-                const [bh, bm] = t.split(':').map(Number);
-                const bSecs = (bh * 3600) + (bm * 60);
-                if (bSecs > currentSecs) {
-                    const diff = bSecs - currentSecs;
-                    document.getElementById('timer').innerText = `${Math.floor(diff/60)} 分 ${diff%60} 秒`;
-                    nextBreak = t;
-                    break;
-                }
-            }
-            if (!nextBreak) document.getElementById('timer').innerText = "今日課程已結束";
         }
-        setInterval(update, 1000);
-        update();
+
+        function initSystem() {
+            const breakTimes = ["08:50", "09:50", "10:50", "11:50", "13:05", "14:00", "15:00", "16:00", "17:00"];
+            setInterval(() => {
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+                document.getElementById('clock').innerText = timeStr;
+                
+                let nextBreak = null;
+                const currentSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+                for (let t of breakTimes) {
+                    const [bh, bm] = t.split(':').map(Number);
+                    const bSecs = (bh * 3600) + (bm * 60);
+                    if (bSecs > currentSecs) {
+                        const diff = bSecs - currentSecs;
+                        document.getElementById('timer').innerText = `${Math.floor(diff/60)} 分 ${diff%60} 秒`;
+                        nextBreak = t;
+                        break;
+                    }
+                }
+                if (!nextBreak) document.getElementById('timer').innerText = "今日課程已結束";
+            }, 1000);
+        }
 
         const students = {
             "1": "林湘凌", "2": "邱婉琳", "3": "駱昱彣", "4": "施雅瑄", "5": "項睿廷",
@@ -107,8 +110,7 @@
         function checkName() {
             const id = document.getElementById('stuId').value;
             const res = document.getElementById('result');
-            res.style.color = students[id] ? "#4cc9f0" : "#ff4d4d";
-            res.innerText = students[id] ? `座號 ${id}：${students[id]}` : (id==="" ? "" : "找不到此座號！");
+            res.innerText = students[id] ? `座號 ${id}：${students[id]}` : (id==="" ? "" : "查無此號");
         }
     </script>
 </body>
