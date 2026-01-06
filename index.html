@@ -3,33 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電三孝點名系統 v8</title>
+    <title>電三孝點名管理系統 v13</title>
     <style>
-        :root { --primary: #4cc9f0; --bg: #0f172a; --card: rgba(30, 41, 59, 0.85); }
+        :root { --primary: #4cc9f0; --secondary: #f72585; --bg: #0f172a; --card: rgba(30, 41, 59, 0.9); }
         body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: radial-gradient(circle at top right, #1e293b, #0f172a); color: white; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         
-        /* 跑馬燈 */
         .marquee-container { position: fixed; top: 0; width: 100%; background: #c0392b; color: white; padding: 10px 0; z-index: 1000; overflow: hidden; display: none; }
         .marquee-text { display: inline-block; white-space: nowrap; animation: scroll 20s linear infinite; font-weight: bold; font-size: 1.1rem; }
         @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 
-        /* 登入牆 */
         #login-wall { background: var(--card); backdrop-filter: blur(15px); padding: 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5); z-index: 101; }
         .logo { font-size: 2.2rem; font-weight: 900; margin-bottom: 25px; background: linear-gradient(to right, #4cc9f0, #4361ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
         input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.9); color: white; box-sizing: border-box; font-size: 1rem; }
         .btn-action { width: 100%; padding: 12px; margin-top: 15px; border-radius: 12px; border: none; background: linear-gradient(45deg, #4361ee, #4cc9f0); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-action:hover { transform: scale(1.02); box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4); }
+        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4); }
         
-        /* 忘記密碼連結 */
-        .forgot-pw { display: block; margin-top: 15px; color: #94a3b8; font-size: 0.85rem; text-decoration: none; cursor: pointer; }
-        .forgot-pw:hover { color: var(--primary); text-decoration: underline; }
-
-        /* 主內容 */
-        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 60px; }
-        .container { background: var(--card); backdrop-filter: blur(10px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 450px; text-align: center; margin-top: 20px; }
-        #clock { font-size: 4rem; font-weight: 900; color: var(--primary); margin: 10px 0; text-shadow: 0 0 20px rgba(76, 201, 240, 0.4); }
-        #timer { font-size: 1.6rem; color: #f72585; background: rgba(247, 37, 133, 0.1); padding: 15px; border-radius: 15px; margin: 20px 0; border: 1px solid rgba(247, 37, 133, 0.3); font-weight: bold; }
-        .search-box { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px; }
+        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; height: 100vh; }
+        .container { background: var(--card); backdrop-filter: blur(10px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 450px; text-align: center; margin-bottom: 30px; }
+        #clock { font-size: 3.5rem; font-weight: 900; color: var(--primary); margin: 5px 0; }
+        #current-lesson { font-size: 1.2rem; color: #ffeb3b; margin: 10px 0; font-weight: bold; background: rgba(255, 235, 59, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,235,59,0.3); }
+        #timer { font-size: 1.3rem; color: var(--secondary); margin: 10px 0; font-weight: bold; }
+        .section-title { color: var(--primary); margin: 20px 0 10px; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -43,68 +37,37 @@
         <input type="text" id="user" placeholder="管理員帳號">
         <input type="password" id="pass" placeholder="存取密碼">
         <button class="btn-action" onclick="doLogin()">進入系統</button>
-        <span class="forgot-pw" onclick="showHint()">忘記密碼？</span>
-        <p id="login-msg" style="color: #f72585; font-size: 0.8rem; margin-top: 15px;"></p>
+        <span style="display:block; margin-top:15px; color:#94a3b8; font-size:0.8rem; cursor:pointer;" onclick="alert('提示：1234')">忘記密碼？</span>
     </div>
 
     <div id="main-content">
         <div class="container">
-            <div style="color: #94a3b8; font-weight: bold;">現在時刻</div>
             <div id="clock">00:00:00</div>
-            <div style="color: #94a3b8; font-weight: bold;">🔔 下課倒數</div>
-            <div id="timer">計算中...</div>
-            <div class="search-box">
-                <h3 style="color: var(--primary); margin-bottom: 15px;">班級名單查詢</h3>
-                <input type="number" id="stuId" placeholder="座號" style="width: 50%; display: inline-block;">
-                <button class="btn-action" style="width: 40%; margin:0; padding: 10px; display: inline-block; vertical-align: top; margin-left: 5px;" onclick="checkName()">搜尋</button>
-                <div id="result" style="margin-top:20px; font-size: 1.6rem; color: var(--primary); font-weight: bold; min-height: 40px;"></div>
-            </div>
+            <div id="current-lesson">正在讀取課表...</div>
+            <div id="timer">計算下課中...</div>
+
+            <div class="section-title">學生搜尋</div>
+            <input type="number" id="stuId" placeholder="輸入座號" style="width: 50%; display: inline-block;">
+            <button class="btn-action" style="width: 40%; margin:0; padding: 10px; display: inline-block; vertical-align: top; margin-left: 5px;" onclick="checkName()">搜尋</button>
+            <div id="result" style="margin-top:15px; font-size: 1.5rem; color: var(--primary); font-weight: bold; min-height: 40px;"></div>
+
+            <div class="section-title">班級抽籤</div>
+            <button class="btn-action" style="background: linear-gradient(45deg, #f72585, #b5179e);" onclick="luckyDraw()">隨機抽取一位幸運兒</button>
+            <div id="lucky-result" style="margin-top:15px; font-size: 1.8rem; color: #ffeb3b; font-weight: bold; min-height: 45px;"></div>
         </div>
     </div>
 
     <script>
         const AUTH = { user: "admin", pass: "1234" };
-
-        function showHint() {
-            // 你可以在這裡自定義給同學看的提示
-            alert("密碼提示：最簡單的數字排列 (1...4)");
-        }
-
-        function doLogin() {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            if(u === AUTH.user && p === AUTH.pass) {
-                document.getElementById('login-wall').style.display = 'none';
-                document.getElementById('main-content').style.display = 'flex';
-                document.getElementById('top-marquee').style.display = 'block';
-                initSystem();
-            } else {
-                document.getElementById('login-msg').innerText = "驗證失敗，請檢查帳號密碼";
-            }
-        }
-
-        function initSystem() {
-            const breakTimes = ["08:50", "09:50", "10:50", "11:50", "13:05", "14:00", "15:00", "16:00", "17:00"];
-            setInterval(() => {
-                const now = new Date();
-                const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
-                document.getElementById('clock').innerText = timeStr;
-                
-                let nextBreak = null;
-                const currentSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-                for (let t of breakTimes) {
-                    const [bh, bm] = t.split(':').map(Number);
-                    const bSecs = (bh * 3600) + (bm * 60);
-                    if (bSecs > currentSecs) {
-                        const diff = bSecs - currentSecs;
-                        document.getElementById('timer').innerText = `${Math.floor(diff/60)} 分 ${diff%60} 秒`;
-                        nextBreak = t;
-                        break;
-                    }
-                }
-                if (!nextBreak) document.getElementById('timer').innerText = "今日課程已結束";
-            }, 1000);
-        }
+        
+        // 職稱大風吹：主任、老師、助教、英文老師
+        const schedule = {
+            1: ["☕ 休息時間", "國文老師", "英語會話 英文老師", "英語文 英文老師", "進階數學 數學老師", "應用基本電學 助教", "應用基本電學 助教"],
+            2: ["體育老師", "電工機械進階 主任", "電工機械進階 主任", "閱讀與認知 閱讀老師", "☕ 休息時間", "進階數學 數學老師", "☕ 休息時間"],
+            3: ["電工機械實習 主任", "電工機械實習 主任", "電工機械實習 主任", "英語會話 英文老師", "微電腦結構 助教", "微電腦結構 助教", "國文老師"],
+            4: ["數位邏輯實習 助教", "數位邏輯實習 助教", "數位邏輯實習 助教", "進階數學 數學老師", "專題實作 助教", "專題實作 助教", "專題實作 助教"],
+            5: ["英語文 英文老師", "電力電子應用實習 助教", "電力電子應用實習 助教", "電力電子應用實習 助教", "體育老師", "閱讀與認知 閱讀老師", "電工機械進階 主任"]
+        };
 
         const students = {
             "1": "林湘凌", "2": "邱婉琳", "3": "駱昱彣", "4": "施雅瑄", "5": "項睿廷",
@@ -118,10 +81,69 @@
             "41": "吳柏諺"
         };
 
+        function doLogin() {
+            if(document.getElementById('user').value === AUTH.user && document.getElementById('pass').value === AUTH.pass) {
+                document.getElementById('login-wall').style.display = 'none';
+                document.getElementById('main-content').style.display = 'flex';
+                document.getElementById('top-marquee').style.display = 'block';
+                initSystem();
+            } else { alert("驗證失敗"); }
+        }
+
+        function initSystem() {
+            const lessonTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:05", "14:00", "15:00", "16:00", "17:00"];
+            const breakTimes = ["08:50", "09:50", "10:50", "11:50", "13:05", "14:00", "15:00", "16:00", "17:00"];
+
+            setInterval(() => {
+                const now = new Date();
+                const day = now.getDay();
+                const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
+                document.getElementById('clock').innerText = timeStr;
+
+                let lessonText = "☕ 目前非上課時間";
+                const currentSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+                
+                if (day >= 1 && day <= 5) {
+                    for(let i=0; i<7; i++) {
+                        const [sh, sm] = lessonTimes[i].split(':').map(Number);
+                        const [eh, em] = breakTimes[i].split(':').map(Number);
+                        if (currentSecs >= (sh*3600+sm*60) && currentSecs < (eh*3600+em*60)) {
+                            lessonText = `📖 第 ${i+1} 節：${schedule[day][i]}`;
+                            break;
+                        }
+                    }
+                }
+                document.getElementById('current-lesson').innerText = lessonText;
+
+                let nextBreak = null;
+                for (let t of breakTimes) {
+                    const [bh, bm] = t.split(':').map(Number);
+                    const bSecs = (bh * 3600) + (bm * 60);
+                    if (bSecs > currentSecs) {
+                        const diff = bSecs - currentSecs;
+                        document.getElementById('timer').innerText = `🔔 下課倒數：${Math.floor(diff/60)}分${diff%60}秒`;
+                        nextBreak = t; break;
+                    }
+                }
+                if (!nextBreak) document.getElementById('timer').innerText = "今日課程已結束";
+            }, 1000);
+        }
+
         function checkName() {
             const id = document.getElementById('stuId').value;
-            const res = document.getElementById('result');
-            res.innerText = students[id] ? `座號 ${id}：${students[id]}` : (id==="" ? "" : "查無此號");
+            document.getElementById('result').innerText = students[id] ? `座號 ${id}：${students[id]}` : (id==="" ? "" : "查無此號");
+        }
+
+        function luckyDraw() {
+            const res = document.getElementById('lucky-result');
+            res.innerText = "🎲 抽取中...";
+            let count = 0;
+            const interval = setInterval(() => {
+                const randomId = Math.floor(Math.random() * 41) + 1;
+                res.innerText = `🎲 座號 ${randomId}：${students[randomId]}`;
+                count++;
+                if (count > 10) clearInterval(interval);
+            }, 100);
         }
     </script>
 </body>
