@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝指揮中心 v57</title>
+    <title>電三孝指揮中心 v58</title>
     <style>
         :root {
             --primary: #00d4ff; --accent: #f72585; --warning: #ffb703; --leave: #a062ff;
             --bg: #0b0f19; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
         }
         body { margin: 0; background: var(--bg); color: #e2e8f0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+
+        .header { display: flex; justify-content: space-between; align-items: center; width: 95%; max-width: 600px; padding: 10px 5px; }
+        .refresh-btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
 
         .page { width: 95%; max-width: 600px; padding: 10px; display: none; padding-bottom: 100px; }
         .page.active { display: block; }
@@ -29,7 +32,7 @@
         #s-13 { left: calc((100% - 48px) / 7 + 8px); }
         #s-41 { left: calc(((100% - 48px) / 7 + 8px) * 2); }
 
-        .present { border-color: var(--primary); color: var(--primary); }
+        .present { border-color: var(--primary); color: var(--primary); background: transparent; }
         .late { border-color: var(--warning); color: var(--warning); background: rgba(255, 183, 3, 0.1); }
         .leave { border-color: var(--leave); color: var(--leave); background: rgba(160, 98, 255, 0.1); }
         .absent { border-color: var(--accent); color: var(--accent); background: rgba(247, 37, 133, 0.1); }
@@ -47,8 +50,12 @@
 </head>
 <body>
 
+    <div class="header">
+        <div id="clock" style="font-size:1.5rem; color:var(--primary); font-family:monospace;">00:00:00</div>
+        <button class="refresh-btn" onclick="dailyReset()">🔄 開新點名(重整)</button>
+    </div>
+
     <div id="p1" class="page active">
-        <div id="clock" style="text-align:center; font-size:2rem; color:var(--primary); margin: 10px 0;">00:00:00</div>
         <div class="report-panel">
             <div onclick="copyList('late-list', '遲到')">
                 <small style="color:var(--warning)">⏳ 遲到</small>
@@ -60,7 +67,7 @@
             </div>
         </div>
         <div class="chart-wrap">
-            <div class="podium">講桌</div>
+            <div class="podium">講桌 PODIUM</div>
             <div class="s spec" id="s-13" onclick="t(13)">13</div>
             <div class="s spec" id="s-41" onclick="t(41)">41</div>
             <div class="grid" id="main-grid"></div>
@@ -68,20 +75,20 @@
     </div>
 
     <div id="p2" class="page">
-        <h3 style="color:var(--primary); margin-bottom:15px;">⏱ 今日遲到時間</h3>
+        <h3 style="color:var(--primary); margin-bottom:15px;">⏱ 今日遲到紀錄</h3>
         <div class="card"><div id="log-list" class="list-container"></div></div>
     </div>
 
     <div id="p3" class="page">
         <h3 style="color:var(--warning); margin-bottom:15px;">📊 累計遲到排行</h3>
         <div class="card"><div id="stat-list" class="list-container"></div></div>
-        <button onclick="resetStats()" style="width:100%; opacity:0.2; background:none; border:none; color:#fff; font-size:0.5rem; margin-top:10px;">RESET STATS</button>
+        <button onclick="fullReset()" style="width:100%; opacity:0.1; background:none; border:none; color:#fff; font-size:0.5rem;">徹底清除所有快取(含排行)</button>
     </div>
 
     <div class="nav-footer">
         <button class="nav-btn btn-p" id="b1" onclick="go(1)">📍 點名</button>
         <button class="nav-btn btn-s" id="b2" onclick="go(2)">⏱ 日誌</button>
-        <button class="nav-btn btn-s" id="b3" onclick="go(3)">📊 排行</button>
+        <button class="nav-btn btn-s" id="b3" onclick="go(3)">📊 統計</button>
     </div>
 
     <script>
@@ -98,7 +105,7 @@
 
         function init() {
             const grid = document.getElementById('main-grid');
-            // 從快取讀取今日狀態，若無則預設 present (青色)
+            grid.innerHTML = ""; // 清空網格避免重複生成
             const data = JSON.parse(localStorage.getItem('e3_st') || '{}');
             const types = JSON.parse(localStorage.getItem('e3_ty') || '{}');
             
@@ -191,18 +198,32 @@
         function save() {
             const d = {};
             document.querySelectorAll('.s').forEach(el => {
-                const id = el.id.split('-')[1] || el.innerText.split('\n')[0];
+                const id = el.innerText.split('\n')[0];
                 if(id && id !== "undefined") d[id] = el.classList.contains('late') ? 'late' : (el.classList.contains('leave') ? 'leave' : (el.classList.contains('absent') ? 'absent' : 'present'));
             });
             localStorage.setItem('e3_st', JSON.stringify(d));
+        }
+
+        function dailyReset() {
+            if(confirm("確定要重置「今日點名」嗎？(會清空目前所有顏色與今日日誌，但不影響累計排行)")) {
+                localStorage.removeItem('e3_st');
+                localStorage.removeItem('e3_lg');
+                localStorage.removeItem('e3_ty');
+                location.reload();
+            }
+        }
+
+        function fullReset() {
+            if(confirm("這會清空包含「排行次數」在內的所有資料，確定嗎？")) {
+                localStorage.clear();
+                location.reload();
+            }
         }
 
         function copyList(id, label) {
             navigator.clipboard.writeText(label + "：" + document.getElementById(id).innerText);
             alert(label + "名單已複製");
         }
-
-        function resetStats() { if(confirm("確定重置長期統計？")) { localStorage.removeItem('e3_stats'); renderStats(); } }
 
         window.onload = init;
     </script>
