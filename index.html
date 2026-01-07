@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝點名系統 v114</title>
+    <title>電三孝點名系統 v115</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
@@ -14,7 +14,7 @@
         }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; transition: 0.3s; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        /* 頂部時鐘 */
+        /* 頂部時鐘與標題 */
         .header { width: 92%; padding: 12px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
         .clock-display { font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
         .theme-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -52,7 +52,7 @@
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
         .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
 
-        /* 液態懸浮導航 (純文字膠囊) */
+        /* 液態懸浮導航 */
         .tab-bar-wrap { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
         .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 50px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 25px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -71,7 +71,7 @@
 
     <header class="header">
         <div>
-            <div style="font-size: 0.6rem; font-weight: 800; color: #888; letter-spacing: 1px;">E3A COMMAND</div>
+            <div style="font-size: 0.6rem; font-weight: 800; color: #888; letter-spacing: 1px;">電三孝點名系統</div>
             <div id="live-clock" class="clock-display">00:00:00</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
@@ -156,7 +156,6 @@
     </div>
 
     <script>
-        // 核心 Layout (0 代表空位，用來撐開空間)
         const layout = [
             2, 0, 0, 6, 20, 10, 21, 
             12, 23, 25, 34, 3, 1, 33, 
@@ -222,20 +221,16 @@
                   n = JSON.parse(localStorage.getItem('e3_note') || '{}'), t = JSON.parse(localStorage.getItem('e3_time') || '{}'),
                   h = JSON.parse(localStorage.getItem('e3_his') || '{}');
 
-            // 護法位渲染
             [13, 41, 28, 27].forEach(id => updateS(document.getElementById('s-'+id), id, a, p, n, t));
 
-            // 主網格渲染 (強制 7 欄並保留空格)
             const gAtt = document.getElementById('g-att'); gAtt.innerHTML = "";
             layout.forEach(id => {
-                let el = document.createElement('div');
-                el.className = "s";
+                let el = document.createElement('div'); el.className = "s";
                 if(id === 0) { el.style.opacity = "0"; el.style.pointerEvents = "none"; }
                 else { el.onclick = () => handle(id); updateS(el, id, a, p, n, t); }
                 gAtt.appendChild(el);
             });
 
-            // 手機同步
             const gPhoPod = document.getElementById('g-pho-pod'); gPhoPod.innerHTML = document.querySelector('#v-att .podium-row').innerHTML;
             const gPhoMain = document.getElementById('g-pho-main'); gPhoMain.innerHTML = "";
             layout.forEach(id => {
@@ -248,7 +243,6 @@
                 const id = parseInt(el.innerText); if(id) el.onclick = () => handle(id);
             });
 
-            // 累積次數
             const rBody = document.getElementById('rec-body'); rBody.innerHTML = "";
             for(let i=1; i<=41; i++) {
                 let data = h[i] || {late:0, absent:0};
