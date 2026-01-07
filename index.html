@@ -3,72 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝指揮中心 v52</title>
+    <title>電三孝指揮中心 v56</title>
     <style>
         :root {
-            --primary: #00d4ff; --accent: #f72585; --warning: #ffb703;
+            --primary: #00d4ff; --accent: #f72585; --warning: #ffb703; --leave: #a062ff;
             --bg: #0b0f19; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
         }
         body { margin: 0; background: var(--bg); color: #e2e8f0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
-        /* 頁面切換控制 */
         .page { width: 95%; max-width: 600px; padding: 10px; display: none; padding-bottom: 100px; }
-        .page.active { display: block; animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .page.active { display: block; }
 
-        /* 頂部名單看板 */
         .report-panel { 
             width: 100%; background: var(--card); border: 1px solid var(--border);
             border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; 
             gap: 10px; text-align: center; margin-bottom: 10px;
         }
-        .report-box div { font-weight: bold; font-size: 1rem; min-height: 1.2rem; margin-top: 4px;}
 
-        /* 座位區 */
         .chart-wrap { position: relative; width: 100%; margin-top: 10px; }
         .podium { width: 100%; height: 35px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #444; margin-bottom: 12px; }
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
 
-        .s { aspect-ratio: 1.2; border: 1.5px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: 0.2s; }
+        .s { aspect-ratio: 1.2; border: 1.5px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: 0.2s; position: relative; }
         .spec { position: absolute; top: 0; height: 35px; width: calc((100% - 48px) / 7); font-size: 1rem; border-width: 1px; }
         #s-13 { left: calc((100% - 48px) / 7 + 8px); }
         #s-41 { left: calc(((100% - 48px) / 7 + 8px) * 2); }
 
         .present { border-color: var(--primary); color: var(--primary); }
-        .absent { border-color: var(--accent); color: var(--accent); background: rgba(247, 37, 133, 0.1); }
         .late { border-color: var(--warning); color: var(--warning); background: rgba(255, 183, 3, 0.1); }
+        .leave { border-color: var(--leave); color: var(--leave); background: rgba(160, 98, 255, 0.1); }
+        .absent { border-color: var(--accent); color: var(--accent); background: rgba(247, 37, 133, 0.1); }
+        .l-tag { position: absolute; bottom: 1px; right: 2px; font-size: 0.5rem; opacity: 0.9; font-weight: normal; }
 
-        /* 導航按鈕 (翻頁按鈕) */
         .nav-footer { position: fixed; bottom: 20px; width: 95%; max-width: 600px; display: flex; gap: 10px; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .nav-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .btn-p { background: var(--primary); color: #000; }
         .btn-s { background: #1e293b; color: #fff; border: 1px solid var(--border); }
 
-        /* 數據清單樣式 */
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .list-container { font-family: monospace; height: 450px; overflow-y: auto; }
-        .row { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; }
-        .rank-badge { background: var(--warning); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 900; }
+        .row { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
     <div id="p1" class="page active">
-        <div id="clock" style="text-align:center; font-size:2rem; color:var(--primary); margin-bottom: 10px;">00:00:00</div>
-        
+        <div id="clock" style="text-align:center; font-size:2rem; color:var(--primary); margin: 10px 0;">00:00:00</div>
         <div class="report-panel">
-            <div class="report-box" onclick="copyList('absent-list', '缺席')">
-                <small style="color:var(--accent)">❌ 複製缺席</small>
-                <div id="absent-list" style="color:var(--accent)">NONE</div>
-            </div>
-            <div class="report-box" onclick="copyList('late-list', '遲到')">
-                <small style="color:var(--warning)">⏳ 複製遲到</small>
+            <div onclick="copyList('late-list', '遲到')">
+                <small style="color:var(--warning)">⏳ 遲到</small>
                 <div id="late-list" style="color:var(--warning)">NONE</div>
             </div>
+            <div onclick="copyList('absent-list', '缺席/請假')">
+                <small style="color:var(--accent)">❌ 缺席/請假</small>
+                <div id="absent-list" style="color:var(--accent)">NONE</div>
+            </div>
         </div>
-
         <div class="chart-wrap">
-            <div class="podium">講桌 PODIUM</div>
+            <div class="podium">講桌</div>
             <div class="s spec present" id="s-13" onclick="t(13)">13</div>
             <div class="s spec present" id="s-41" onclick="t(41)">41</div>
             <div class="grid" id="main-grid"></div>
@@ -76,24 +68,19 @@
     </div>
 
     <div id="p2" class="page">
-        <h3 style="color:var(--primary); margin: 0 0 15px 0;">🕒 今日到校時間</h3>
-        <div class="card">
-            <div id="log-list" class="list-container"></div>
-        </div>
+        <h3 style="color:var(--primary); margin-bottom:15px;">⏱ 今日遲到時間</h3>
+        <div class="card"><div id="log-list" class="list-container"></div></div>
     </div>
 
     <div id="p3" class="page">
-        <h3 style="color:var(--warning); margin: 0 0 15px 0;">🏆 累計遲到次數表</h3>
-        <div class="card">
-            <div id="stat-list" class="list-container"></div>
-        </div>
-        <button onclick="resetStats()" style="width:100%; background:none; border:none; color:#333; font-size:0.7rem;">清除長期統計數據</button>
+        <h3 style="color:var(--warning); margin-bottom:15px;">📊 累計遲到排行</h3>
+        <div class="card"><div id="stat-list" class="list-container"></div></div>
     </div>
 
     <div class="nav-footer">
-        <button class="nav-btn btn-p" id="b1" onclick="go(1)">📍 點名板</button>
-        <button class="nav-btn btn-s" id="b2" onclick="go(2)">⏱ 時間</button>
-        <button class="nav-btn btn-s" id="b3" onclick="go(3)">📊 統計</button>
+        <button class="nav-btn btn-p" id="b1" onclick="go(1)">📍 點名</button>
+        <button class="nav-btn btn-s" id="b2" onclick="go(2)">⏱ 日誌</button>
+        <button class="nav-btn btn-s" id="b3" onclick="go(3)">📊 排行</button>
     </div>
 
     <script>
@@ -101,7 +88,7 @@
         
         function go(n) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.replace('btn-p','btn-s'); });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.replace('btn-p','btn-s'));
             document.getElementById('p'+n).classList.add('active');
             document.getElementById('b'+n).classList.replace('btn-s','btn-p');
             if(n===2) renderLogs();
@@ -111,16 +98,23 @@
         function init() {
             const grid = document.getElementById('main-grid');
             const data = JSON.parse(localStorage.getItem('e3_st') || '{}');
+            const types = JSON.parse(localStorage.getItem('e3_ty') || '{}');
+            
             [13, 41].forEach(id => {
                 const el = document.getElementById(`s-${id}`);
-                el.className = `s spec ${data[id] || 'present'}`;
+                const s = data[id] || 'present';
+                el.className = `s spec ${s}`;
+                if(s === 'leave') el.innerHTML += `<span class="l-tag">${types[id]||''}</span>`;
             });
+
             layout.forEach(id => {
                 const el = document.createElement('div');
                 if (id === 0) el.style.opacity = "0";
                 else {
-                    el.className = `s ${data[id] || 'present'}`;
-                    el.id = `s-${id}`; el.innerText = id;
+                    const s = data[id] || 'present';
+                    el.className = `s ${s}`;
+                    el.id = `s-${id}`; 
+                    el.innerHTML = id + (s==='leave' ? `<span class="l-tag">${types[id]||''}</span>` : '');
                     el.onclick = () => t(id);
                 }
                 grid.appendChild(el);
@@ -131,69 +125,83 @@
 
         function t(id) {
             const el = document.getElementById(`s-${id}`);
-            const isSpec = el.classList.contains('spec');
+            const isSp = el.classList.contains('spec');
             const time = new Date().toLocaleTimeString('zh-TW', {hour12:false});
+            let types = JSON.parse(localStorage.getItem('e3_ty') || '{}');
             
             if(el.classList.contains('present')) {
-                el.className = `s ${isSpec?'spec':''} absent`;
-            } else if(el.classList.contains('absent')) {
-                el.className = `s ${isSpec?'spec':''} late`;
-                // 1. 紀錄今日時間
-                let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-                logs.unshift({id: id, time: time});
-                localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
-                // 2. 累計遲到次數
-                let stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
-                stats[id] = (stats[id] || 0) + 1;
-                localStorage.setItem('e3_stats', JSON.stringify(stats));
+                // 第一下：遲到
+                el.className = `s ${isSp?'spec':''} late`;
+                addLog(id, time); addStat(id);
+            } else if(el.classList.contains('late')) {
+                // 第二下：請假或缺席
+                const choice = prompt("類別？ (1:事 2:病 3:喪 4:公 5:直接缺席)");
+                const map = {"1":"事假","2":"病假","3":"喪假","4":"公假"};
+                if(choice === "5" || choice === null) {
+                    el.className = `s ${isSp?'spec':''} absent`;
+                    el.innerHTML = id;
+                    delete types[id];
+                } else if(map[choice]) {
+                    el.className = `s ${isSp?'spec':''} leave`;
+                    el.innerHTML = id + `<span class="l-tag">${map[choice]}</span>`;
+                    types[id] = map[choice];
+                }
             } else {
-                el.className = `s ${isSpec?'spec':''} present`;
+                // 第三下：重置
+                el.className = `s ${isSp?'spec':''} present`;
+                el.innerHTML = id;
+                delete types[id];
             }
+            localStorage.setItem('e3_ty', JSON.stringify(types));
             save(); update();
         }
 
+        function addLog(id, time) {
+            let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+            logs.unshift({id: id, time: time});
+            localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
+        }
+
+        function addStat(id) {
+            let stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+            stats[id] = (stats[id] || 0) + 1;
+            localStorage.setItem('e3_stats', JSON.stringify(stats));
+        }
+
         function update() {
-            const a = Array.from(document.querySelectorAll('.absent')).map(el => el.innerText).sort((x,y)=>x-y);
-            const l = Array.from(document.querySelectorAll('.late')).map(el => el.innerText).sort((x,y)=>x-y);
-            document.getElementById('absent-list').innerText = a.join(', ') || "NONE";
-            document.getElementById('late-list').innerText = l.join(', ') || "NONE";
+            const l = Array.from(document.querySelectorAll('.late')).map(el => el.innerText.split('\n')[0]).sort((x,y)=>x-y);
+            const a = Array.from(document.querySelectorAll('.absent, .leave')).map(el => {
+                let id = el.innerText.split('\n')[0];
+                return el.classList.contains('leave') ? id+'(假)' : id;
+            }).sort();
+            document.getElementById('late-list').innerText = l.join(',') || "NONE";
+            document.getElementById('absent-list').innerText = a.join(',') || "NONE";
         }
 
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-            document.getElementById('log-list').innerHTML = logs.map(o => `
-                <div class="row"><span>座號 ${o.id}</span><span style="color:var(--warning)">${o.time}</span></div>
-            `).join('');
+            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="row"><span>座號 ${o.id}</span><span style="color:var(--warning)">${o.time}</span></div>`).join('');
         }
 
         function renderStats() {
             const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
             const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
-            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `
-                <div class="row">
-                    <span>座號 ${id}</span>
-                    <div><span class="rank-badge">${count} 次</span></div>
-                </div>
-            `).join('') || '<div style="text-align:center;color:#444;margin-top:20px;">尚無紀錄</div>';
+            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="row"><span>座號 ${id}</span><span style="color:var(--warning)">${count} 次</span></div>`).join('');
         }
 
         function save() {
             const d = {};
             document.querySelectorAll('.s').forEach(el => {
-                const id = el.id.split('-')[1] || el.innerText;
-                d[id] = el.classList.contains('absent') ? 'absent' : (el.classList.contains('late') ? 'late' : 'present');
+                const id = el.innerText.split('\n')[0];
+                if(id) d[id] = el.classList.contains('late') ? 'late' : (el.classList.contains('leave') ? 'leave' : (el.classList.contains('absent') ? 'absent' : 'present'));
             });
             localStorage.setItem('e3_st', JSON.stringify(d));
         }
 
         function copyList(id, label) {
-            const text = document.getElementById(id).innerText;
-            if(text === "NONE") return;
-            navigator.clipboard.writeText(label + "名單：" + text);
+            navigator.clipboard.writeText(label + "：" + document.getElementById(id).innerText);
             alert(label + "名單已複製");
         }
-
-        function resetStats() { if(confirm("確定要重置「累計次數」嗎？這無法還原！")) { localStorage.removeItem('e3_stats'); renderStats(); } }
 
         window.onload = init;
     </script>
