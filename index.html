@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝數位指揮部 v62</title>
+    <title>電三孝數位指揮部 v63</title>
     <style>
         :root {
             --primary: #00f2ff; /* 霓虹青 */
@@ -19,7 +19,7 @@
             margin: 0;
             background: radial-gradient(circle at center, #1a1f2c 0%, var(--bg) 100%);
             color: #ffffff;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -54,7 +54,7 @@
         }
 
         .refresh-btn {
-            background: rgba(255, 0, 85, 0.2);
+            background: rgba(255, 0, 85, 0.1);
             color: var(--accent);
             border: 1px solid var(--accent);
             padding: 8px 16px;
@@ -69,13 +69,13 @@
         @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         .report-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; margin-bottom: 20px; }
-        .report-item small { font-size: 0.7rem; opacity: 0.6; display: block; margin-bottom: 5px; }
+        .report-item small { font-size: 0.75rem; opacity: 0.6; display: block; margin-bottom: 5px; font-weight: bold; }
 
         .chart-wrap { position: relative; width: 100%; padding: 20px 0; }
         .podium {
             width: 100%; height: 40px; background: rgba(255,255,255,0.05); border-radius: 10px;
             display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
-            letter-spacing: 5px; color: rgba(255,255,255,0.3); margin-bottom: 20px; border: 1px solid var(--glass-border);
+            letter-spacing: 10px; color: rgba(255,255,255,0.3); margin-bottom: 20px; border: 1px solid var(--glass-border);
         }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
@@ -87,45 +87,46 @@
             background: rgba(255,255,255,0.02);
         }
 
-        /* 霓虹狀態 */
         .present { color: var(--primary); border-color: rgba(0, 242, 255, 0.3); }
         .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.1); box-shadow: 0 0 10px rgba(255, 183, 0, 0.2); }
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189, 0, 255, 0.1); box-shadow: 0 0 10px rgba(189, 0, 255, 0.2); }
         .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); box-shadow: 0 0 10px rgba(255, 0, 85, 0.2); }
 
-        .spec { position: absolute; top: 0; height: 40px; width: calc((100% - 60px) / 7); }
+        /* 修正 13 與 41 號的對齊公式 */
+        .spec { position: absolute; top: 20px; height: calc((100vw * 0.95 / 7) - 10px); max-height: 75px; width: calc((100% - 60px) / 7); }
         #s-13 { left: calc((100% - 60px) / 7 + 10px); }
         #s-41 { left: calc(((100% - 60px) / 7 + 10px) * 2); }
-        .l-tag { position: absolute; bottom: 2px; font-size: 0.5rem; font-weight: bold; }
+        
+        .l-tag { position: absolute; bottom: 4px; font-size: 0.55rem; font-weight: bold; }
 
         .nav-footer { position: fixed; bottom: 30px; width: 90%; max-width: 500px; display: flex; gap: 15px; padding: 10px; border-radius: 50px; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 12px; border-radius: 40px; border: none; color: rgba(255,255,255,0.5); background: transparent; font-weight: bold; cursor: pointer; }
+        .nav-btn { flex: 1; padding: 12px; border-radius: 40px; border: none; color: rgba(255,255,255,0.4); background: transparent; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
         .nav-btn.btn-active { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
 
         .card { padding: 15px; margin-bottom: 15px; }
-        .row { padding: 12px 5px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; }
+        .row { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <div id="clock">00:00:00</div>
-        <button class="refresh-btn" onclick="dailyReset()">RESET BOARD</button>
+        <button class="refresh-btn" onclick="dailyReset()">🔄 重置今日名單</button>
     </div>
 
     <div id="p1" class="page active">
         <div class="report-panel glass-panel">
             <div onclick="copyList('late-list', '遲到')">
-                <small style="color:var(--warning)">LATE</small>
-                <div id="late-list" style="color:var(--warning)">-</div>
+                <small style="color:var(--warning)">⏳ 遲到名單</small>
+                <div id="late-list" style="color:var(--warning)">無</div>
             </div>
             <div onclick="copyList('absent-list', '缺席/請假')">
-                <small style="color:var(--accent)">ABSENT/LEAVE</small>
-                <div id="absent-list" style="color:var(--accent)">-</div>
+                <small style="color:var(--accent)">❌ 缺席/請假</small>
+                <div id="absent-list" style="color:var(--accent)">無</div>
             </div>
         </div>
         <div class="chart-wrap">
-            <div class="podium">PODIUM</div>
+            <div class="podium">講桌</div>
             <div class="s spec present" id="s-13" onclick="t(13)">13</div>
             <div class="s spec present" id="s-41" onclick="t(41)">41</div>
             <div class="grid" id="main-grid"></div>
@@ -134,23 +135,23 @@
 
     <div id="p2" class="page">
         <div class="card glass-panel">
-            <h3 style="margin:0 0 15px 0; color:var(--primary)">DAILY LOGS</h3>
+            <h3 style="margin:0 0 15px 0; color:var(--primary); font-size:1.1rem;">⏱ 今日紀錄日誌</h3>
             <div id="log-list"></div>
         </div>
     </div>
 
     <div id="p3" class="page">
         <div class="card glass-panel">
-            <h3 style="margin:0 0 15px 0; color:var(--warning)">RANKING</h3>
+            <h3 style="margin:0 0 15px 0; color:var(--warning); font-size:1.1rem;">📊 累計遲到排行</h3>
             <div id="stat-list"></div>
-            <button onclick="clearStats()" style="width:100%; margin-top:20px; background:none; border:1px solid rgba(255,0,0,0.3); color:rgba(255,0,0,0.5); padding:10px; border-radius:10px;">PURGE RANKING</button>
+            <button onclick="clearStats()" style="width:100%; margin-top:30px; background:none; border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.2); padding:10px; border-radius:10px; font-size:0.7rem;">清空所有統計數據</button>
         </div>
     </div>
 
     <nav class="nav-footer glass-panel">
-        <button class="nav-btn btn-active" id="b1" onclick="go(1)">BOARD</button>
-        <button class="nav-btn" id="b2" onclick="go(2)">LOGS</button>
-        <button class="nav-btn" id="b3" onclick="go(3)">STATS</button>
+        <button class="nav-btn btn-active" id="b1" onclick="go(1)">點名板</button>
+        <button class="nav-btn" id="b2" onclick="go(2)">日誌頁</button>
+        <button class="nav-btn" id="b3" onclick="go(3)">排行榜</button>
     </nav>
 
     <script>
@@ -201,12 +202,10 @@
             let types = JSON.parse(localStorage.getItem('e3_ty') || '{}');
             
             if(el.classList.contains('present')) {
-                // 點 1 下：遲到
                 el.className = `s ${isSp?'spec':''} late`;
                 addLog(id, time); addStat(id);
             } else if(el.classList.contains('late')) {
-                // 點 2 下：問假別
-                const choice = prompt("請假類別？ (1:事 2:病 3:喪 4:公 5:缺席)");
+                const choice = prompt("選擇類別：\n1.事假  2.病假  3.喪假  4.公假  5.缺席");
                 const map = {"1":"事假","2":"病假","3":"喪假","4":"公假"};
                 if(choice === "5" || choice === null) {
                     el.className = `s ${isSp?'spec':''} absent`;
@@ -218,7 +217,6 @@
                     types[id] = map[choice];
                 }
             } else {
-                // 點 3 下：回到在座 (無 4 次點擊)
                 el.className = `s ${isSp?'spec':''} present`;
                 el.innerHTML = id;
                 delete types[id];
@@ -242,18 +240,18 @@
         function renderStats() {
             const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
             const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
-            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="row"><span>ID ${id}</span><span style="color:var(--warning)">${count} TIMES</span></div>`).join('') || '<div style="opacity:0.2">NO DATA</div>';
+            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="row"><span>座號 ${id}</span><span style="color:var(--warning)">${count} 次</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">暫無統計數據</div>';
         }
 
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="row"><span>ID ${o.id}</span><span style="color:var(--primary)">${o.time}</span></div>`).join('') || '<div style="opacity:0.2">EMPTY</div>';
+            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="row"><span>座號 ${o.id}</span><span style="color:var(--primary)">${o.time}</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">目前尚無紀錄</div>';
         }
 
-        function clearStats() { if(confirm("確定清空排行統計？")) { localStorage.removeItem('e3_stats'); renderStats(); } }
+        function clearStats() { if(confirm("確定要刪除所有排行榜數據嗎？")) { localStorage.removeItem('e3_stats'); renderStats(); } }
 
         function dailyReset() {
-            if(confirm("確定重整今日名單？")) {
+            if(confirm("重置今日名單？(清空顏色與日誌，保留排行)")) {
                 localStorage.removeItem('e3_st'); localStorage.removeItem('e3_lg'); localStorage.removeItem('e3_ty');
                 location.reload();
             }
@@ -274,13 +272,13 @@
                 let id = el.innerText.split('\n')[0];
                 return el.classList.contains('leave') ? id+'(假)' : id;
             }).sort();
-            document.getElementById('late-list').innerText = l.join(',') || "-";
-            document.getElementById('absent-list').innerText = a.join(',') || "-";
+            document.getElementById('late-list').innerText = l.join(',') || "無";
+            document.getElementById('absent-list').innerText = a.join(',') || "無";
         }
 
         function copyList(id, label) {
             navigator.clipboard.writeText(label + ": " + document.getElementById(id).innerText);
-            alert("COPIED!");
+            alert("已複製名單！");
         }
 
         window.onload = init;
