@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝戰略版 v111</title>
+    <title>電三孝戰略終極版 v112</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
@@ -14,33 +14,32 @@
         }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; transition: 0.3s; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        /* 頂部時鐘與導航 */
-        .header { width: 92%; padding: 10px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
+        /* 頂部時鐘 */
+        .header { width: 92%; padding: 12px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
         .clock-display { font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
-        .theme-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
         .dash-card { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
         .dash-card big { display: block; font-size: 1.1rem; font-weight: 800; }
         .dash-card small { font-size: 0.55rem; color: #8e8e93; font-weight: bold; }
 
-        /* 異常名單區 */
-        .status-list-zone { width: 92%; padding: 10px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; }
+        /* 異常名單區 + 小圓標複製 */
+        .status-list-zone { width: 92%; padding: 10px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 12px; position: relative; }
         .status-item { font-size: 0.75rem; margin: 3px 0; display: flex; flex-wrap: wrap; line-height: 1.4; }
-        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
+        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,122,255,0.3); font-size: 0.9rem; }
 
         .main-container { width: 95%; height: calc(100vh - 280px); overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
         .view { display: none; width: 100%; max-width: 400px; }
         .view.active { display: block; }
 
+        /* 座位設定 */
         .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
-        .podium-box { grid-column: 4; height: 40px; border: 1px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #888; }
+        .podium-box { grid-column: 4; height: 42px; border: 1.5px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #888; font-weight: bold; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
-        
-        /* 座位格 */
         .s { width: 52px; height: 42px; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; cursor: pointer; color: #888; transition: 0.1s; position: relative; }
-        .time-label { position: absolute; top: 2px; font-size: 0.45rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+        .time-label { position: absolute; top: 2px; font-size: 0.45rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; pointer-events: none; }
         .note-label { font-size: 0.55rem; font-weight: 800; margin-top: 10px; }
 
         .present { color: var(--primary); border-color: var(--primary); }
@@ -50,35 +49,35 @@
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
         .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
 
+        /* 液態懸浮導航 (無圖示) */
         .tab-bar-wrap { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
-        .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 54px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 27px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .tab-btn { border: none; background: none; color: #888; font-size: 0.65rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
-        .tab-btn.active { color: var(--primary); }
-        .tab-btn i { font-size: 1.1rem; font-style: normal; }
+        .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 50px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 25px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); transform: scale(1.1); }
 
         #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
         .menu-content { background: var(--card); padding: 25px; border-radius: 25px; width: 260px; text-align: center; border: 1px solid var(--border); }
         .menu-btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: var(--border); color: var(--text); }
 
         .record-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .record-table th { text-align: left; color: #888; padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.7rem; }
-        .record-table td { padding: 10px; border-bottom: 1px solid var(--border); }
+        .record-table th { text-align: left; color: #888; padding: 12px 10px; border-bottom: 1px solid var(--border); font-size: 0.7rem; }
+        .record-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
     <header class="header">
         <div>
-            <div style="font-size: 0.6rem; font-weight: 800; color: #888;">電三孝戰略系統</div>
+            <div style="font-size: 0.6rem; font-weight: 800; color: #888; letter-spacing: 1px;">E3A COMMAND</div>
             <div id="live-clock" class="clock-display">00:00:00</div>
         </div>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     </header>
 
     <div class="dashboard">
-        <div class="dash-card"><small>出席率</small><big id="d1_v">--</big></div>
-        <div class="dash-card"><small>到班人數</small><big id="d2_v">--</big></div>
-        <div class="dash-card"><small>手機繳交</small><big id="d3_v" style="color:var(--phone)">--</big></div>
+        <div class="dash-card"><small>出席率</small><big id="d1_v">0%</big></div>
+        <div class="dash-card"><small>到班人數</small><big id="d2_v">0</big></div>
+        <div class="dash-card"><small>手機繳交</small><big id="d3_v" style="color:var(--phone)">0</big></div>
     </div>
 
     <div class="status-list-zone">
@@ -90,24 +89,24 @@
     <div class="main-container">
         <div id="v-att" class="view active">
             <div class="podium-row">
-                <div class="s" id="s-28" style="grid-column:2" onclick="handle(28)">28</div>
-                <div class="s" id="s-13" style="grid-column:3" onclick="handle(13)">13</div>
+                <div class="s" id="s-13" style="grid-column:1" onclick="handle(13)">13</div>
+                <div class="s" id="s-41" style="grid-column:2" onclick="handle(41)">41</div>
                 <div class="podium-box">講桌</div>
-                <div class="s" id="s-41" style="grid-column:5" onclick="handle(41)">41</div>
-                <div class="s" id="s-27" style="grid-column:6" onclick="handle(27)">27</div>
+                <div class="s" id="s-28" style="grid-column:6" onclick="handle(28)">28</div>
+                <div class="s" id="s-27" style="grid-column:7" onclick="handle(27)">27</div>
             </div>
             <div id="g-att" class="grid"></div>
         </div>
 
         <div id="v-pho" class="view">
-            <button onclick="allPhone()" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px; border:none; background:var(--phone); color:#fff; font-weight:bold;">一鍵全班繳交</button>
+            <button onclick="allPhone()" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px; border:none; background:var(--phone); color:#fff; font-weight:bold;">標記全班繳交</button>
             <div id="g-pho-pod" class="podium-row"></div>
             <div id="g-pho-main" class="grid"></div>
         </div>
 
         <div id="v-sta" class="view">
             <div style="padding: 20px; background: var(--card); border-radius: 18px; border:1px solid var(--border);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">實到出席 <b id="st-p">0</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">今日在座 <b id="st-p">0</b></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:var(--warning)">今日遲到 <b id="st-l">0</b></div>
                 <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">事假 <b id="st-v1">0</b></div>
@@ -127,14 +126,14 @@
         </div>
 
         <div id="v-set" class="view" style="text-align:center; padding-top:40px;">
-            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 35px; border-radius:30px; font-weight:bold;">重置今日數據</button>
-            <button onclick="hardReset()" style="margin-top:20px; background:none; border:none; color:#888; font-size:0.7rem; text-decoration:underline;">清除歷史次數</button>
+            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 35px; border-radius:30px; font-weight:bold;">重置當日狀態</button>
+            <button onclick="hardReset()" style="margin-top:20px; background:none; border:none; color:#888; font-size:0.75rem; text-decoration:underline;">永久清除歷史紀錄</button>
         </div>
     </div>
 
     <div id="leave-menu">
         <div class="menu-content">
-            <h3 style="margin:0 0 15px 0;">假別類型</h3>
+            <h3 style="margin-top:0;">假別類型</h3>
             <button class="menu-btn" onclick="selLeave('事')">事假</button>
             <button class="menu-btn" onclick="selLeave('公')">公假</button>
             <button class="menu-btn" onclick="selLeave('病')">病假</button>
@@ -145,11 +144,11 @@
 
     <div class="tab-bar-wrap">
         <nav class="tab-bar">
-            <button class="tab-btn active" onclick="sw('att')"><i>📍</i>點名</button>
-            <button class="tab-btn" onclick="sw('pho')"><i>📱</i>手機</button>
-            <button class="tab-btn" onclick="sw('sta')"><i>📊</i>統計</button>
-            <button class="tab-btn" onclick="sw('rec')"><i>🕒</i>次數</button>
-            <button class="tab-btn" onclick="sw('set')"><i>⚙️</i>設定</button>
+            <button class="tab-btn active" onclick="sw('att')">點名</button>
+            <button class="tab-btn" onclick="sw('pho')">手機</button>
+            <button class="tab-btn" onclick="sw('sta')">統計</button>
+            <button class="tab-btn" onclick="sw('rec')">次數</button>
+            <button class="tab-btn" onclick="sw('set')">設定</button>
         </nav>
     </div>
 
@@ -211,7 +210,7 @@
                   h = JSON.parse(localStorage.getItem('e3_his') || '{}');
 
             const gAtt = document.getElementById('g-att'); gAtt.innerHTML = "";
-            [28,13,41,27].forEach(id => updateS(document.getElementById('s-'+id), id, a, p, n, t));
+            [13, 41, 28, 27].forEach(id => updateS(document.getElementById('s-'+id), id, a, p, n, t));
             layout.forEach(id => {
                 let el = document.createElement('div');
                 if(id===0) el.style.opacity = "0";
@@ -225,12 +224,12 @@
                 if(id===0) el.style.opacity = "0";
                 else { el.className="s"; el.onclick=()=>handle(id); updateS(el, id, a, p, n, t); gPhoMain.appendChild(el); }
             });
-            gPhoPod.querySelectorAll('.s').forEach(el => el.onclick = () => handle(el.innerText.replace(/[^\d]/g, '')));
+            gPhoPod.querySelectorAll('.s').forEach(el => el.onclick = () => handle(parseInt(el.innerText)));
 
             const rBody = document.getElementById('rec-body'); rBody.innerHTML = "";
             for(let i=1; i<=41; i++) {
                 let data = h[i] || {late:0, absent:0};
-                rBody.innerHTML += `<tr><td>${i}號</td><td>${data.late}</td><td>${data.absent}</td></tr>`;
+                rBody.innerHTML += `<tr><td>${i}號</td><td>${data.late}次</td><td>${data.absent}次</td></tr>`;
             }
             calc(a, p, n);
         }
@@ -254,7 +253,7 @@
                 if(s==='leave') { if(n[i]==='事') v1++; else if(n[i]==='公') v2++; else if(n[i]==='病') v3++; else if(n[i]==='喪') v4++; }
             }
             document.getElementById('d1_v').innerText = Math.round((pres/41)*100) + "%";
-            document.getElementById('d2_v').innerText = (pres + late);
+            document.getElementById('d2_v').innerText = pres + late;
             document.getElementById('d3_v').innerText = pho;
             document.getElementById('txt-abs').innerText = absL.join(', ') || '無';
             document.getElementById('txt-late').innerText = lateL.join(', ') || '無';
@@ -264,15 +263,14 @@
         }
 
         function copyReport() {
-            const text = `電三孝回報：\n缺席/請假：${document.getElementById('txt-abs').innerText}\n遲到：${document.getElementById('txt-late').innerText}\n實到人數：${document.getElementById('d2_v').innerText}`;
+            const text = `電三孝點名回報：\n缺席/請假：${document.getElementById('txt-abs').innerText}\n遲到：${document.getElementById('txt-late').innerText}\n實到人數：${document.getElementById('d2_v').innerText}`;
             navigator.clipboard.writeText(text).then(() => alert("回報文字已複製！"));
         }
 
         function allPhone() { let p = {}; for(let i=1; i<=41; i++) p[i] = 'y'; localStorage.setItem('e3_pho', JSON.stringify(p)); render(); }
         function dailyReset() { if(confirm("重置今日數據？")) { localStorage.removeItem('e3_att'); localStorage.removeItem('e3_pho'); localStorage.removeItem('e3_note'); localStorage.removeItem('e3_time'); location.reload(); } }
-        function hardReset() { if(confirm("永久清除累積次數？")) { localStorage.clear(); location.reload(); } }
+        function hardReset() { if(confirm("確定要永久清除歷史累計次數？")) { localStorage.clear(); location.reload(); } }
         
-        // 啟動時鐘
         setInterval(() => {
             document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false});
         }, 1000);
