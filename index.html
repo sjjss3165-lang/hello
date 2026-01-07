@@ -3,233 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電三孝智慧管理系統 v31</title>
+    <title>電三孝指揮中心 v47</title>
     <style>
         :root {
             --primary: #00d4ff; --accent: #f72585; --warning: #ffb703;
-            --bg-dark: #0b0f19; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
+            --bg: #0b0f19; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
         }
         body {
-            margin: 0; background: radial-gradient(circle at center, #1a1f35 0%, #0b0f19 100%);
-            color: #e2e8f0; font-family: 'SF Pro Display', 'Microsoft JhengHei', sans-serif;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-bottom: 50px;
+            margin: 0; background: var(--bg); color: #e2e8f0; font-family: sans-serif;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
-        .dashboard {
-            width: 95%; max-width: 800px; background: var(--glass); backdrop-filter: blur(20px);
-            border: 1px solid var(--border); border-radius: 24px; padding: 25px;
-            box-shadow: 0 40px 100px rgba(0,0,0,0.5); margin: 20px 0;
-        }
-        #clock { font-size: 3.2rem; font-weight: 200; color: var(--primary); text-align: center; margin-bottom: 5px; }
+
+        /* 頁面切換機制 */
+        .page { width: 95%; max-width: 600px; padding: 15px; display: none; padding-bottom: 90px; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* 導航列 */
+        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(10, 12, 18, 0.98); display: flex; border-top: 1px solid var(--border); z-index: 1000; }
+        .nav-btn { flex: 1; text-align: center; color: #475569; font-size: 0.8rem; cursor: pointer; display: flex; flex-direction: column; justify-content: center; }
+        .nav-btn.active { color: var(--primary); font-weight: bold; }
+
+        /* 座位區佈局 */
+        .chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+        .teacher-area { grid-column: span 7; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 15px; align-items: flex-end; }
+        .desk { grid-column: 4 / 7; background: rgba(255,255,255,0.03); height: 35px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #444; border: 1px dashed var(--border); }
         
-        .info-panel { 
-            background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; margin: 20px 0; 
-            border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center;
+        .s { 
+            aspect-ratio: 1.2; border: 1.5px solid var(--border); border-radius: 6px; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s;
         }
-        .info-item { text-align: center; flex: 1; }
-        .info-label { font-size: 0.65rem; color: #94a3b8; letter-spacing: 1px; margin-bottom: 5px; }
-        .info-value { font-size: 1.2rem; font-weight: bold; color: #fff; }
+        .mini { height: 35px; aspect-ratio: auto; font-size: 0.9rem; }
 
-        .late-list-box {
-            background: rgba(255, 183, 3, 0.05); border: 1px dashed var(--warning);
-            border-radius: 12px; padding: 15px; margin-top: 20px;
-        }
-        .late-list-content { color: var(--warning); font-family: monospace; font-size: 0.9rem; word-break: break-all; }
+        .present { border-color: var(--primary); color: var(--primary); }
+        .absent { border-color: var(--accent); color: var(--accent); background: rgba(247, 37, 133, 0.15); }
+        .late { border-color: var(--warning); color: var(--warning); background: rgba(255, 183, 3, 0.15); }
 
-        .seating-chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
-        .seat {
-            aspect-ratio: 1.1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-            border-radius: 8px; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; cursor: pointer; transition: 0.2s; position: relative; padding: 2px;
-        }
-        .seat.present { background: rgba(0, 212, 255, 0.12); border-color: var(--primary); }
-        .seat.absent { background: rgba(247, 37, 133, 0.25); border-color: var(--accent); }
-        .seat.late { background: rgba(255, 183, 3, 0.25); border-color: var(--warning); }
-        .seat-no { font-size: 0.55rem; position: absolute; top: 4px; left: 6px; opacity: 0.6; }
-        .seat-name { font-size: 0.85rem; font-weight: bold; }
-
-        .teacher-desk { grid-column: span 7; background: rgba(255,255,255,0.1); height: 40px; margin-bottom: 50px; margin-top: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; letter-spacing: 8px; color: #94a3b8; border: 1px dashed var(--border); position: relative;}
-        .special-seat { position: absolute; top: -50px; width: 55px; height: 40px; background: rgba(0,212,255,0.1); border: 1px solid var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;}
-
-        .btn { width: auto; padding: 8px 20px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 30px; display: block; margin-left: auto; margin-right: auto; }
-        .btn-primary { background: var(--primary); color: #000; opacity: 0.4; font-size: 0.7rem; }
-
-        #login-wall { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 999; }
-        input[type="password"] { width: 200px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; text-align: center; }
+        /* 第二頁元件 */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        #gacha-num { font-size: 4rem; text-align: center; color: var(--primary); font-weight: 900; margin: 10px 0; }
+        .log-list { font-family: monospace; font-size: 0.85rem; height: 250px; overflow-y: auto; color: #94a3b8; }
+        .log-item { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
     </style>
 </head>
 <body>
 
-    <div id="login-wall">
-        <div class="dashboard" style="max-width: 300px; text-align:center;">
-            <h3 style="color:var(--primary)">電三孝管理系統</h3>
-            <input type="password" id="pass" placeholder="Password">
-            <button class="btn btn-primary" style="opacity:1; font-size:1rem; margin-top:15px;" onclick="doLogin()">UNLOCK</button>
+    <div id="p1" class="page active">
+        <div id="clock" style="text-align:center; font-size:2.5rem; color:var(--primary); margin: 10px 0;">00:00:00</div>
+        
+        <div class="chart" id="chart-container">
+            <div class="teacher-area">
+                <div style="grid-column: 2;"><div class="s mini present" id="s-13" onclick="t(13)">13</div></div>
+                <div style="grid-column: 3;"><div class="s mini present" id="s-41" onclick="t(41)">41</div></div>
+                <div class="desk">講桌 / PODIUM</div>
+            </div>
         </div>
     </div>
 
-    <div id="main-content" style="display: none; width: 100%; align-items: center; flex-direction: column;">
-        <div class="dashboard">
-            <div id="clock">00:00:00</div>
-            
-            <div class="info-panel">
-                <div class="info-item" style="border-right: 1px solid var(--border);">
-                    <div class="info-label">目前課程</div>
-                    <div id="current-lesson" class="info-value">--</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">下課倒數</div>
-                    <div id="timer" class="info-value">--</div>
-                </div>
-            </div>
-
-            <div class="late-list-box" id="late-box" style="display:none;">
-                <div class="info-label" style="color:var(--warning); margin-bottom:10px;">📋 遲到登記名單</div>
-                <div id="late-text" class="late-list-content"></div>
-            </div>
-
-            <div style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
-                <span style="font-size:0.75rem; color:var(--primary); letter-spacing:2px; font-weight: bold;">SEATING PLAN</span>
-                <div style="font-size:0.8rem;">
-                    出: <b id="p-count" style="color:var(--primary)">0</b> | 
-                    缺: <b id="a-count" style="color:var(--accent)">0</b> | 
-                    遲: <b id="l-count" style="color:var(--warning)">0</b>
-                </div>
-            </div>
-
-            <div class="seating-chart" id="chart">
-                <div class="teacher-desk">
-                    講桌 / BLACKBOARD
-                    <div class="special-seat" style="left: 20%;" id="s-13" onclick="toggleSeat(13)"><span style="font-size:0.65rem;">13</span></div>
-                    <div class="special-seat" style="left: 45%;" id="s-41" onclick="toggleSeat(41)"><span style="font-size:0.65rem;">41</span></div>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" onclick="resetSeats()">RESET ALL SEATS</button>
+    <div id="p2" class="page">
+        <h3 style="color:var(--primary); text-align:center; font-weight:300;">數據分析中心</h3>
+        
+        <div class="card" style="display:flex; justify-content:space-around; text-align:center;">
+            <div><div id="cnt-a" style="color:var(--accent); font-size:1.5rem; font-weight:bold;">0</div><small>缺席</small></div>
+            <div><div id="cnt-l" style="color:var(--warning); font-size:1.5rem; font-weight:bold;">0</div><small>遲到</small></div>
+            <div><div id="cnt-p" style="color:var(--primary); font-size:1.5rem; font-weight:bold;">41</div><small>在座</small></div>
         </div>
+
+        <div class="card">
+            <small style="color:var(--warning)">隨機抽人 (自動過濾缺席)</small>
+            <div id="gacha-num">??</div>
+            <button onclick="startGacha()" style="width:100%; padding:10px; background:var(--primary); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">START</button>
+        </div>
+
+        <div class="card">
+            <small style="color:var(--warning)">🕒 到校時間登記日誌</small>
+            <div id="log-list" class="log-list"></div>
+        </div>
+    </div>
+
+    <div class="nav">
+        <div class="nav-btn active" id="b1" onclick="go(1)">📍 點名板</div>
+        <div class="nav-btn" id="b2" onclick="go(2)">📊 數據中心</div>
     </div>
 
     <script>
-        const AUTH = "1234";
-        const students = {"1":"林湘凌","2":"邱婉琳","3":"駱昱彣","4":"施雅瑄","5":"項睿廷","6":"杜柏昂","7":"陳志倫","8":"顏銘徵","9":"林尚廷","10":"徐得軒","11":"蔡丞恩","12":"邱宥睿","13":"石浩文","14":"王品堯","15":"周辰旭","16":"王淮謙","17":"林易澄","18":"黃存豪","19":"柳凱博","20":"孫沂鈞","21":"馮靖富","22":"陳佑瑜","23":"施邦佑","24":"范舜為","25":"許翔硯","26":"陳敬恩","27":"陳學洋","28":"江郁昌","29":"鄭閎楷","30":"江承恩","31":"洪畯楷","32":"鄭聿廷","33":"何承恩","34":"張議澧","35":"蔡品宇","36":"曾柏諺","37":"詹詠全","38":"方廷祐","39":"陳傳叡","40":"周彥成","41":"吳柏諺"};
+        const layout = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
         
-        const seatMapping = [
-            2, 0, 0, 6, 20, 10, 21,
-            12, 23, 25, 34, 3, 1, 33,
-            39, 4, 19, 15, 18, 24, 30,
-            40, 5, 16, 35, 29, 9, 36,
-            32, 14, 37, 17, 31, 8, 7,
-            22, 11, 26, 38, 0, 0, 0
-        ];
-
-        const schedule = {
-            1: ["國文", "英語會話", "英語文", "進階數學", "應電助教", "應電助教", "應電助教", "彈性"],
-            2: ["體育", "電機主任", "電機主任", "閱讀老師", "休息", "數學老師", "休息", "課輔"],
-            3: ["實習主任", "實習主任", "實習主任", "英語會話", "微電助教", "微電助教", "國文", "彈性"],
-            4: ["數邏助教", "數邏助教", "數邏助教", "數學老師", "專題助教", "專題助教", "專題助教", "自主"],
-            5: ["英語文", "電力助教", "電力助教", "電力助教", "體育", "閱讀老師", "電機主任", "課輔"]
-        };
-
-        function doLogin() {
-            if(document.getElementById('pass').value === AUTH) {
-                document.getElementById('login-wall').style.display='none';
-                document.getElementById('main-content').style.display='flex';
-                init();
-            } else alert("密碼錯誤");
+        function go(n) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('p'+n).classList.add('active');
+            document.getElementById('b'+n).classList.add('active');
+            if(n===2) updateStats();
         }
 
         function init() {
-            const chart = document.getElementById('chart');
+            const chart = document.getElementById('chart-container');
+            const data = JSON.parse(localStorage.getItem('e3_st') || '{}');
+            
             [13, 41].forEach(id => {
-                const s = document.getElementById(`s-${id}`);
-                s.className = 'special-seat present';
-                s.innerHTML = `<span class="seat-no">${id}</span><div class="seat-name" style="font-size:0.65rem; margin-left:5px;">${students[id].substring(1)}</div>`;
+                const el = document.getElementById(`s-${id}`);
+                el.className = `s mini ${data[id] || 'present'}`;
             });
 
-            seatMapping.forEach(id => {
-                const seat = document.createElement('div');
-                if (id === 0) {
-                    seat.style.opacity = "0";
-                } else {
-                    seat.className = 'seat present';
-                    seat.id = `s-${id}`;
-                    seat.innerHTML = `<span class="seat-no">${id}</span><div class="seat-name">${students[id]}</div>`;
-                    seat.onclick = () => toggleSeat(id);
+            layout.forEach(id => {
+                const el = document.createElement('div');
+                if (id === 0) el.style.opacity = "0";
+                else {
+                    el.className = `s ${data[id] || 'present'}`;
+                    el.id = `s-${id}`;
+                    el.innerText = id;
+                    el.onclick = () => t(id);
                 }
-                chart.appendChild(seat);
+                chart.appendChild(el);
             });
+            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false}); }, 1000);
+            renderLogs();
             updateStats();
-            updateTime();
-            setInterval(updateTime, 1000);
         }
 
-        function toggleSeat(id) {
-            const seat = document.getElementById(`s-${id}`);
-            if(seat.classList.contains('present')) seat.classList.replace('present', 'absent');
-            else if(seat.classList.contains('absent')) seat.classList.replace('absent', 'late');
-            else seat.classList.replace('late', 'present');
-            updateStats();
+        function t(id) {
+            const el = document.getElementById(`s-${id}`);
+            const isMini = el.classList.contains('mini');
+            const now = new Date();
+            const time = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0');
+            
+            if(el.classList.contains('present')) el.className = isMini ? "s mini absent" : "s absent";
+            else if(el.classList.contains('absent')) {
+                el.className = isMini ? "s mini late" : "s late";
+                let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+                logs.unshift(`[${time}] 座號 ${id} 到校`);
+                localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
+                renderLogs();
+            } else el.className = isMini ? "s mini present" : "s present";
+            
+            save(); updateStats();
         }
 
         function updateStats() {
-            const lates = document.querySelectorAll('.late');
-            document.getElementById('p-count').innerText = document.querySelectorAll('.present').length;
-            document.getElementById('a-count').innerText = document.querySelectorAll('.absent').length;
-            document.getElementById('l-count').innerText = lates.length;
-
-            // 處理遲到清單顯示
-            const lateBox = document.getElementById('late-box');
-            const lateText = document.getElementById('late-text');
-            if (lates.length > 0) {
-                lateBox.style.display = 'block';
-                let list = [];
-                lates.forEach(s => {
-                    const id = s.id.split('-')[1];
-                    list.push(`${id}${students[id]}`);
-                });
-                lateText.innerText = list.join('、'); // 用頓號隔開成一條
-            } else {
-                lateBox.style.display = 'none';
-            }
+            const a = document.querySelectorAll('.absent').length;
+            const l = document.querySelectorAll('.late').length;
+            document.getElementById('cnt-a').innerText = a;
+            document.getElementById('cnt-l').innerText = l;
+            document.getElementById('cnt-p').innerText = 41 - a;
         }
 
-        function resetSeats() {
-            if(confirm("重置所有座位狀態？")) {
-                document.querySelectorAll('.seat, .special-seat').forEach(s => {
-                    s.classList.remove('absent','late');
-                    s.classList.add('present');
-                });
-                updateStats();
-            }
+        function startGacha() {
+            const ok = Array.from(document.querySelectorAll('.s:not(.absent)'));
+            if(!ok.length) return;
+            let i = 0;
+            const timer = setInterval(() => {
+                document.getElementById('gacha-num').innerText = ok[Math.floor(Math.random()*ok.length)].innerText;
+                if(i++ > 15) clearInterval(timer);
+            }, 50);
         }
 
-        function updateTime() {
-            const now = new Date();
-            const day = now.getDay();
-            const currentSecs = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-            document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', {hour12:false});
-            
-            let lessonText = "休息時間";
-            let timerText = "IDLE";
-            const startTimes = ["08:00", "09:00", "10:00", "11:00", "13:10", "14:10", "15:10", "16:10"];
-            const endTimes = ["08:50", "09:50", "10:50", "11:50", "14:00", "15:00", "16:00", "17:00"];
-            
-            if (day >= 1 && day <= 5) {
-                for (let i = 0; i < 8; i++) {
-                    const [sh, sm] = startTimes[i].split(':').map(Number);
-                    const [eh, em] = endTimes[i].split(':').map(Number);
-                    const sSecs = sh*3600 + sm*60;
-                    const eSecs = eh*3600 + em*60;
-                    if (currentSecs >= sSecs && currentSecs < eSecs) {
-                        lessonText = `${schedule[day][i]}`;
-                        const diff = eSecs - currentSecs;
-                        timerText = `${Math.floor(diff/60)}分${diff%60}秒`;
-                        break;
-                    }
-                }
-            }
-            document.getElementById('current-lesson').innerText = lessonText;
-            document.getElementById('timer').innerText = timerText;
+        function renderLogs() {
+            const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+            document.getElementById('log-list').innerHTML = logs.map(t => `<div class="log-item">${t}</div>`).join('');
         }
+
+        function save() {
+            const d = {};
+            document.querySelectorAll('.s').forEach(el => {
+                const id = el.id ? el.id.split('-')[1] : el.innerText;
+                d[id] = el.classList.contains('absent') ? 'absent' : (el.classList.contains('late') ? 'late' : 'present');
+            });
+            localStorage.setItem('e3_st', JSON.stringify(d));
+        }
+
+        window.onload = init;
     </script>
 </body>
 </html>
