@@ -3,147 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電三孝點名管理系統 v13</title>
+    <title>電三孝智慧管理系統 v23 - 完整姓名點名版</title>
     <style>
-        :root { --primary: #4cc9f0; --secondary: #f72585; --bg: #0f172a; --card: rgba(30, 41, 59, 0.9); }
-        body { font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; background: radial-gradient(circle at top right, #1e293b, #0f172a); color: white; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        :root {
+            --primary: #00d4ff; --accent: #f72585; --warning: #ffb703;
+            --bg-dark: #0b0f19; --glass: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            margin: 0; background: radial-gradient(circle at center, #1a1f35 0%, #0b0f19 100%);
+            color: #e2e8f0; font-family: 'SF Pro Display', 'Microsoft JhengHei', sans-serif;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
+        .dashboard {
+            width: 95%; max-width: 800px; background: var(--glass); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 24px; padding: 20px;
+            box-shadow: 0 40px 100px rgba(0,0,0,0.5); margin: 20px 0;
+        }
+        #clock { font-size: 3.2rem; font-weight: 200; color: var(--primary); text-align: center; margin: 0; letter-spacing: -1px; }
+        .info-card { background: rgba(0,0,0,0.4); border-radius: 15px; padding: 12px; margin: 10px 0; border-left: 4px solid var(--primary); text-align: center; }
         
-        .marquee-container { position: fixed; top: 0; width: 100%; background: #c0392b; color: white; padding: 10px 0; z-index: 1000; overflow: hidden; display: none; }
-        .marquee-text { display: inline-block; white-space: nowrap; animation: scroll 20s linear infinite; font-weight: bold; font-size: 1.1rem; }
-        @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        /* 座位表佈局優化 */
+        .seating-chart {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); 
+            gap: 8px; margin-top: 15px;
+        }
+        .seat {
+            aspect-ratio: 1.1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            border-radius: 10px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; cursor: pointer; transition: 0.2s; position: relative;
+            padding: 5px; box-sizing: border-box;
+        }
+        .seat.present { background: rgba(0, 212, 255, 0.15); border-color: var(--primary); color: #fff; }
+        .seat.absent { background: rgba(247, 37, 133, 0.3); border-color: var(--accent); color: #fff; }
+        .seat.late { background: rgba(255, 183, 3, 0.3); border-color: var(--warning); color: #fff; }
+        
+        .seat-no { font-size: 0.6rem; position: absolute; top: 4px; left: 6px; opacity: 0.5; }
+        .seat-name { font-size: 0.85rem; font-weight: bold; white-space: nowrap; }
 
-        #login-wall { background: var(--card); backdrop-filter: blur(15px); padding: 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.5); z-index: 101; }
-        .logo { font-size: 2.2rem; font-weight: 900; margin-bottom: 25px; background: linear-gradient(to right, #4cc9f0, #4361ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 2px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15,23,42,0.9); color: white; box-sizing: border-box; font-size: 1rem; }
-        .btn-action { width: 100%; padding: 12px; margin-top: 15px; border-radius: 12px; border: none; background: linear-gradient(45deg, #4361ee, #4cc9f0); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-action:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4); }
-        
-        #main-content { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 60px; overflow-y: auto; height: 100vh; }
-        .container { background: var(--card); backdrop-filter: blur(10px); padding: 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 450px; text-align: center; margin-bottom: 30px; }
-        #clock { font-size: 3.5rem; font-weight: 900; color: var(--primary); margin: 5px 0; }
-        #current-lesson { font-size: 1.2rem; color: #ffeb3b; margin: 10px 0; font-weight: bold; background: rgba(255, 235, 59, 0.1); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,235,59,0.3); }
-        #timer { font-size: 1.3rem; color: var(--secondary); margin: 10px 0; font-weight: bold; }
-        .section-title { color: var(--primary); margin: 20px 0 10px; font-size: 1.2rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px; }
+        .teacher-desk {
+            grid-column: span 7; background: rgba(255,255,255,0.08); height: 35px;
+            margin-bottom: 20px; border-radius: 8px; display: flex; align-items: center;
+            justify-content: center; font-size: 0.8rem; letter-spacing: 8px; color: #94a3b8;
+            border: 1px dashed var(--border);
+        }
+
+        .stats { display: flex; justify-content: space-around; margin: 15px 0; font-size: 0.9rem; }
+        .btn-reset { width: 100%; padding: 12px; border-radius: 12px; border: none; background: #4361ee; color: white; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+
+        #login-wall { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 999; }
     </style>
 </head>
 <body>
 
-    <div id="top-marquee" class="marquee-container">
-        <div class="marquee-text">📢 班務提醒：請立即繳交手機！聯絡簿請確實交齊至講桌！ 📢 &nbsp;&nbsp;&nbsp;&nbsp; ⏰ 提醒：每日 07:00 起床鬧鐘已啟動 ⏰</div>
-    </div>
-
     <div id="login-wall">
-        <div class="logo">電三孝點名系統</div>
-        <input type="text" id="user" placeholder="管理員帳號">
-        <input type="password" id="pass" placeholder="存取密碼">
-        <button class="btn-action" onclick="doLogin()">進入系統</button>
-        <span style="display:block; margin-top:15px; color:#94a3b8; font-size:0.8rem; cursor:pointer;" onclick="alert('提示：1234')">忘記密碼？</span>
+        <div class="dashboard" style="max-width: 320px; text-align:center;">
+            <div style="font-size: 0.8rem; color: var(--primary); letter-spacing: 2px; margin-bottom: 15px;">CLASS 3-XIAO ADMIN</div>
+            <input type="password" id="pass" style="width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:rgba(0,0,0,0.5); color:white; text-align:center; font-size:1rem;" placeholder="輸入存取密碼">
+            <button class="btn-reset" onclick="doLogin()">進入點名系統</button>
+        </div>
     </div>
 
-    <div id="main-content">
-        <div class="container">
+    <div id="main-content" style="display: none; width: 100%; align-items: center; flex-direction: column;">
+        <div class="dashboard">
             <div id="clock">00:00:00</div>
-            <div id="current-lesson">正在讀取課表...</div>
-            <div id="timer">計算下課中...</div>
+            <div class="info-card">
+                <div id="current-lesson" style="font-weight:bold;">同步課表中...</div>
+                <div id="timer" style="color:var(--primary); font-size:0.8rem;">--:--</div>
+            </div>
 
-            <div class="section-title">學生搜尋</div>
-            <input type="number" id="stuId" placeholder="輸入座號" style="width: 50%; display: inline-block;">
-            <button class="btn-action" style="width: 40%; margin:0; padding: 10px; display: inline-block; vertical-align: top; margin-left: 5px;" onclick="checkName()">搜尋</button>
-            <div id="result" style="margin-top:15px; font-size: 1.5rem; color: var(--primary); font-weight: bold; min-height: 40px;"></div>
+            <div class="stats">
+                <span style="color:var(--primary)">出席: <b id="count-present">0</b></span>
+                <span style="color:var(--accent)">缺席: <b id="count-absent">0</b></span>
+                <span style="color:var(--warning)">遲到: <b id="count-late">0</b></span>
+            </div>
 
-            <div class="section-title">班級抽籤</div>
-            <button class="btn-action" style="background: linear-gradient(45deg, #f72585, #b5179e);" onclick="luckyDraw()">隨機抽取一位幸運兒</button>
-            <div id="lucky-result" style="margin-top:15px; font-size: 1.8rem; color: #ffeb3b; font-weight: bold; min-height: 45px;"></div>
+            <div class="seating-chart" id="chart">
+                <div class="teacher-desk">講桌 / 黑板</div>
+            </div>
+            
+            <button class="btn-reset" onclick="resetSeats()" style="opacity:0.8; font-size:0.8rem;">一鍵重置出席狀態</button>
         </div>
     </div>
 
     <script>
-        const AUTH = { user: "admin", pass: "1234" };
+        const AUTH_PASS = "1234";
+        const students = {"1":"林湘凌","2":"邱婉琳","3":"駱昱彣","4":"施雅瑄","5":"項睿廷","6":"杜柏昂","7":"陳志倫","8":"顏銘徵","9":"林尚廷","10":"徐得軒","11":"蔡丞恩","12":"邱宥睿","13":"石浩文","14":"王品堯","15":"周辰旭","16":"王淮謙","17":"林易澄","18":"黃存豪","19":"柳凱博","20":"孫沂鈞","21":"馮靖富","22":"陳佑瑜","23":"施邦佑","24":"范舜為","25":"許翔硯","26":"陳敬恩","27":"陳學洋","28":"江郁昌","29":"鄭閎楷","30":"江承恩","31":"洪畯楷","32":"鄭聿廷","33":"何承恩","34":"張議澧","35":"蔡品宇","36":"曾柏諺","37":"詹詠全","38":"方廷祐","39":"陳傳叡","40":"周彥成","41":"吳柏諺"};
         
-        // 職稱大風吹：主任、老師、助教、英文老師
         const schedule = {
-            1: ["☕ 休息時間", "國文老師", "英語會話 英文老師", "英語文 英文老師", "進階數學 數學老師", "應用基本電學 助教", "應用基本電學 助教"],
-            2: ["體育老師", "電工機械進階 主任", "電工機械進階 主任", "閱讀與認知 閱讀老師", "☕ 休息時間", "進階數學 數學老師", "☕ 休息時間"],
-            3: ["電工機械實習 主任", "電工機械實習 主任", "電工機械實習 主任", "英語會話 英文老師", "微電腦結構 助教", "微電腦結構 助教", "國文老師"],
-            4: ["數位邏輯實習 助教", "數位邏輯實習 助教", "數位邏輯實習 助教", "進階數學 數學老師", "專題實作 助教", "專題實作 助教", "專題實作 助教"],
-            5: ["英語文 英文老師", "電力電子應用實習 助教", "電力電子應用實習 助教", "電力電子應用實習 助教", "體育老師", "閱讀與認知 閱讀老師", "電工機械進階 主任"]
-        };
-
-        const students = {
-            "1": "林湘凌", "2": "邱婉琳", "3": "駱昱彣", "4": "施雅瑄", "5": "項睿廷",
-            "6": "杜柏昂", "7": "陳志倫", "8": "顏銘徵", "9": "林尚廷", "10": "徐得軒",
-            "11": "蔡丞恩", "12": "邱宥睿", "13": "石浩文", "14": "王品堯", "15": "周辰旭",
-            "16": "王淮謙", "17": "林易澄", "18": "黃存豪", "19": "柳凱博", "20": "孫沂鈞",
-            "21": "馮靖富", "22": "陳佑瑜", "23": "施邦佑", "24": "范舜為", "25": "許翔硯",
-            "26": "陳敬恩", "27": "陳學洋", "28": "江郁昌", "29": "鄭閎楷", "30": "江承恩",
-            "31": "洪畯楷", "32": "鄭聿廷", "33": "何承恩", "34": "張議澧", "35": "蔡品宇",
-            "36": "曾柏諺", "37": "詹詠全", "38": "方廷祐", "39": "陳傳叡", "40": "周彥成",
-            "41": "吳柏諺"
+            1: ["國文", "英語會話", "英語文", "進階數學", "應電助教", "應電助教", "應電助教", "彈性"],
+            2: ["體育", "電機主任", "電機主任", "閱讀老師", "休息", "數學老師", "休息", "課輔"],
+            3: ["實習主任", "實習主任", "實習主任", "英語會話", "微電助教", "微電助教", "國文", "彈性"],
+            4: ["數邏助教", "數邏助教", "數邏助教", "數學老師", "專題助教", "專題助教", "專題助教", "自主"],
+            5: ["英語文", "電力助教", "電力助教", "電力助教", "體育", "閱讀老師", "電機主任", "課輔"]
         };
 
         function doLogin() {
-            if(document.getElementById('user').value === AUTH.user && document.getElementById('pass').value === AUTH.pass) {
+            if(document.getElementById('pass').value === AUTH_PASS) {
                 document.getElementById('login-wall').style.display = 'none';
                 document.getElementById('main-content').style.display = 'flex';
-                document.getElementById('top-marquee').style.display = 'block';
                 initSystem();
-            } else { alert("驗證失敗"); }
+                renderSeats();
+            } else { alert("密碼錯誤"); }
+        }
+
+        function renderSeats() {
+            const chart = document.getElementById('chart');
+            for (let i = 1; i <= 41; i++) {
+                const seat = document.createElement('div');
+                seat.className = 'seat present';
+                seat.id = `seat-${i}`;
+                seat.innerHTML = `<span class="seat-no">${i}</span><div class="seat-name">${students[i]}</div>`;
+                seat.onclick = () => toggleSeat(i);
+                chart.appendChild(seat);
+            }
+            updateStats();
+        }
+
+        function toggleSeat(id) {
+            const seat = document.getElementById(`seat-${id}`);
+            if (seat.classList.contains('present')) {
+                seat.classList.replace('present', 'absent');
+            } else if (seat.classList.contains('absent')) {
+                seat.classList.replace('absent', 'late');
+            } else {
+                seat.classList.replace('late', 'present');
+            }
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('count-present').innerText = document.querySelectorAll('.seat.present').length;
+            document.getElementById('count-absent').innerText = document.querySelectorAll('.seat.absent').length;
+            document.getElementById('count-late').innerText = document.querySelectorAll('.seat.late').length;
+        }
+
+        function resetSeats() {
+            if(confirm("確定要重置點名表嗎？")) {
+                document.querySelectorAll('.seat').forEach(s => s.className = 'seat present');
+                updateStats();
+            }
         }
 
         function initSystem() {
-            const lessonTimes = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:05", "14:00", "15:00", "16:00", "17:00"];
-            const breakTimes = ["08:50", "09:50", "10:50", "11:50", "13:05", "14:00", "15:00", "16:00", "17:00"];
+            const startTimes = ["08:00", "09:00", "10:00", "11:00", "13:10", "14:10", "15:10", "16:10"];
+            const endTimes = ["08:50", "09:50", "10:50", "11:50", "14:00", "15:00", "16:00", "17:00"];
 
             setInterval(() => {
                 const now = new Date();
                 const day = now.getDay();
-                const timeStr = now.toLocaleTimeString('zh-TW', { hour12: false });
-                document.getElementById('clock').innerText = timeStr;
+                const currentSecs = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+                document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', { hour12: false });
 
-                let lessonText = "☕ 目前非上課時間";
-                const currentSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-                
+                let lessonText = "☕ 非上課時段";
+                let timerText = "IDLE";
+
                 if (day >= 1 && day <= 5) {
-                    for(let i=0; i<7; i++) {
-                        const [sh, sm] = lessonTimes[i].split(':').map(Number);
-                        const [eh, em] = breakTimes[i].split(':').map(Number);
-                        if (currentSecs >= (sh*3600+sm*60) && currentSecs < (eh*3600+em*60)) {
-                            lessonText = `📖 第 ${i+1} 節：${schedule[day][i]}`;
+                    for (let i = 0; i < 8; i++) {
+                        const [sh, sm] = startTimes[i].split(':').map(Number);
+                        const [eh, em] = endTimes[i].split(':').map(Number);
+                        const sSecs = sh*3600 + sm*60;
+                        const eSecs = eh*3600 + em*60;
+
+                        if (currentSecs >= sSecs && currentSecs < eSecs) {
+                            lessonText = `第 ${i+1} 節：${schedule[day][i]}`;
+                            const diff = eSecs - currentSecs;
+                            timerText = `下課倒數: ${Math.floor(diff/60)}分${diff%60}秒`;
                             break;
+                        } else if (i < 7) {
+                            const [nextSh, nextSm] = startTimes[i+1].split(':').map(Number);
+                            const nextSSecs = nextSh*3600 + nextSm*60;
+                            if (currentSecs >= eSecs && currentSecs < nextSSecs) {
+                                lessonText = (i === 3) ? "🍱 午休中" : "☕ 休息時間";
+                                const diff = nextSSecs - currentSecs;
+                                timerText = `上課倒數: ${Math.floor(diff/60)}分${diff%60}秒`;
+                                break;
+                            }
                         }
                     }
                 }
                 document.getElementById('current-lesson').innerText = lessonText;
-
-                let nextBreak = null;
-                for (let t of breakTimes) {
-                    const [bh, bm] = t.split(':').map(Number);
-                    const bSecs = (bh * 3600) + (bm * 60);
-                    if (bSecs > currentSecs) {
-                        const diff = bSecs - currentSecs;
-                        document.getElementById('timer').innerText = `🔔 下課倒數：${Math.floor(diff/60)}分${diff%60}秒`;
-                        nextBreak = t; break;
-                    }
-                }
-                if (!nextBreak) document.getElementById('timer').innerText = "今日課程已結束";
+                document.getElementById('timer').innerText = timerText;
             }, 1000);
-        }
-
-        function checkName() {
-            const id = document.getElementById('stuId').value;
-            document.getElementById('result').innerText = students[id] ? `座號 ${id}：${students[id]}` : (id==="" ? "" : "查無此號");
-        }
-
-        function luckyDraw() {
-            const res = document.getElementById('lucky-result');
-            res.innerText = "🎲 抽取中...";
-            let count = 0;
-            const interval = setInterval(() => {
-                const randomId = Math.floor(Math.random() * 41) + 1;
-                res.innerText = `🎲 座號 ${randomId}：${students[randomId]}`;
-                count++;
-                if (count > 10) clearInterval(interval);
-            }, 100);
         }
     </script>
 </body>
