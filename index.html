@@ -3,137 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝點名系統 v98</title>
+    <title>電三孝戰術指揮中心 v99</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --accent: #ff3b30; --phone: #5856d6;
-            --bg: #f2f2f7; --glass: rgba(255, 255, 255, 0.85); --text: #1c1c1e;
+            --bg: #f2f2f7; --glass: rgba(255, 255, 255, 0.9); --text: #1c1c1e;
         }
-        body { margin: 0; background: radial-gradient(circle at center, #ffffff 0%, var(--bg) 100%); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        body { margin: 0; background: #fff; background-image: radial-gradient(var(--bg) 20%, transparent 20%), radial-gradient(var(--bg) 20%, transparent 20%); background-position: 0 0, 10px 10px; background-size: 20px 20px; color: var(--text); font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
         
-        .header { width: 90%; max-width: 600px; padding: 20px 0 10px; display: flex; justify-content: space-between; align-items: flex-end; }
-        #main-title { font-size: 2rem; font-weight: 800; color: var(--text); }
-        
-        .mode-switch { background: #e5e5ea; padding: 4px; border-radius: 14px; display: flex; gap: 4px; }
-        .m-btn { border: none; padding: 8px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; color: #8e8e93; background: transparent; transition: 0.2s; }
-        .m-btn.active { background: #fff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+        /* 玻璃面板 */
+        .glass { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
 
-        .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .dash-item { text-align: center; }
-        .dash-item big { display: block; font-size: 1.6rem; font-weight: 800; color: var(--text); }
-        .dash-item small { font-size: 0.6rem; opacity: 0.5; font-weight: bold; }
-
-        .page { width: 95%; max-width: 600px; padding-bottom: 100px; height: calc(100vh - 320px); overflow-y: auto; }
-        .chart-wrap { position: relative; width: 100%; padding-top: 10px; } 
+        /* 頂部導航 */
+        .header { width: 95%; max-width: 600px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; border-radius: 20px; }
+        .title-area h1 { margin: 0; font-size: 1.5rem; font-weight: 900; background: linear-gradient(45deg, var(--primary), var(--phone)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        /* 講桌第一排護法 (28, 13, Podium, 41, 27) */
-        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; margin-bottom: 20px; align-items: center; }
-        .podium-box { grid-column: 4; height: 40px; border: 1px dashed rgba(0,0,0,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aaa; letter-spacing: 4px; }
+        /* 分頁切換器 */
+        .tab-bar { position: fixed; bottom: 20px; width: 92%; max-width: 500px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 8px; border-radius: 25px; z-index: 100; }
+        .tab-btn { border: none; background: transparent; padding: 10px 0; border-radius: 15px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; color: #8e8e93; transition: 0.3s; }
+        .tab-btn.active { background: #fff; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .tab-btn span { font-size: 0.65rem; font-weight: bold; }
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
-        .s { aspect-ratio: 1.6; border: 1px solid rgba(0,0,0,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: 0.1s; background: #fff; font-weight: 600; color: #8e8e93; position: relative; }
+        /* 主容器 */
+        .main-content { width: 95%; max-width: 600px; height: calc(100vh - 220px); overflow-y: auto; padding: 10px 0; margin-top: 10px; }
+        .view { display: none; width: 100%; }
+        .view.active { display: block; animation: fadeIn 0.3s ease; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 儀表板 */
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .dash-card { padding: 15px; border-radius: 18px; text-align: center; }
+        .dash-card big { display: block; font-size: 1.4rem; font-weight: 800; }
+        .dash-card small { font-size: 0.6rem; opacity: 0.5; font-weight: bold; }
+
+        /* 座位區佈局 */
+        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 25px; }
+        .podium-box { grid-column: 4; height: 45px; border: 2px dashed #ddd; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #bbb; letter-spacing: 3px; }
+
+        .seat-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
+        .s { aspect-ratio: 1.5; background: #fff; border: 1.5px solid #eee; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; color: #d1d1d6; }
         
-        /* 色彩狀態 */
-        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.2); }
+        /* 狀態標記 */
+        .present { color: var(--primary); border-color: var(--primary); background: rgba(0, 122, 255, 0.03); }
         .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 149, 0, 0.05); }
         .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 59, 48, 0.05); }
         .leave { color: #bd00ff; border-color: #bd00ff; background: rgba(189, 0, 255, 0.05); }
         
-        /* 手機模式樣式 */
-        .phone-mode .s.ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; box-shadow: 0 4px 12px rgba(88, 86, 214, 0.2); }
+        /* 手機模式專屬：格子變紫 */
+        .phone-view .s.ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
 
-        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 10px; border-radius: 50px; justify-content: center; }
-        .reset-btn { background: none; border: none; color: #ccc; font-size: 0.7rem; cursor: pointer; }
+        /* 統計列表 */
+        .stat-list { display: flex; flex-direction: column; gap: 10px; }
+        .stat-row { padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .reset-area { padding: 30px; text-align: center; }
+        .btn-danger { background: var(--accent); color: #fff; border: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <span id="main-title">電三孝</span>
-        <div class="mode-switch glass-panel">
-            <button class="m-btn active" id="b-att" onclick="setMode('attend')">點名</button>
-            <button class="m-btn" id="b-pho" onclick="setMode('phone')">手機</button>
+    <header class="header glass">
+        <div class="title-area">
+            <h1>電三孝</h1>
         </div>
-    </div>
+        <div id="status-tag" style="font-size: 0.7rem; font-weight: bold; background: #eee; padding: 4px 10px; border-radius: 10px;">系統就緒</div>
+    </header>
 
-    <div class="dashboard glass-panel">
-        <div class="dash-item"><small id="l1">出席率</small><big id="v1">100%</big></div>
-        <div class="dash-item"><small id="l2">在座</small><big id="v2">41</big></div>
-        <div class="dash-item"><small id="l3">缺假</small><big id="v3" style="color:var(--accent)">0</big></div>
-    </div>
-
-    <div class="page active">
-        <div class="chart-wrap" id="board-container">
-            <div class="podium-row">
-                <div class="s present" id="s-28" style="grid-column: 2" onclick="h(28)">28</div>
-                <div class="s present" id="s-13" style="grid-column: 3" onclick="h(13)">13</div>
-                <div class="podium-box">講桌</div>
-                <div class="s present" id="s-41" style="grid-column: 5" onclick="h(41)">41</div>
-                <div class="s present" id="s-27" style="grid-column: 6" onclick="h(27)">27</div>
+    <div class="main-content">
+        <div id="v-attend" class="view active">
+            <div class="dashboard">
+                <div class="dash-card glass"><small>出席率</small><big id="att-rate">100%</big></div>
+                <div class="dash-card glass"><small>在座</small><big id="att-count">41</big></div>
+                <div class="dash-card glass"><small>缺席</small><big id="att-abs" style="color:var(--accent)">0</big></div>
             </div>
+            
+            <div class="podium-row">
+                <div class="s present" id="s-13" style="grid-column: 2" onclick="toggle(13)">13</div>
+                <div class="s present" id="s-41" style="grid-column: 3" onclick="toggle(41)">41</div>
+                <div class="podium-box">講桌</div>
+                <div class="s present" id="s-28" style="grid-column: 5" onclick="toggle(28)">28</div>
+                <div class="s present" id="s-27" style="grid-column: 6" onclick="toggle(27)">27</div>
+            </div>
+            <div id="grid-attend" class="seat-grid"></div>
+        </div>
 
-            <div id="main-grid" class="grid"></div>
+        <div id="v-phone" class="view phone-view">
+            <div class="dashboard">
+                <div class="dash-card glass"><small>手機繳交率</small><big id="ph-rate">0%</big></div>
+                <div class="dash-card glass"><small>已繳</small><big id="ph-count">0</big></div>
+                <div class="dash-card glass"><small>未繳</small><big id="ph-miss">41</big></div>
+            </div>
+            <div id="grid-phone"></div> </div>
+
+        <div id="v-stats" class="view">
+            <div class="stat-list">
+                <div class="stat-row glass"><span>應到人數</span><b>41</b></div>
+                <div class="stat-row glass"><span>目前在座</span><b id="st-p">41</b></div>
+                <div class="stat-row glass"><span>遲到/請假</span><b id="st-l">0</b></div>
+                <div class="stat-row glass" style="border-left: 5px solid var(--phone)"><span>手機已收</span><b id="st-ph">0</b></div>
+                <div class="stat-row glass"><span>更新時間</span><b id="st-time">--</b></div>
+            </div>
+        </div>
+
+        <div id="v-info" class="view">
+            <div class="reset-area glass">
+                <h3>數據管理</h3>
+                <p style="font-size: 0.8rem; opacity: 0.6;">此操作將清除所有本地儲存的點名與手機狀態數據。</p>
+                <button class="btn-danger" onclick="dailyReset()">清除今日數據</button>
+            </div>
         </div>
     </div>
 
-    <nav class="nav-footer glass-panel">
-        <button class="reset-btn" onclick="dailyReset()">🔄 RESET DATA</button>
+    <nav class="tab-bar glass">
+        <button class="tab-btn active" onclick="showView('attend')">📍<span>點名</span></button>
+        <button class="tab-btn" onclick="showView('phone')">📱<span>手機</span></button>
+        <button class="tab-btn" onclick="showView('stats')">📊<span>統計</span></button>
+        <button class="tab-btn" onclick="showView('info')">⚙️<span>設定</span></button>
     </nav>
 
     <script>
-        const layout = [
-            2, 12, 23, 25, 34, 3, 1,
-            33, 39, 4, 19, 15, 18, 24,
-            30, 40, 5, 16, 35, 29, 9,
-            36, 32, 14, 37, 17, 31, 8,
-            7, 22, 11, 26, 38, 0, 0, 0, 0
+        // 嚴格按照確認的其餘 36 人網格佈局
+        const gridData = [
+            2, 0, 0, 6, 20, 10, 21,
+            12, 23, 25, 34, 3, 1, 33,
+            39, 4, 19, 15, 18, 24, 30,
+            40, 5, 16, 35, 29, 9, 36,
+            32, 14, 37, 17, 31, 8, 7,
+            22, 11, 26, 38, 0, 0, 0
         ];
 
-        let mode = 'attend';
+        let currentView = 'attend';
 
-        function setMode(m) {
-            mode = m;
-            document.getElementById('b-att').classList.toggle('active', m === 'attend');
-            document.getElementById('b-pho').classList.toggle('active', m === 'phone');
-            document.getElementById('board-container').classList.toggle('phone-mode', m === 'phone');
-            updateDash();
+        function showView(v) {
+            currentView = v;
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            document.getElementById('v-' + v).classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            renderAll();
         }
 
         function init() {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = "";
-            const att = JSON.parse(localStorage.getItem('e3_st') || '{}');
-            const pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
-
-            // 初始化講桌第一排
-            [28, 13, 41, 27].forEach(id => renderS(document.getElementById(`s-${id}`), id, att, pho));
-
-            // 初始化主網格
-            layout.forEach(id => {
-                const el = document.createElement('div');
-                if (id === 0) { el.style.opacity = "0"; }
-                else {
-                    el.className = "s"; el.id = `s-${id}`; el.innerText = id;
-                    el.onclick = () => h(id);
-                    renderS(el, id, att, pho);
-                    grid.appendChild(el);
-                }
-            });
-            updateDash();
+            renderAll();
+            setInterval(() => { document.getElementById('st-time').innerText = new Date().toLocaleTimeString(); }, 1000);
         }
 
-        function renderS(el, id, att, pho) {
+        function renderAll() {
+            const att = JSON.parse(localStorage.getItem('e3_att') || '{}');
+            const pho = JSON.parse(localStorage.getItem('e3_pho') || '{}');
+
+            // 渲染護法座位
+            [13, 41, 28, 27].forEach(id => {
+                const el = document.getElementById(`s-${id}`);
+                applyState(el, id, att, pho);
+            });
+
+            // 渲染網格 (點名分頁與手機分頁)
+            const gAttend = document.getElementById('grid-attend');
+            gAttend.innerHTML = "";
+            
+            // 手機分頁專用的容器處理
+            const gPhone = document.getElementById('grid-phone');
+            gPhone.innerHTML = document.querySelector('.podium-row').outerHTML; // 複製護法排
+            const phoneInnerGrid = document.createElement('div');
+            phoneInnerGrid.className = "seat-grid";
+            gPhone.appendChild(phoneInnerGrid);
+
+            gridData.forEach(id => {
+                const seatA = createSeat(id, att, pho);
+                gAttend.appendChild(seatA);
+                
+                const seatP = createSeat(id, att, pho);
+                phoneInnerGrid.appendChild(seatP);
+            });
+
+            // 手機分頁中的護法點擊修正
+            gPhone.querySelectorAll('.s').forEach(el => {
+                const id = el.id.split('-')[1];
+                el.onclick = () => toggle(id);
+            });
+
+            updateLogic(att, pho);
+        }
+
+        function createSeat(id, att, pho) {
+            const el = document.createElement('div');
+            if (id === 0) { el.style.opacity = "0"; return el; }
+            el.className = "s"; el.id = `s-${id}`; el.innerText = id;
+            el.onclick = () => toggle(id);
+            applyState(el, id, att, pho);
+            return el;
+        }
+
+        function applyState(el, id, att, pho) {
             if(!el) return;
             el.className = "s " + (att[id] || 'present');
             if(pho[id] === 'y') el.classList.add('ph-done');
         }
 
-        function h(id) {
-            let att = JSON.parse(localStorage.getItem('e3_st') || '{}');
-            let pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
+        function toggle(id) {
+            let att = JSON.parse(localStorage.getItem('e3_att') || '{}');
+            let pho = JSON.parse(localStorage.getItem('e3_pho') || '{}');
 
-            if(mode === 'attend') {
+            if(currentView === 'attend') {
                 const s = att[id] || 'present';
                 if(s === 'present') att[id] = 'late';
                 else if(s === 'late') att[id] = 'absent';
@@ -142,32 +215,37 @@
             } else {
                 pho[id] = (pho[id] === 'y') ? 'n' : 'y';
             }
-            localStorage.setItem('e3_st', JSON.stringify(att));
-            localStorage.setItem('e3_ph', JSON.stringify(pho));
-            init();
+            localStorage.setItem('e3_att', JSON.stringify(att));
+            localStorage.setItem('e3_pho', JSON.stringify(pho));
+            renderAll();
         }
 
-        function updateDash() {
-            const seats = document.querySelectorAll('.s:not([style*="opacity:0"])');
-            let p = 0, ph = 0, a = 0;
-            seats.forEach(s => {
-                if(s.classList.contains('present')) p++;
-                if(s.classList.contains('ph-done')) ph++;
-                if(s.classList.contains('late') || s.classList.contains('absent') || s.classList.contains('leave')) a++;
-            });
+        function updateLogic(att, pho) {
             const total = 41;
-            document.getElementById('v1').innerText = Math.round((p/total)*100) + "%";
-            document.getElementById('v2').innerText = (mode === 'attend') ? p : ph;
-            document.getElementById('v3').innerText = (mode === 'attend') ? a : (total - ph);
+            let presentCount = 0;
+            let phoneCount = 0;
             
-            if(mode === 'attend') {
-                document.getElementById('l1').innerText = "出席率"; document.getElementById('l2').innerText = "在座"; document.getElementById('l3').innerText = "缺假";
-            } else {
-                document.getElementById('l1').innerText = "繳交率"; document.getElementById('l2').innerText = "已交"; document.getElementById('l3').innerText = "未交";
+            // 遍歷所有座號 1~41
+            for(let i=1; i<=41; i++) {
+                if((att[i] || 'present') === 'present') presentCount++;
+                if(pho[i] === 'y') phoneCount++;
             }
+
+            // 更新 UI
+            document.getElementById('att-rate').innerText = Math.round((presentCount/total)*100) + "%";
+            document.getElementById('att-count').innerText = presentCount;
+            document.getElementById('att-abs').innerText = total - presentCount;
+
+            document.getElementById('ph-rate').innerText = Math.round((phoneCount/total)*100) + "%";
+            document.getElementById('ph-count').innerText = phoneCount;
+            document.getElementById('ph-miss').innerText = total - phoneCount;
+
+            document.getElementById('st-p').innerText = presentCount;
+            document.getElementById('st-l').innerText = total - presentCount;
+            document.getElementById('st-ph').innerText = phoneCount;
         }
 
-        function dailyReset() { if(confirm("重置數據？")) { localStorage.clear(); location.reload(); } }
+        function dailyReset() { if(confirm("確定重置今日所有數據？")) { localStorage.clear(); location.reload(); } }
         window.onload = init;
     </script>
 </body>
