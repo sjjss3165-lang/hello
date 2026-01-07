@@ -3,204 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝指揮中心 v88</title>
+    <title>電三孝指揮中心 v91</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --accent: #ff3b30; --phone: #5856d6; --leave: #bd00ff;
-            --bg: #f2f2f7; --glass: rgba(255, 255, 255, 0.8); --text: #1c1c1e;
+            --bg: #f2f2f7; --glass: rgba(255, 255, 255, 0.85); --text: #1c1c1e;
         }
         body { margin: 0; background: radial-gradient(circle at center, #ffffff 0%, var(--bg) 100%); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
-        .header { width: 90%; max-width: 600px; padding: 20px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
-        #main-title { font-size: 2rem; font-weight: 800; }
+        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
         
-        .mode-switch { background: #e5e5ea; padding: 4px; border-radius: 12px; display: flex; gap: 4px; margin: 10px 0; }
-        .m-btn { border: none; padding: 6px 15px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: 0.3s; color: #8e8e93; background: transparent; }
+        .header { width: 90%; max-width: 600px; padding: 20px 0 5px; display: flex; justify-content: space-between; align-items: center; }
+        #main-title { font-size: 2rem; font-weight: 800; color: var(--text); }
+        .mode-switch { background: #e5e5ea; padding: 4px; border-radius: 12px; display: flex; gap: 4px; }
+        .m-btn { border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: bold; cursor: pointer; color: #8e8e93; background: transparent; }
         .m-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 15px; }
         .dash-item { text-align: center; }
-        .dash-item big { display: block; font-size: 1.6rem; font-weight: 800; color: var(--text); }
+        .dash-item big { display: block; font-size: 1.5rem; font-weight: 800; color: var(--text); }
         .dash-item small { font-size: 0.6rem; opacity: 0.5; font-weight: bold; }
 
-        .page { width: 95%; max-width: 600px; padding-bottom: 120px; }
-        .chart-wrap { position: relative; width: 100%; padding-top: 50px; } 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
+        /* 分頁切換 */
+        .page { width: 95%; max-width: 600px; display: none; padding-bottom: 100px; height: calc(100vh - 320px); overflow-y: auto; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .chart-wrap { position: relative; width: 100%; padding-top: 50px; }
+        .podium { width: 100%; height: 35px; background: rgba(0,0,0,0.02); border: 1px dashed rgba(0,0,0,0.05); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aaa; letter-spacing: 8px; }
         
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
         .s { aspect-ratio: 1.6; border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; background: #fff; font-weight: 600; color: #8e8e93; position: relative; }
-        .spec { position: absolute; top: 0px; z-index: 100; width: calc((100% - 48px) / 7); }
+        
+        .spec { position: absolute; top: 0px; width: calc((100% - 48px) / 7); z-index: 10; }
         #s-13 { left: calc(((100% - 48px) / 7) + 8px); }
         #s-41 { left: calc((((100% - 48px) / 7) + 8px) * 2); }
-        
-        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.4); }
+
+        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.3); }
         .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 149, 0, 0.05); }
         .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 59, 48, 0.05); }
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189, 0, 255, 0.05); }
         
-        /* 假別標籤 */
+        .s.phone-done { box-shadow: inset 0 0 0 3px var(--phone); }
+        .s.phone-done::after { content: "📱"; position: absolute; top: -4px; right: -4px; font-size: 0.6rem; }
         .l-tag { position: absolute; bottom: 1px; font-size: 0.5rem; font-weight: 900; background: rgba(0,0,0,0.05); padding: 0 2px; border-radius: 3px; }
 
-        /* 手機繳交狀態 (紫色外框與陰影，不蓋住原本顏色) */
-        .s.phone-done::after { content: "📱"; position: absolute; top: -5px; right: -5px; font-size: 0.7rem; z-index: 10; }
-        .s.phone-done { box-shadow: inset 0 0 0 3px var(--phone); }
+        .list-row { padding: 14px 10px; border-bottom: 1px solid rgba(0,0,0,0.03); display: flex; justify-content: space-between; }
 
-        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 6px; border-radius: 50px; background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 6px; border-radius: 50px; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.1); justify-content: space-around; z-index: 1000; }
+        .nav-btn { flex: 1; padding: 12px; border: none; background: transparent; color: #8e8e93; font-weight: bold; cursor: pointer; border-radius: 40px; font-size: 0.9rem; transition: 0.3s; }
+        .nav-btn.active { background: var(--primary); color: #fff; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="title-area">
-            <span id="main-title">電三孝</span>
-            <div id="mode-text" style="font-size:0.8rem; color:var(--primary); font-weight:bold; margin-top:5px;">模式：一般點名</div>
-        </div>
+        <span id="main-title">電三孝</span>
         <div class="mode-switch glass-panel">
-            <button class="m-btn active" id="btn-attend" onclick="setMode('attend')">點名</button>
-            <button class="m-btn" id="btn-phone" onclick="setMode('phone')">收手機</button>
+            <button class="m-btn active" id="m-att" onclick="setMode('attend')">點名</button>
+            <button class="m-btn" id="m-pho" onclick="setMode('phone')">手機</button>
         </div>
     </div>
 
     <div class="dashboard glass-panel">
-        <div class="dash-item"><small id="stat-label-1">出席率</small><big id="rate-val">100%</big></div>
-        <div class="dash-item"><small id="stat-label-2">在座</small><big id="p-num">41</big></div>
-        <div class="dash-item"><small id="stat-label-3">未交/缺席</small><big id="a-num" style="color:var(--accent)">0</big></div>
+        <div class="dash-item"><small id="l1">出席率</small><big id="v1">0%</big></div>
+        <div class="dash-item"><small id="l2">在座</small><big id="v2">0</big></div>
+        <div class="dash-item"><small id="l3">缺假</small><big id="v3" style="color:var(--accent)">0</big></div>
     </div>
 
-    <div class="page" style="display:block;">
+    <div id="p1" class="page active">
         <div class="chart-wrap">
-            <div class="s spec present" id="s-13" onclick="handleTap(13)">13</div>
-            <div class="s spec present" id="s-41" onclick="handleTap(41)">41</div>
+            <div class="s spec" id="s-13" onclick="h(13)">13</div>
+            <div class="s spec" id="s-41" onclick="h(41)">41</div>
+            <div class="podium">COMMANDER PODIUM</div>
             <div id="main-grid" class="grid"></div>
+        </div>
+        <button onclick="dailyReset()" style="width:100%; margin-top:20px; border:none; background:none; color:#ccc; font-size:0.7rem;">🔄 重置今日點名數據</button>
+    </div>
+
+    <div id="p2" class="page">
+        <div class="glass-panel" style="padding: 20px; min-height: 100px;">
+            <h3 style="margin:0 0 15px 0; font-size:1rem;">⏱ 今日點名日誌</h3>
+            <div id="log-list"></div>
+        </div>
+    </div>
+
+    <div id="p3" class="page">
+        <div class="glass-panel" style="padding: 20px; min-height: 100px;">
+            <h3 style="margin:0 0 15px 0; font-size:1rem;">📊 累計遲到排行</h3>
+            <div id="stat-list"></div>
         </div>
     </div>
 
     <nav class="nav-footer">
-        <button onclick="dailyReset()" style="width:100%; border:none; background:none; color:#8e8e93; font-weight:bold; cursor:pointer;">🔄 重置今日所有數據</button>
+        <button class="nav-btn active" id="nb1" onclick="go(1)">點名</button>
+        <button class="nav-btn" id="nb2" onclick="go(2)">日誌</button>
+        <button class="nav-btn" id="nb3" onclick="go(3)">排行</button>
     </nav>
 
     <script>
         const layout = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
-        let currentMode = 'attend';
+        let mode = 'attend';
+
+        function go(n) {
+            document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i+1 === n));
+            document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i+1 === n));
+            if(n===2) renderLogs();
+            if(n===3) renderStats();
+        }
 
         function setMode(m) {
-            currentMode = m;
-            document.getElementById('btn-attend').classList.toggle('active', m === 'attend');
-            document.getElementById('btn-phone').classList.toggle('active', m === 'phone');
-            document.getElementById('mode-text').innerText = `模式：${m === 'attend' ? '一般點名' : '手機繳交'}`;
-            document.getElementById('mode-text').style.color = m === 'attend' ? 'var(--primary)' : 'var(--phone)';
-            updateDashboard();
+            mode = m;
+            document.getElementById('m-att').classList.toggle('active', m === 'attend');
+            document.getElementById('m-pho').classList.toggle('active', m === 'phone');
+            updateDash();
         }
 
         function init() {
             const grid = document.getElementById('main-grid');
             grid.innerHTML = "";
-            const attendData = JSON.parse(localStorage.getItem('e3_st') || '{}');
-            const phoneData = JSON.parse(localStorage.getItem('e3_ph') || '{}');
-            const typeData = JSON.parse(localStorage.getItem('e3_ty') || '{}');
+            const att = JSON.parse(localStorage.getItem('e3_st') || '{}');
+            const pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
+            const typ = JSON.parse(localStorage.getItem('e3_ty') || '{}');
 
-            [13, 41].forEach(id => {
-                const el = document.getElementById(`s-${id}`);
-                applyStatus(el, id, attendData, phoneData, typeData);
-            });
+            [13, 41].forEach(id => renderS(document.getElementById(`s-${id}`), id, att, pho, typ));
 
             layout.forEach(id => {
-                if (id === 0) { grid.appendChild(document.createElement('div')).style.opacity = "0"; }
+                const el = document.createElement('div');
+                if (id === 0) { el.style.opacity = "0"; }
                 else {
-                    const el = document.createElement('div');
-                    el.id = `s-${id}`; el.innerText = id;
-                    el.onclick = () => handleTap(id);
-                    applyStatus(el, id, attendData, phoneData, typeData);
-                    grid.appendChild(el);
+                    el.id = `s-${id}`; el.innerText = id; el.onclick = () => h(id);
+                    renderS(el, id, att, pho, typ);
                 }
+                grid.appendChild(el);
             });
-            updateDashboard();
+            updateDash();
         }
 
-        function applyStatus(el, id, att, ph, ty) {
-            el.className = `s ${el.classList.contains('spec') ? 'spec' : ''}`;
-            const s = att[id] || 'present';
-            el.classList.add(s);
-            if(ph[id] === 'done') el.classList.add('phone-done');
-            if(ty[id]) {
-                const span = document.createElement('span');
-                span.className = 'l-tag'; span.innerText = ty[id];
-                el.appendChild(span);
+        function renderS(el, id, att, pho, typ) {
+            if(!el) return;
+            el.className = `s ${el.classList.contains('spec') ? 'spec' : ''} ${att[id] || 'present'}`;
+            if(pho[id] === 'y') el.classList.add('phone-done');
+            const old = el.querySelector('.l-tag'); if(old) old.remove();
+            if(typ[id]) {
+                const s = document.createElement('span'); s.className = 'l-tag'; s.innerText = typ[id];
+                el.appendChild(s);
             }
         }
 
-        function handleTap(id) {
+        function h(id) {
             const el = document.getElementById(`s-${id}`);
-            let att = JSON.parse(localStorage.getItem('e3_st') || '{}');
-            let ph = JSON.parse(localStorage.getItem('e3_ph') || '{}');
-            let ty = JSON.parse(localStorage.getItem('e3_ty') || '{}');
+            let att = JSON.parse(localStorage.getItem('e3_st') || '{}'), pho = JSON.parse(localStorage.getItem('e3_ph') || '{}'), typ = JSON.parse(localStorage.getItem('e3_ty') || '{}');
+            const time = new Date().toLocaleTimeString('zh-TW', {hour12:false});
 
-            if(currentMode === 'attend') {
-                if(el.classList.contains('present')) {
-                    el.classList.replace('present', 'late');
-                    att[id] = 'late';
-                } else if(el.classList.contains('late') || el.classList.contains('leave') || el.classList.contains('absent')) {
-                    const choice = prompt("選擇假別：1.事 2.病 3.公 4.缺席 5.撤銷(回出席)");
-                    const map = {"1":"事","2":"病","3":"公"};
-                    
-                    // 清除舊標籤
-                    const oldTag = el.querySelector('.l-tag');
-                    if(oldTag) oldTag.remove();
-
-                    if(choice === "5") {
-                        el.className = `s ${el.classList.contains('spec') ? 'spec' : ''} present ${ph[id]==='done'?'phone-done':''}`;
-                        att[id] = 'present'; delete ty[id];
-                    } else if(choice === "4" || choice === null) {
-                        el.className = `s ${el.classList.contains('spec') ? 'spec' : ''} absent ${ph[id]==='done'?'phone-done':''}`;
-                        att[id] = 'absent'; delete ty[id];
-                    } else if(map[choice]) {
-                        el.className = `s ${el.classList.contains('spec') ? 'spec' : ''} leave ${ph[id]==='done'?'phone-done':''}`;
-                        att[id] = 'leave'; ty[id] = map[choice];
-                        const span = document.createElement('span');
-                        span.className = 'l-tag'; span.innerText = ty[id];
-                        el.appendChild(span);
-                    }
+            if(mode === 'attend') {
+                if(!att[id] || att[id] === 'present') { 
+                    att[id] = 'late'; addLog(id, time); addStat(id);
+                } else {
+                    const c = prompt("假別: 1.事 2.病 3.公 4.缺 5.回出席");
+                    if(c === "1") { att[id] = 'leave'; typ[id] = '事'; }
+                    else if(c === "2") { att[id] = 'leave'; typ[id] = '病'; }
+                    else if(c === "3") { att[id] = 'leave'; typ[id] = '公'; }
+                    else if(c === "4") { att[id] = 'absent'; delete typ[id]; }
+                    else if(c === "5") { att[id] = 'present'; delete typ[id]; }
                 }
             } else {
-                el.classList.toggle('phone-done');
-                ph[id] = el.classList.contains('phone-done') ? 'done' : 'none';
+                pho[id] = (pho[id] === 'y') ? 'n' : 'y';
             }
             
             localStorage.setItem('e3_st', JSON.stringify(att));
-            localStorage.setItem('e3_ph', JSON.stringify(ph));
-            localStorage.setItem('e3_ty', JSON.stringify(ty));
-            updateDashboard();
+            localStorage.setItem('e3_ph', JSON.stringify(pho));
+            localStorage.setItem('e3_ty', JSON.stringify(typ));
+            init();
         }
 
-        function updateDashboard() {
+        function updateDash() {
+            let p = 0, ph = 0, a = 0;
             const all = document.querySelectorAll('.s');
-            let p = 0, a = 0, ph = 0;
             all.forEach(el => {
-                if(el.classList.contains('present')) p++;
-                if(el.classList.contains('late') || el.classList.contains('absent') || el.classList.contains('leave')) a++;
-                if(el.classList.contains('phone-done')) ph++;
+                if (el.innerText.trim() !== "") {
+                    if (el.classList.contains('present')) p++;
+                    if (el.classList.contains('phone-done')) ph++;
+                    if (el.classList.contains('late') || el.classList.contains('absent') || el.classList.contains('leave')) a++;
+                }
             });
 
-            if(currentMode === 'attend') {
-                document.getElementById('stat-label-1').innerText = "出席率";
-                document.getElementById('rate-val').innerText = Math.round((p / 41) * 100) + "%";
-                document.getElementById('stat-label-2').innerText = "在座";
-                document.getElementById('p-num').innerText = p;
-                document.getElementById('stat-label-3').innerText = "缺假";
-                document.getElementById('a-num').innerText = a;
+            if(mode === 'attend') {
+                document.getElementById('l1').innerText = "出席率"; document.getElementById('v1').innerText = Math.round((p / 41) * 100) + "%";
+                document.getElementById('l2').innerText = "在座"; document.getElementById('v2').innerText = p;
+                document.getElementById('l3').innerText = "缺假"; document.getElementById('v3').innerText = a;
             } else {
-                document.getElementById('stat-label-1').innerText = "繳交率";
-                document.getElementById('rate-val').innerText = Math.round((ph / 41) * 100) + "%";
-                document.getElementById('stat-label-2').innerText = "已交";
-                document.getElementById('p-num').innerText = ph;
-                document.getElementById('stat-label-3').innerText = "未交";
-                document.getElementById('a-num').innerText = 41 - ph;
+                document.getElementById('l1').innerText = "繳交率"; document.getElementById('v1').innerText = Math.round((ph / 41) * 100) + "%";
+                document.getElementById('l2').innerText = "已交"; document.getElementById('v2').innerText = ph;
+                document.getElementById('l3').innerText = "未交"; document.getElementById('v3').innerText = 41 - ph;
             }
         }
 
-        function dailyReset() {
-            if(confirm("確定重置今日所有數據？")) { localStorage.clear(); location.reload(); }
+        function addLog(id, t) {
+            let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+            logs.unshift({id: id, time: t});
+            localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
         }
 
+        function renderLogs() {
+            const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="list-row"><span>座號 ${o.id}</span><span style="color:var(--warning); font-weight:bold;">${o.time}</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">尚無今日日誌</div>';
+        }
+
+        function addStat(id) {
+            let stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+            stats[id] = (stats[id] || 0) + 1;
+            localStorage.setItem('e3_stats', JSON.stringify(stats));
+        }
+
+        function renderStats() {
+            const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+            const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
+            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="list-row"><span>座號 ${id}</span><span style="font-weight:bold;">${count} 次</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">無排行數據</div>';
+        }
+
+        function dailyReset() { if(confirm("重置數據？")) { localStorage.removeItem('e3_st'); localStorage.removeItem('e3_lg'); location.reload(); } }
         window.onload = init;
     </script>
 </body>
