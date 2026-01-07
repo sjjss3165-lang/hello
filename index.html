@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝點名 v108</title>
+    <title>電三孝戰略版 v111</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
@@ -14,69 +14,77 @@
         }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; transition: 0.3s; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        /* 頂部導航 */
-        .header { width: 92%; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
-        .theme-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 50%; cursor: pointer; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; }
+        /* 頂部時鐘與導航 */
+        .header { width: 92%; padding: 10px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .clock-display { font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
+        .theme-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
 
-        /* 數據儀表板 */
-        .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 10px; }
-        .dash-card { background: var(--card); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+        .dash-card { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
         .dash-card big { display: block; font-size: 1.1rem; font-weight: 800; }
-        .dash-card small { font-size: 0.6rem; color: #8e8e93; font-weight: bold; }
+        .dash-card small { font-size: 0.55rem; color: #8e8e93; font-weight: bold; }
 
-        /* 異常名單區 + 小圓標複製 */
-        .status-list-zone { width: 92%; padding: 12px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; }
-        .status-item { font-size: 0.8rem; margin: 4px 0; line-height: 1.4; display: flex; align-items: center; }
-        .copy-circle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
+        /* 異常名單區 */
+        .status-list-zone { width: 92%; padding: 10px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 15px; position: relative; }
+        .status-item { font-size: 0.75rem; margin: 3px 0; display: flex; flex-wrap: wrap; line-height: 1.4; }
+        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
 
-        .main-container { width: 95%; height: calc(100vh - 260px); overflow-y: auto; display: flex; flex-direction: column; align-items: center; }
+        .main-container { width: 95%; height: calc(100vh - 280px); overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
         .view { display: none; width: 100%; max-width: 400px; }
         .view.active { display: block; }
 
-        /* 座位設定 */
         .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
-        .podium-box { grid-column: 4; height: 40px; border: 1.5px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #888; }
+        .podium-box { grid-column: 4; height: 40px; border: 1px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #888; }
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; padding-bottom: 80px; }
-        .s { width: 52px; height: 40px; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; cursor: pointer; color: #888; transition: 0.2s; position: relative; }
-        .s small { font-size: 0.55rem; font-weight: bold; margin-top: -1px; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
+        
+        /* 座位格 */
+        .s { width: 52px; height: 42px; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; cursor: pointer; color: #888; transition: 0.1s; position: relative; }
+        .time-label { position: absolute; top: 2px; font-size: 0.45rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+        .note-label { font-size: 0.55rem; font-weight: 800; margin-top: 10px; }
 
-        /* 狀態色彩 */
         .present { color: var(--primary); border-color: var(--primary); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255,149,0,0.1); }
-        .absent { color: var(--absent); border-color: var(--absent); background: rgba(255,59,48,0.1); }
-        .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.1); }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255,149,0,0.05); }
+        .late .time-label { color: var(--warning); }
+        .absent { color: var(--absent); border-color: var(--absent); background: rgba(255,59,48,0.05); }
+        .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
         .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
 
-        /* 液態懸浮導航 */
         .tab-bar-wrap { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
-        .tab-bar { pointer-events: auto; width: 85%; max-width: 380px; height: 52px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 26px; display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+        .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 54px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 27px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .tab-btn { border: none; background: none; color: #888; font-size: 0.65rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
         .tab-btn.active { color: var(--primary); }
+        .tab-btn i { font-size: 1.1rem; font-style: normal; }
 
-        /* 選單彈窗 */
-        #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; }
-        .menu-content { background: var(--card); padding: 25px; border-radius: 24px; width: 260px; text-align: center; border: 1px solid var(--border); }
-        .menu-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: var(--border); color: var(--text); }
+        #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
+        .menu-content { background: var(--card); padding: 25px; border-radius: 25px; width: 260px; text-align: center; border: 1px solid var(--border); }
+        .menu-btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: var(--border); color: var(--text); }
+
+        .record-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .record-table th { text-align: left; color: #888; padding: 10px; border-bottom: 1px solid var(--border); font-size: 0.7rem; }
+        .record-table td { padding: 10px; border-bottom: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <h1 style="font-size: 1.3rem;">電三孝戰略部</h1>
+        <div>
+            <div style="font-size: 0.6rem; font-weight: 800; color: #888;">電三孝戰略系統</div>
+            <div id="live-clock" class="clock-display">00:00:00</div>
+        </div>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     </header>
 
     <div class="dashboard">
-        <div class="dash-card"><small>出席率</small><big id="d1_v">0%</big></div>
-        <div class="dash-card"><small>到班人數</small><big id="d2_v">0</big></div>
-        <div class="dash-card"><small>手機繳交</small><big id="d3_v" style="color:var(--phone)">0</big></div>
+        <div class="dash-card"><small>出席率</small><big id="d1_v">--</big></div>
+        <div class="dash-card"><small>到班人數</small><big id="d2_v">--</big></div>
+        <div class="dash-card"><small>手機繳交</small><big id="d3_v" style="color:var(--phone)">--</big></div>
     </div>
 
     <div class="status-list-zone">
         <div class="status-item"><b style="color:var(--absent); margin-right:5px;">缺/假:</b> <span id="txt-abs">無</span></div>
         <div class="status-item"><b style="color:var(--warning); margin-right:5px;">遲到:</b> <span id="txt-late">無</span></div>
-        <div class="copy-circle" onclick="copyReport()" title="複製報數文字">📋</div>
+        <div class="copy-circle" onclick="copyReport()">📋</div>
     </div>
 
     <div class="main-container">
@@ -92,13 +100,16 @@
         </div>
 
         <div id="v-pho" class="view">
-            <button onclick="allPhone()" style="width:100%; padding:10px; margin-bottom:15px; border-radius:10px; border:none; background:var(--phone); color:#fff; font-weight:bold;">一鍵標記全班已交</button>
+            <button onclick="allPhone()" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px; border:none; background:var(--phone); color:#fff; font-weight:bold;">一鍵全班繳交</button>
             <div id="g-pho-pod" class="podium-row"></div>
             <div id="g-pho-main" class="grid"></div>
         </div>
 
         <div id="v-sta" class="view">
             <div style="padding: 20px; background: var(--card); border-radius: 18px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px;">實到出席 <b id="st-p">0</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:12px; color:var(--warning)">今日遲到 <b id="st-l">0</b></div>
+                <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">事假 <b id="st-v1">0</b></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">公假 <b id="st-v2">0</b></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:10px;">病假 <b id="st-v3">0</b></div>
@@ -106,14 +117,24 @@
             </div>
         </div>
 
+        <div id="v-rec" class="view">
+            <div style="background:var(--card); border-radius:18px; border:1px solid var(--border); overflow:hidden;">
+                <table class="record-table">
+                    <thead><tr><th>座號</th><th>累積遲到</th><th>累積缺/假</th></tr></thead>
+                    <tbody id="rec-body"></tbody>
+                </table>
+            </div>
+        </div>
+
         <div id="v-set" class="view" style="text-align:center; padding-top:40px;">
-            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 35px; border-radius:30px; font-weight:bold;">重置當日系統</button>
+            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 35px; border-radius:30px; font-weight:bold;">重置今日數據</button>
+            <button onclick="hardReset()" style="margin-top:20px; background:none; border:none; color:#888; font-size:0.7rem; text-decoration:underline;">清除歷史次數</button>
         </div>
     </div>
 
     <div id="leave-menu">
         <div class="menu-content">
-            <h3 style="margin-top:0;">請假類型</h3>
+            <h3 style="margin:0 0 15px 0;">假別類型</h3>
             <button class="menu-btn" onclick="selLeave('事')">事假</button>
             <button class="menu-btn" onclick="selLeave('公')">公假</button>
             <button class="menu-btn" onclick="selLeave('病')">病假</button>
@@ -124,24 +145,21 @@
 
     <div class="tab-bar-wrap">
         <nav class="tab-bar">
-            <button class="tab-btn active" onclick="sw('att')">點名</button>
-            <button class="tab-btn" onclick="sw('pho')">手機</button>
-            <button class="tab-btn" onclick="sw('sta')">統計</button>
-            <button class="tab-btn" onclick="sw('set')">設定</button>
+            <button class="tab-btn active" onclick="sw('att')"><i>📍</i>點名</button>
+            <button class="tab-btn" onclick="sw('pho')"><i>📱</i>手機</button>
+            <button class="tab-btn" onclick="sw('sta')"><i>📊</i>統計</button>
+            <button class="tab-btn" onclick="sw('rec')"><i>🕒</i>次數</button>
+            <button class="tab-btn" onclick="sw('set')"><i>⚙️</i>設定</button>
         </nav>
     </div>
 
     <script>
         const layout = [2,0,0,6,20,10,21, 12,23,25,34,3,1,33, 39,4,19,15,18,24,30, 40,5,16,35,29,9,36, 32,14,37,17,31,8,7, 22,11,26,38,0,0,0];
-        let curView = 'att', pendingId = null;
+        let curV = 'att', pendingId = null;
 
-        function toggleTheme() {
-            const b = document.body;
-            b.dataset.theme = b.dataset.theme === 'dark' ? 'light' : 'dark';
-        }
-
+        function toggleTheme() { document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'; }
         function sw(v) {
-            curView = v;
+            curV = v;
             document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
             document.getElementById('v-'+v).classList.add('active');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -150,53 +168,81 @@
         }
 
         function handle(id) {
-            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), p = JSON.parse(localStorage.getItem('e3_pho') || '{}'), n = JSON.parse(localStorage.getItem('e3_note') || '{}');
-            if(curView === 'att') {
+            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), 
+                p = JSON.parse(localStorage.getItem('e3_pho') || '{}'), 
+                n = JSON.parse(localStorage.getItem('e3_note') || '{}'),
+                t = JSON.parse(localStorage.getItem('e3_time') || '{}'),
+                h = JSON.parse(localStorage.getItem('e3_his') || '{}');
+
+            if(!h[id]) h[id] = {late:0, absent:0};
+
+            if(curV === 'att') {
                 let s = a[id] || 'present';
-                if(s === 'present') a[id] = 'late';
+                const now = new Date().toLocaleTimeString('zh-TW', {hour12:false, hour:'2-digit', minute:'2-digit'});
+                if(s === 'present') { a[id] = 'late'; t[id] = now; h[id].late++; }
                 else if(s === 'late') { pendingId = id; document.getElementById('leave-menu').style.display='flex'; return; }
-                else if(s === 'leave') { a[id] = 'absent'; delete n[id]; }
-                else { a[id] = 'present'; delete n[id]; }
+                else if(s === 'leave') { a[id] = 'absent'; delete n[id]; h[id].absent++; }
+                else { a[id] = 'present'; delete n[id]; delete t[id]; }
             } else { p[id] = (p[id] === 'y') ? 'n' : 'y'; }
-            save(a, p, n);
+            save(a, p, n, t, h);
         }
 
-        function selLeave(t) {
-            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), n = JSON.parse(localStorage.getItem('e3_note') || '{}');
-            a[pendingId] = 'leave'; n[pendingId] = t; closeMenu(); save(a, null, n);
+        function selLeave(type) {
+            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), n = JSON.parse(localStorage.getItem('e3_note') || '{}'), h = JSON.parse(localStorage.getItem('e3_his') || '{}');
+            a[pendingId] = 'leave'; n[pendingId] = type;
+            if(!h[pendingId]) h[pendingId] = {late:0, absent:0};
+            h[pendingId].absent++;
+            closeMenu(); save(a, null, n, null, h);
         }
 
         function closeMenu() { document.getElementById('leave-menu').style.display='none'; }
-        function save(a, p, n) { if(a) localStorage.setItem('e3_att', JSON.stringify(a)); if(p) localStorage.setItem('e3_pho', JSON.stringify(p)); if(n) localStorage.setItem('e3_note', JSON.stringify(n)); render(); }
+        function save(a, p, n, t, h) {
+            if(a) localStorage.setItem('e3_att', JSON.stringify(a));
+            if(p) localStorage.setItem('e3_pho', JSON.stringify(p));
+            if(n) localStorage.setItem('e3_note', JSON.stringify(n));
+            if(t) localStorage.setItem('e3_time', JSON.stringify(t));
+            if(h) localStorage.setItem('e3_his', JSON.stringify(h));
+            render();
+        }
 
         function render() {
-            const a = JSON.parse(localStorage.getItem('e3_att') || '{}'), p = JSON.parse(localStorage.getItem('e3_pho') || '{}'), n = JSON.parse(localStorage.getItem('e3_note') || '{}');
+            const a = JSON.parse(localStorage.getItem('e3_att') || '{}'), p = JSON.parse(localStorage.getItem('e3_pho') || '{}'),
+                  n = JSON.parse(localStorage.getItem('e3_note') || '{}'), t = JSON.parse(localStorage.getItem('e3_time') || '{}'),
+                  h = JSON.parse(localStorage.getItem('e3_his') || '{}');
+
             const gAtt = document.getElementById('g-att'); gAtt.innerHTML = "";
-            [28,13,41,27].forEach(id => updateS(document.getElementById('s-'+id), id, a, p, n));
+            [28,13,41,27].forEach(id => updateS(document.getElementById('s-'+id), id, a, p, n, t));
             layout.forEach(id => {
                 let el = document.createElement('div');
                 if(id===0) el.style.opacity = "0";
-                else { el.className="s"; el.innerText=id; el.onclick=()=>handle(id); updateS(el, id, a, p, n); }
-                gAtt.appendChild(el);
+                else { el.className="s"; el.id=`s-${id}`; el.onclick=()=>handle(id); updateS(el, id, a, p, n, t); gAtt.appendChild(el); }
             });
+
             const gPhoPod = document.getElementById('g-pho-pod'); gPhoPod.innerHTML = document.querySelector('#v-att .podium-row').innerHTML;
             const gPhoMain = document.getElementById('g-pho-main'); gPhoMain.innerHTML = "";
             layout.forEach(id => {
                 let el = document.createElement('div');
                 if(id===0) el.style.opacity = "0";
-                else { el.className="s"; el.innerText=id; el.onclick=()=>handle(id); updateS(el, id, a, p, n); }
-                gPhoMain.appendChild(el);
+                else { el.className="s"; el.onclick=()=>handle(id); updateS(el, id, a, p, n, t); gPhoMain.appendChild(el); }
             });
-            gPhoPod.querySelectorAll('.s').forEach(el => el.onclick = () => handle(el.innerText.split('\n')[0]));
+            gPhoPod.querySelectorAll('.s').forEach(el => el.onclick = () => handle(el.innerText.replace(/[^\d]/g, '')));
+
+            const rBody = document.getElementById('rec-body'); rBody.innerHTML = "";
+            for(let i=1; i<=41; i++) {
+                let data = h[i] || {late:0, absent:0};
+                rBody.innerHTML += `<tr><td>${i}號</td><td>${data.late}</td><td>${data.absent}</td></tr>`;
+            }
             calc(a, p, n);
         }
 
-        function updateS(el, id, a, p, n) {
+        function updateS(el, id, a, p, n, t) {
             if(!el) return;
-            let s = a[id] || 'present';
-            el.className = "s " + s;
-            if(curView === 'pho' && p[id] === 'y') el.classList.add('ph-done');
-            if(s === 'leave') el.innerHTML = `${id}<br><small>${n[id]||'假'}</small>`; else el.innerText = id;
+            let s = a[id] || 'present'; el.className = "s " + s;
+            if(curV === 'pho' && p[id] === 'y') el.classList.add('ph-done');
+            el.innerHTML = "";
+            if(t[id]) { let ts = document.createElement('div'); ts.className='time-label'; ts.innerText=t[id]; el.appendChild(ts); }
+            let num = document.createElement('div'); num.innerText = id; el.appendChild(num);
+            if(s === 'leave') { let nl = document.createElement('div'); nl.className='note-label'; nl.innerText=n[id]||'假'; el.appendChild(nl); }
         }
 
         function calc(a, p, n) {
@@ -212,22 +258,25 @@
             document.getElementById('d3_v').innerText = pho;
             document.getElementById('txt-abs').innerText = absL.join(', ') || '無';
             document.getElementById('txt-late').innerText = lateL.join(', ') || '無';
-            document.getElementById('st-v1').innerText=v1; document.getElementById('st-v2').innerText=v2; document.getElementById('st-v3').innerText=v3; document.getElementById('st-v4').innerText=v4;
+            document.getElementById('st-p').innerText = pres; document.getElementById('st-l').innerText = late;
+            document.getElementById('st-v1').innerText=v1; document.getElementById('st-v2').innerText=v2;
+            document.getElementById('st-v3').innerText=v3; document.getElementById('st-v4').innerText=v4;
         }
 
         function copyReport() {
-            const abs = document.getElementById('txt-abs').innerText;
-            const late = document.getElementById('txt-late').innerText;
-            const text = `電三孝點名回報：\n缺席/請假：${abs}\n遲到：${late}`;
-            navigator.clipboard.writeText(text).then(() => alert("名單已複製！"));
+            const text = `電三孝回報：\n缺席/請假：${document.getElementById('txt-abs').innerText}\n遲到：${document.getElementById('txt-late').innerText}\n實到人數：${document.getElementById('d2_v').innerText}`;
+            navigator.clipboard.writeText(text).then(() => alert("回報文字已複製！"));
         }
 
-        function allPhone() {
-            let p = {}; for(let i=1; i<=41; i++) p[i] = 'y';
-            localStorage.setItem('e3_pho', JSON.stringify(p)); render();
-        }
+        function allPhone() { let p = {}; for(let i=1; i<=41; i++) p[i] = 'y'; localStorage.setItem('e3_pho', JSON.stringify(p)); render(); }
+        function dailyReset() { if(confirm("重置今日數據？")) { localStorage.removeItem('e3_att'); localStorage.removeItem('e3_pho'); localStorage.removeItem('e3_note'); localStorage.removeItem('e3_time'); location.reload(); } }
+        function hardReset() { if(confirm("永久清除累積次數？")) { localStorage.clear(); location.reload(); } }
+        
+        // 啟動時鐘
+        setInterval(() => {
+            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false});
+        }, 1000);
 
-        function dailyReset() { if(confirm("確定重置數據？")) { localStorage.clear(); location.reload(); } }
         window.onload = render;
     </script>
 </body>
