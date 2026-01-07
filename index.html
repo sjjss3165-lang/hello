@@ -3,69 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝黑科技指揮部 v66</title>
+    <title>電三孝</title>
     <style>
         :root {
             --primary: #00f2ff; --warning: #ffb700; --leave: #bd00ff; --accent: #ff0055;
             --bg: #05070a; --glass: rgba(255, 255, 255, 0.03); --glass-border: rgba(255, 255, 255, 0.1);
         }
-        body { margin: 0; background: radial-gradient(circle at center, #1a1f2c 0%, var(--bg) 100%); color: #fff; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); }
-        .header { width: 90%; max-width: 600px; padding: 20px 10px; display: flex; justify-content: space-between; align-items: center; }
-        #clock-area { text-align: left; }
-        #clock { font-size: 1.6rem; color: var(--primary); text-shadow: 0 0 10px var(--primary); font-family: monospace; display: block; }
-        #today-info { font-size: 0.7rem; opacity: 0.6; }
+        body { margin: 0; background: radial-gradient(circle at center, #1a1f2c 0%, var(--bg) 100%); color: #fff; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6); }
         
-        .voice-btn { background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 30px; cursor: pointer; transition: 0.3s; font-size: 0.8rem; }
-        .voice-btn.active { background: var(--accent); color: white; border-color: var(--accent); animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 85, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 85, 0); } }
+        .header { width: 90%; max-width: 600px; padding: 25px 10px; display: flex; justify-content: space-between; align-items: center; }
+        #title-area { display: flex; flex-direction: column; }
+        #main-title { font-size: 2.2rem; font-weight: 900; color: #fff; letter-spacing: 2px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+        #clock { font-size: 1.1rem; color: var(--primary); font-family: monospace; margin-top: 5px; opacity: 0.9; }
+        
+        .voice-btn { background: rgba(0, 242, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); padding: 10px 20px; border-radius: 30px; cursor: pointer; font-weight: bold; }
+        .voice-btn.active { background: var(--accent); color: white; border-color: var(--accent); animation: pulse 1.2s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-        .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; align-items: center; margin-bottom: 15px; text-align: center; }
-        .dash-item big { display: block; font-size: 1.5rem; font-weight: bold; color: var(--primary); }
-        .dash-item small { font-size: 0.7rem; opacity: 0.5; }
+        .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 20px; }
+        .dash-item { display: flex; flex-direction: column; align-items: center; }
+        .dash-item big { font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        .dash-item small { font-size: 0.65rem; opacity: 0.5; margin-top: 4px; }
 
-        .page { width: 95%; max-width: 600px; display: none; padding-bottom: 120px; animation: slideUp 0.4s ease-out; }
-        .page.active { display: block; }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .page { width: 95%; max-width: 600px; display: none; padding-bottom: 120px; }
+        .page.active { display: block; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        .chart-wrap { position: relative; width: 100%; padding: 20px 0; }
-        .podium { width: 100%; height: 40px; background: rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: rgba(255,255,255,0.3); margin-bottom: 25px; border: 1px solid var(--glass-border); letter-spacing: 10px; }
+        .chart-wrap { position: relative; width: 100%; padding: 10px 0; }
+        .podium { width: 100%; height: 40px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: rgba(255,255,255,0.2); margin-bottom: 30px; border: 1px solid var(--glass-border); letter-spacing: 12px; }
+        
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
-
-        .s { aspect-ratio: 1.6; border: 1px solid var(--glass-border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: 0.3s; position: relative; background: rgba(255,255,255,0.02); }
-        .present { color: var(--primary); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.1); box-shadow: 0 0 10px rgba(255, 183, 0, 0.2); }
+        .s { aspect-ratio: 1.6; border: 1px solid var(--glass-border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; position: relative; background: rgba(255,255,255,0.02); }
+        
+        .present { color: var(--primary); border-color: rgba(0, 242, 255, 0.2); }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.15); }
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189, 0, 255, 0.1); }
         .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); }
 
-        .spec { position: absolute; top: 25px; width: calc((100% - 48px) / 7); }
+        .spec { position: absolute; top: 10px; width: calc((100% - 48px) / 7); }
         #s-13 { left: calc(((100% - 48px) / 7) + 8px); }
         #s-41 { left: calc((((100% - 48px) / 7) + 8px) * 2); }
-        .l-tag { position: absolute; bottom: 2px; font-size: 0.5rem; font-weight: bold; }
+        .l-tag { position: absolute; bottom: 2px; font-size: 0.55rem; font-weight: bold; background: rgba(0,0,0,0.5); padding: 0 4px; border-radius: 4px; }
 
-        .nav-footer { position: fixed; bottom: 30px; width: 90%; max-width: 500px; display: flex; gap: 15px; padding: 10px; border-radius: 50px; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 12px; border-radius: 40px; border: none; color: rgba(255,255,255,0.4); background: transparent; font-weight: bold; cursor: pointer; }
-        .nav-btn.btn-active { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
+        .nav-footer { position: fixed; bottom: 30px; width: 90%; max-width: 500px; display: flex; gap: 10px; padding: 8px; border-radius: 50px; }
+        .nav-btn { flex: 1; padding: 14px; border-radius: 40px; border: none; color: rgba(255,255,255,0.3); background: transparent; font-weight: bold; cursor: pointer; }
+        .nav-btn.btn-active { background: var(--primary); color: #000; box-shadow: 0 0 25px rgba(0, 242, 255, 0.4); }
 
-        .card { padding: 15px; margin-bottom: 15px; }
-        .row { padding: 12px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
+        .card { padding: 20px; margin-bottom: 20px; }
+        .row { padding: 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <div id="clock-area">
+        <div id="title-area">
+            <span id="main-title">電三孝</span>
             <span id="clock">00:00:00</span>
-            <span id="today-info">正在判斷基準時間...</span>
         </div>
         <button id="voiceBtn" class="voice-btn" onclick="startVoice()">🎤 語音點名</button>
     </div>
 
     <div class="dashboard glass-panel">
-        <div class="dash-item"><small>出席率</small><big id="rate-val">0%</big></div>
+        <div class="dash-item"><small>出席</small><big id="rate-val">0%</big></div>
         <div class="dash-item"><small>在座</small><big id="present-val">0</big></div>
         <div class="dash-item"><small>遲到</small><big id="late-val" style="color:var(--warning)">0</big></div>
-        <div class="dash-item"><small>缺席</small><big id="absent-val" style="color:var(--accent)">0</big></div>
+        <div class="dash-item"><small>缺/假</small><big id="absent-val" style="color:var(--accent)">0</big></div>
     </div>
 
     <div id="p1" class="page active">
@@ -75,20 +78,21 @@
             <div class="s spec present" id="s-41" onclick="t(41)">41</div>
             <div class="grid" id="main-grid"></div>
         </div>
+        <button onclick="dailyReset()" style="width:100%; margin-top:10px; background:none; border:none; color:rgba(255,255,255,0.1); font-size:0.7rem;">🔄 重置今日</button>
     </div>
 
     <div id="p2" class="page">
         <div class="card glass-panel">
-            <h3 style="margin:0; color:var(--primary); font-size:1rem;">⏱ 遲到紀錄日誌</h3>
+            <h3 style="margin:0 0 15px 0; color:var(--primary); font-size:1rem;">⏱ 今日遲到紀錄</h3>
             <div id="log-list"></div>
         </div>
     </div>
 
     <div id="p3" class="page">
         <div class="card glass-panel">
-            <h3 style="margin:0; color:var(--warning); font-size:1rem;">📊 累計排行</h3>
+            <h3 style="margin:0 0 15px 0; color:var(--warning); font-size:1rem;">📊 累計排行</h3>
             <div id="stat-list"></div>
-            <button onclick="clearStats()" style="width:100%; margin-top:30px; background:none; border:1px solid rgba(255,255,255,0.1); color:rgba(255,255,255,0.2); padding:10px; border-radius:10px;">清空統計</button>
+            <button onclick="clearStats()" style="width:100%; margin-top:40px; background:none; color:rgba(255,0,0,0.3); font-size:0.7rem; border:none;">清空統計</button>
         </div>
     </div>
 
@@ -100,7 +104,7 @@
 
     <script>
         const layout = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
-        const TOTAL_STUDENTS = 41;
+        const TOTAL = 41;
 
         function go(n) {
             document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i+1 === n));
@@ -109,9 +113,8 @@
         }
 
         function getBaseTime() {
-            const day = new Date().getDay(); // 0是週日, 3是週三
-            if (day === 3) return { h: 7, m: 30, str: "07:30 (週三基準)" };
-            return { h: 8, m: 0, str: "08:00 (一般基準)" };
+            const day = new Date().getDay();
+            return (day === 3) ? { h: 7, m: 30 } : { h: 8, m: 0 };
         }
 
         function init() {
@@ -138,11 +141,7 @@
                 grid.appendChild(el);
             });
 
-            setInterval(() => { 
-                const now = new Date();
-                document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', {hour12:false});
-                document.getElementById('today-info').innerText = "今日基準: " + getBaseTime().str;
-            }, 1000);
+            setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false}); }, 1000);
             updateDashboard();
         }
 
@@ -151,12 +150,8 @@
             const isSp = el.classList.contains('spec');
             const now = new Date();
             const timeStr = now.toLocaleTimeString('zh-TW', {hour12:false});
-            
-            // 自動判定基準時間
             const baseSetting = getBaseTime();
-            const base = new Date(); 
-            base.setHours(baseSetting.h, baseSetting.m, 0);
-            
+            const base = new Date(); base.setHours(baseSetting.h, baseSetting.m, 0);
             const diff = Math.floor((now - base) / 60000);
             const lateInfo = diff > 0 ? `(遲 ${diff}分)` : "(準點)";
 
@@ -177,16 +172,15 @@
             } else {
                 el.className = `s ${isSp?'spec':''} present`; el.innerHTML = id; delete types[id];
             }
-            localStorage.setItem('e3_ty', JSON.stringify(types)); save(); updateDashboard();
+            saveAll(types); updateDashboard();
         }
 
         function startVoice() {
             const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!Speech) return alert("瀏覽器不支援語音");
+            if (!Speech) return alert("語音點名僅支援 Chrome");
             const rec = new Speech(); rec.lang = 'zh-TW';
             const btn = document.getElementById('voiceBtn');
-            btn.classList.add('active'); btn.innerText = "正在聆聽...";
-            
+            btn.classList.add('active');
             rec.onresult = (e) => {
                 const text = e.results[0][0].transcript;
                 const idMatch = text.match(/\d+/);
@@ -199,7 +193,7 @@
                     }
                 }
             };
-            rec.onend = () => { btn.classList.remove('active'); btn.innerText = "🎤 語音點名"; };
+            rec.onend = () => { btn.classList.remove('active'); };
             rec.start();
         }
 
@@ -207,8 +201,7 @@
             const p = document.querySelectorAll('.present').length;
             const l = document.querySelectorAll('.late').length;
             const a = document.querySelectorAll('.absent, .leave').length;
-            const rate = Math.round((p / TOTAL_STUDENTS) * 100);
-            document.getElementById('rate-val').innerText = rate + "%";
+            document.getElementById('rate-val').innerText = Math.round((p / TOTAL) * 100) + "%";
             document.getElementById('present-val').innerText = p;
             document.getElementById('late-val').innerText = l;
             document.getElementById('absent-val').innerText = a;
@@ -222,7 +215,7 @@
 
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="row"><span>座號 ${o.id}</span><span style="color:var(--warning)">${o.time} ${o.info}</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">無紀錄</div>';
+            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="row"><span>座號 ${o.id}</span><span style="color:var(--warning)">${o.time} ${o.info}</span></div>`).join('');
         }
 
         function addStat(id) {
@@ -233,17 +226,20 @@
         function renderStats() {
             const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
             const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
-            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="row"><span>座號 ${id}</span><span>${count} 次</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">無數據</div>';
+            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="row"><span>座號 ${id}</span><span>${count} 次</span></div>`).join('');
         }
 
         function clearStats() { if(confirm("清空排行？")) { localStorage.removeItem('e3_stats'); renderStats(); } }
-        function save() {
+        function dailyReset() { if(confirm("重置今日狀態？")) { localStorage.removeItem('e3_st'); localStorage.removeItem('e3_lg'); localStorage.removeItem('e3_ty'); location.reload(); } }
+
+        function saveAll(types) {
             const d = {};
             document.querySelectorAll('.s').forEach(el => {
                 const id = el.innerText.split('\n')[0];
                 if(id && id !== "undefined") d[id] = el.classList.contains('late') ? 'late' : (el.classList.contains('leave') ? 'leave' : (el.classList.contains('absent') ? 'absent' : 'present'));
             });
             localStorage.setItem('e3_st', JSON.stringify(d));
+            localStorage.setItem('e3_ty', JSON.stringify(types));
         }
         window.onload = init;
     </script>
