@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝數位指揮部 v63</title>
+    <title>電三孝數位指揮部 v64</title>
     <style>
         :root {
-            --primary: #00f2ff; /* 霓虹青 */
-            --warning: #ffb700; /* 暖陽黃 */
-            --leave: #bd00ff;   /* 幻影紫 */
-            --accent: #ff0055;  /* 魅惑紅 */
+            --primary: #00f2ff;
+            --warning: #ffb700;
+            --leave: #bd00ff;
+            --accent: #ff0055;
             --bg: #05070a;
             --glass: rgba(255, 255, 255, 0.03);
             --glass-border: rgba(255, 255, 255, 0.1);
@@ -75,15 +75,25 @@
         .podium {
             width: 100%; height: 40px; background: rgba(255,255,255,0.05); border-radius: 10px;
             display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
-            letter-spacing: 10px; color: rgba(255,255,255,0.3); margin-bottom: 20px; border: 1px solid var(--glass-border);
+            letter-spacing: 10px; color: rgba(255,255,255,0.3); margin-bottom: 25px; border: 1px solid var(--glass-border);
         }
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+        /* 調整格線間距以符合長方形 */
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
 
+        /* 座位變成長方形 (aspect-ratio 改為 1.6) */
         .s {
-            aspect-ratio: 1; border: 1px solid var(--glass-border); border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
-            font-weight: 300; cursor: pointer; transition: all 0.3s; position: relative;
+            aspect-ratio: 1.6; 
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 300;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
             background: rgba(255,255,255,0.02);
         }
 
@@ -92,12 +102,16 @@
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189, 0, 255, 0.1); box-shadow: 0 0 10px rgba(189, 0, 255, 0.2); }
         .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); box-shadow: 0 0 10px rgba(255, 0, 85, 0.2); }
 
-        /* 修正 13 與 41 號的對齊公式 */
-        .spec { position: absolute; top: 20px; height: calc((100vw * 0.95 / 7) - 10px); max-height: 75px; width: calc((100% - 60px) / 7); }
-        #s-13 { left: calc((100% - 60px) / 7 + 10px); }
-        #s-41 { left: calc(((100% - 60px) / 7 + 10px) * 2); }
+        /* 修正長方形版 13 與 41 號定位 */
+        .spec { 
+            position: absolute; 
+            top: 25px; 
+            width: calc((100% - 48px) / 7); /* 扣除 6 個 gap 的寬度 */
+        }
+        #s-13 { left: calc(((100% - 48px) / 7) + 8px); }
+        #s-41 { left: calc((((100% - 48px) / 7) + 8px) * 2); }
         
-        .l-tag { position: absolute; bottom: 4px; font-size: 0.55rem; font-weight: bold; }
+        .l-tag { position: absolute; bottom: 2px; font-size: 0.5rem; font-weight: bold; }
 
         .nav-footer { position: fixed; bottom: 30px; width: 90%; max-width: 500px; display: flex; gap: 15px; padding: 10px; border-radius: 50px; z-index: 1000; }
         .nav-btn { flex: 1; padding: 12px; border-radius: 40px; border: none; color: rgba(255,255,255,0.4); background: transparent; font-weight: bold; cursor: pointer; font-size: 0.9rem; }
