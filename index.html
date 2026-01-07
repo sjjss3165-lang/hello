@@ -3,119 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝指揮中心 v93</title>
+    <title>電三孝戰術中心 v96</title>
     <style>
         :root {
-            --primary: #007aff; --warning: #ff9500; --accent: #ff3b30; --phone: #5856d6; --leave: #bd00ff;
-            --bg: #f2f2f7; --glass: rgba(255, 255, 255, 0.85); --text: #1c1c1e;
+            --primary: #00f2ff; --warning: #ffb700; --accent: #ff0055; --phone: #bd00ff;
+            --bg: #05070a; --glass: rgba(20, 25, 35, 0.9); --border: rgba(255, 255, 255, 0.1);
         }
-        body { margin: 0; background: radial-gradient(circle at center, #ffffff 0%, var(--bg) 100%); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
         
-        .header { width: 90%; max-width: 600px; padding: 20px 0 5px; display: flex; justify-content: space-between; align-items: center; }
-        #main-title { font-size: 2rem; font-weight: 800; color: var(--text); }
-        .mode-switch { background: #e5e5ea; padding: 4px; border-radius: 12px; display: flex; gap: 4px; }
-        .m-btn { border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: bold; cursor: pointer; color: #8e8e93; background: transparent; }
-        .m-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .main-container { width: 98vw; height: 95vh; max-width: 1100px; display: grid; grid-template-columns: 260px 1fr; gap: 15px; }
 
-        .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .dash-item { text-align: center; }
-        .dash-item big { display: block; font-size: 1.5rem; font-weight: 800; color: var(--text); }
-        .dash-item small { font-size: 0.6rem; opacity: 0.5; font-weight: bold; }
-
-        .page { width: 95%; max-width: 600px; display: none; padding-bottom: 100px; height: calc(100vh - 320px); overflow-y: auto; }
-        .page.active { display: block; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .chart-wrap { position: relative; width: 100%; padding-top: 50px; }
-        .podium { width: 100%; height: 35px; background: rgba(0,0,0,0.02); border: 1px dashed rgba(0,0,0,0.05); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aaa; letter-spacing: 8px; }
+        .sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
         
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
-        .s { aspect-ratio: 1.6; border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; background: #fff; font-weight: 600; color: #8e8e93; position: relative; transition: 0.1s; }
-        
-        /* 13 對準 25, 41 對準 23 */
-        .spec { position: absolute; top: 0px; width: calc((100% - 60px) / 7); z-index: 10; }
-        #s-13 { left: calc(((100% - 60px) / 7 + 10px) * 4); } 
-        #s-41 { left: calc(((100% - 60px) / 7 + 10px) * 3); } 
+        #main-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 15px rgba(0,242,255,0.5); }
+        .stat-box { margin-bottom: 15px; padding: 10px; border-left: 3px solid var(--primary); background: rgba(0,242,255,0.05); }
+        .stat-box big { font-size: 2rem; font-weight: 900; display: block; }
 
-        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.3); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 149, 0, 0.05); }
-        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 59, 48, 0.05); }
-        .leave { color: var(--leave); border-color: var(--leave); background: rgba(189, 0, 255, 0.05); }
-        
-        /* 手機模式樣式 (僅在手機模式顯示) */
-        .phone-mode-active .s.phone-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; box-shadow: 0 2px 8px rgba(88, 86, 214, 0.3); }
-        .l-tag { position: absolute; bottom: 1px; font-size: 0.5rem; font-weight: 900; background: rgba(0,0,0,0.05); padding: 0 2px; border-radius: 3px; }
+        .content { display: flex; flex-direction: column; gap: 15px; }
+        .m-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .m-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
 
-        .list-row { padding: 14px 10px; border-bottom: 1px solid rgba(0,0,0,0.03); display: flex; justify-content: space-between; }
-        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 6px; border-radius: 50px; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.1); justify-content: space-around; z-index: 1000; }
-        .nav-btn { flex: 1; padding: 12px; border: none; background: transparent; color: #8e8e93; font-weight: bold; cursor: pointer; border-radius: 40px; font-size: 0.9rem; transition: 0.3s; }
-        .nav-btn.active { background: var(--primary); color: #fff; }
+        .board { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        
+        /* 講桌區 (只有 13, 41) */
+        .podium-area { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 20px; }
+        .podium-box { grid-column: 4; border: 1px dashed #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #444; height: 45px; }
+
+        /* 主網格 */
+        .main-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+
+        .s { aspect-ratio: 1.5; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; cursor: pointer; transition: 0.2s; color: #444; }
+        
+        .present { color: var(--primary); border-color: var(--primary); box-shadow: inset 0 0 10px rgba(0,242,255,0.1); }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.1); }
+        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); }
+        .leave { color: var(--phone); border-color: var(--phone); background: rgba(189, 0, 255, 0.1); }
+
+        .phone-mode .s.ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; box-shadow: 0 0 15px var(--phone); }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <span id="main-title">電三孝</span>
-        <div class="mode-switch glass-panel">
-            <button class="m-btn active" id="m-att" onclick="setMode('attend')">點名</button>
-            <button class="m-btn" id="m-pho" onclick="setMode('phone')">手機</button>
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
+                <div id="main-title">電三孝</div>
+                <div style="font-size:0.8rem; opacity:0.5; margin-bottom:20px;">COMMAND CENTER</div>
+                <div class="stat-box"><small>達成率</small><big id="v1">100%</big></div>
+                <div class="stat-box"><small>在座</small><big id="v2">41</big></div>
+                <div class="stat-box" style="border-color:var(--accent);"><small>異常</small><big id="v3" style="color:var(--accent)">0</big></div>
+                <button class="m-btn" style="background:var(--primary); color:#000; margin-top:auto;" onclick="randomPick()">🎯 隨機抽籤</button>
+                <button class="m-btn" style="margin-top:10px; font-size:0.7rem;" onclick="dailyReset()">RESET DATA</button>
+            </div>
+        </div>
+
+        <div class="content">
+            <div style="display:flex; gap:10px;">
+                <button class="m-btn active" id="b-att" onclick="setMode('attend')">點名模式</button>
+                <button class="m-btn" id="b-pho" onclick="setMode('phone')">收手機模式</button>
+            </div>
+
+            <div class="glass-card board" id="board-container">
+                <div class="podium-area">
+                    <div style="grid-column:3" class="s present" id="s-13" onclick="handleTap(13)">13</div>
+                    <div class="podium-box">PODIUM</div>
+                    <div style="grid-column:5" class="s present" id="s-41" onclick="handleTap(41)">41</div>
+                </div>
+
+                <div class="main-grid" id="main-grid"></div>
+            </div>
         </div>
     </div>
-
-    <div class="dashboard glass-panel">
-        <div class="dash-item"><small id="l1">出席率</small><big id="v1">0%</big></div>
-        <div class="dash-item"><small id="l2">在座</small><big id="v2">0</big></div>
-        <div class="dash-item"><small id="l3">缺假</small><big id="v3" style="color:var(--accent)">0</big></div>
-    </div>
-
-    <div id="p1" class="page active">
-        <div id="board-container" class="chart-wrap">
-            <div class="s spec present" id="s-13" onclick="h(13)">13</div>
-            <div class="s spec present" id="s-41" onclick="h(41)">41</div>
-            <div class="podium">COMMANDER PODIUM</div>
-            <div id="main-grid" class="grid"></div>
-        </div>
-        <button onclick="dailyReset()" style="width:100%; margin-top:20px; border:none; background:none; color:#ccc; font-size:0.7rem;">🔄 重置今日數據</button>
-    </div>
-
-    <div id="p2" class="page">
-        <div class="glass-panel" style="padding: 20px;">
-            <h3 style="margin:0 0 15px 0; font-size:1rem;">⏱ 今日點名日誌</h3>
-            <div id="log-list"></div>
-        </div>
-    </div>
-
-    <div id="p3" class="page">
-        <div class="glass-panel" style="padding: 20px;">
-            <h3 style="margin:0 0 15px 0; font-size:1rem;">📊 累計遲到排行</h3>
-            <div id="stat-list"></div>
-        </div>
-    </div>
-
-    <nav class="nav-footer">
-        <button class="nav-btn active" onclick="go(1)">點名</button>
-        <button class="nav-btn" onclick="go(2)">日誌</button>
-        <button class="nav-btn" onclick="go(3)">排行</button>
-    </nav>
 
     <script>
-        const layout = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
-        let mode = 'attend';
+        // 精確匹配圖片：2 號在網格第一位，28, 27 在中間
+        const gridSeats = [
+            2, 12, 23, 25, 34, 3, 1,
+            33, 39, 4, 19, 15, 18, 24,
+            30, 40, 5, 16, 35, 29, 9,
+            36, 32, 14, 37, 17, 31, 8,
+            7, 22, 11, 26, 38, 28, 27,
+            0, 0, 0, 0, 0, 0, 0 // 補齊
+        ];
 
-        function go(n) {
-            document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i+1 === n));
-            document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i+1 === n));
-            if(n===2) renderLogs(); if(n===3) renderStats();
-        }
+        let currentMode = 'attend';
 
         function setMode(m) {
-            mode = m;
-            document.getElementById('m-att').classList.toggle('active', m === 'attend');
-            document.getElementById('m-pho').classList.toggle('active', m === 'phone');
-            // 關鍵切換：控制是否顯示手機繳交狀態
-            document.getElementById('board-container').classList.toggle('phone-mode-active', m === 'phone');
-            updateDash();
+            currentMode = m;
+            document.getElementById('b-att').classList.toggle('active', m === 'attend');
+            document.getElementById('b-pho').classList.toggle('active', m === 'phone');
+            document.getElementById('board-container').classList.toggle('phone-mode', m === 'phone');
+            updateDashboard();
         }
 
         function init() {
@@ -123,99 +102,67 @@
             grid.innerHTML = "";
             const att = JSON.parse(localStorage.getItem('e3_st') || '{}');
             const pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
-            const typ = JSON.parse(localStorage.getItem('e3_ty') || '{}');
 
-            [13, 41].forEach(id => renderS(document.getElementById(`s-${id}`), id, att, pho, typ));
+            // 初始化講桌兩翼
+            [13, 41].forEach(id => renderSeat(document.getElementById(`s-${id}`), id, att, pho));
 
-            layout.forEach(id => {
+            // 初始化主網格 (包含 2 號)
+            gridSeats.forEach(id => {
                 const el = document.createElement('div');
                 if (id === 0) { el.style.opacity = "0"; }
                 else {
-                    el.id = `s-${id}`; el.innerText = id; el.onclick = () => h(id);
-                    renderS(el, id, att, pho, typ);
+                    el.className = "s"; el.id = `s-${id}`; el.innerText = id;
+                    el.onclick = () => handleTap(id);
+                    renderSeat(el, id, att, pho);
                 }
                 grid.appendChild(el);
             });
-            updateDash();
+            updateDashboard();
         }
 
-        function renderS(el, id, att, pho, typ) {
+        function renderSeat(el, id, att, pho) {
             if(!el) return;
-            el.className = `s ${el.classList.contains('spec') ? 'spec' : ''} ${att[id] || 'present'}`;
-            if(pho[id] === 'y') el.classList.add('phone-done');
-            const old = el.querySelector('.l-tag'); if(old) old.remove();
-            if(typ[id]) {
-                const s = document.createElement('span'); s.className = 'l-tag'; s.innerText = typ[id];
-                el.appendChild(s);
-            }
+            el.className = "s " + (att[id] || 'present');
+            if(pho[id] === 'y') el.classList.add('ph-done');
         }
 
-        function h(id) {
-            const el = document.getElementById(`s-${id}`);
-            let att = JSON.parse(localStorage.getItem('e3_st') || '{}'), pho = JSON.parse(localStorage.getItem('e3_ph') || '{}'), typ = JSON.parse(localStorage.getItem('e3_ty') || '{}');
-            const time = new Date().toLocaleTimeString('zh-TW', {hour12:false});
-
-            if(mode === 'attend') {
-                if(!att[id] || att[id] === 'present') { att[id] = 'late'; addLog(id, time); addStat(id); }
-                else {
-                    const c = prompt("假別: 1.事 2.病 3.公 4.缺 5.回出席");
-                    if(c === "1") { att[id] = 'leave'; typ[id] = '事'; }
-                    else if(c === "2") { att[id] = 'leave'; typ[id] = '病'; }
-                    else if(c === "3") { att[id] = 'leave'; typ[id] = '公'; }
-                    else if(c === "4") { att[id] = 'absent'; delete typ[id]; }
-                    else if(c === "5") { att[id] = 'present'; delete typ[id]; }
-                }
+        function handleTap(id) {
+            let att = JSON.parse(localStorage.getItem('e3_st') || '{}');
+            let pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
+            if(currentMode === 'attend') {
+                const s = att[id] || 'present';
+                if(s === 'present') att[id] = 'late';
+                else if(s === 'late') att[id] = 'absent';
+                else if(s === 'absent') att[id] = 'leave';
+                else att[id] = 'present';
             } else {
                 pho[id] = (pho[id] === 'y') ? 'n' : 'y';
             }
-            localStorage.setItem('e3_st', JSON.stringify(att)); localStorage.setItem('e3_ph', JSON.stringify(pho)); localStorage.setItem('e3_ty', JSON.stringify(typ));
+            localStorage.setItem('e3_st', JSON.stringify(att));
+            localStorage.setItem('e3_ph', JSON.stringify(pho));
             init();
         }
 
-        function updateDash() {
+        function updateDashboard() {
+            const seats = document.querySelectorAll('.s:not([style*="opacity:0"])');
             let p = 0, ph = 0, a = 0;
-            document.querySelectorAll('.s').forEach(el => {
-                if (el.innerText.trim() !== "") {
-                    if (el.classList.contains('present')) p++;
-                    if (el.classList.contains('phone-done')) ph++;
-                    if (el.classList.contains('late') || el.classList.contains('absent') || el.classList.contains('leave')) a++;
-                }
+            seats.forEach(s => {
+                if(s.classList.contains('present')) p++;
+                if(s.classList.contains('ph-done')) ph++;
+                if(s.classList.contains('late') || s.classList.contains('absent') || s.classList.contains('leave')) a++;
             });
-            const v1 = (mode === 'attend') ? Math.round((p/41)*100) : Math.round((ph/41)*100);
-            document.getElementById('v1').innerText = v1 + "%";
-            document.getElementById('v2').innerText = (mode === 'attend') ? p : ph;
-            document.getElementById('v3').innerText = (mode === 'attend') ? a : (41-ph);
-            
-            // 標籤切換
-            if(mode === 'attend') {
-                document.getElementById('l1').innerText = "出席率"; document.getElementById('l2').innerText = "在座"; document.getElementById('l3').innerText = "缺假";
-            } else {
-                document.getElementById('l1').innerText = "繳交率"; document.getElementById('l2').innerText = "已交"; document.getElementById('l3').innerText = "未交";
-            }
+            const total = 41;
+            document.getElementById('v1').innerText = Math.round((p/total)*100) + "%";
+            document.getElementById('v2').innerText = (currentMode === 'attend') ? p : ph;
+            document.getElementById('v3').innerText = (currentMode === 'attend') ? a : (total - ph);
         }
 
-        function addLog(id, t) {
-            let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-            logs.unshift({id: id, time: t}); localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
+        function randomPick() {
+            const list = Array.from(document.querySelectorAll('.s.present')).map(s => s.innerText);
+            if(list.length) alert("🎯 抽中座號：" + list[Math.floor(Math.random() * list.length)]);
         }
 
-        function renderLogs() {
-            const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="list-row"><span>座號 ${o.id}</span><span style="color:var(--warning); font-weight:bold;">${o.time}</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">尚無今日日誌</div>';
-        }
-
-        function addStat(id) {
-            let stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
-            stats[id] = (stats[id] || 0) + 1; localStorage.setItem('e3_stats', JSON.stringify(stats));
-        }
-
-        function renderStats() {
-            const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
-            const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
-            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="list-row"><span>座號 ${id}</span><span style="font-weight:bold;">${count} 次</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">無排行數據</div>';
-        }
-
-        function dailyReset() { if(confirm("重置數據？")) { localStorage.removeItem('e3_st'); location.reload(); } }
+        function dailyReset() { if(confirm("確定重置？")) { localStorage.clear(); location.reload(); } }
         window.onload = init;
     </script>
 </body>
