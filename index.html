@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝戰略終極版 v113</title>
+    <title>電三孝點名系統 v114</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
@@ -14,28 +14,34 @@
         }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; transition: 0.3s; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
+        /* 頂部時鐘 */
         .header { width: 92%; padding: 12px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
         .clock-display { font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
         .theme-toggle { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
+        /* 數據儀表板 */
         .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
         .dash-card { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
         .dash-card big { display: block; font-size: 1.1rem; font-weight: 800; }
         .dash-card small { font-size: 0.55rem; color: #8e8e93; font-weight: bold; }
 
+        /* 異常名單區 + 小圓標複製 */
         .status-list-zone { width: 92%; padding: 10px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 12px; position: relative; }
         .status-item { font-size: 0.75rem; margin: 3px 0; display: flex; flex-wrap: wrap; line-height: 1.4; }
-        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
+        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,122,255,0.3); transition: 0.2s; }
+        .copy-circle:active { transform: translateY(-50%) scale(0.9); }
 
         .main-container { width: 95%; height: calc(100vh - 280px); overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
         .view { display: none; width: 100%; max-width: 400px; }
         .view.active { display: block; }
 
-        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
+        /* 座位設定：黃金適中比例 (52px x 42px) */
+        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 18px; }
         .podium-box { grid-column: 3 / span 3; height: 42px; border: 1.5px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #888; font-weight: bold; letter-spacing: 5px; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
         .s { width: 52px; height: 42px; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; cursor: pointer; color: #888; transition: 0.1s; position: relative; }
+        
         .time-label { position: absolute; top: 2px; font-size: 0.45rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; pointer-events: none; }
         .note-label { font-size: 0.55rem; font-weight: 800; margin-top: 10px; }
 
@@ -46,6 +52,7 @@
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
         .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
 
+        /* 液態懸浮導航 (純文字膠囊) */
         .tab-bar-wrap { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
         .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 50px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 25px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
         .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -122,7 +129,7 @@
         </div>
 
         <div id="v-set" class="view" style="text-align:center; padding-top:40px;">
-            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 35px; border-radius:30px; font-weight:bold;">重置當日狀態</button>
+            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 35px; border-radius:30px; font-weight:bold;">重置今日數據</button>
             <button onclick="hardReset()" style="margin-top:20px; background:none; border:none; color:#888; font-size:0.75rem; text-decoration:underline;">永久清除歷史紀錄</button>
         </div>
     </div>
@@ -149,14 +156,14 @@
     </div>
 
     <script>
-        // 核心 Layout (0 代表空位)
+        // 核心 Layout (0 代表空位，用來撐開空間)
         const layout = [
-            2,0,0,6,20,10,21, 
-            12,23,25,34,3,1,33, 
-            39,4,19,15,18,24,30, 
-            40,5,16,35,29,9,36, 
-            32,14,37,17,31,8,7, 
-            22,11,26,38,0,0,0
+            2, 0, 0, 6, 20, 10, 21, 
+            12, 23, 25, 34, 3, 1, 33, 
+            39, 4, 19, 15, 18, 24, 30, 
+            40, 5, 16, 35, 29, 9, 36, 
+            32, 14, 37, 17, 31, 8, 7, 
+            22, 11, 26, 38, 0, 0, 0
         ];
         let curV = 'att', pendingId = null;
 
@@ -188,4 +195,107 @@
                 else if(s === 'late') { pendingId = id; document.getElementById('leave-menu').style.display='flex'; return; }
                 else if(s === 'leave') { a[id] = 'absent'; delete n[id]; h[id].absent++; }
                 else { a[id] = 'present'; delete n[id]; delete t[id]; }
-            } else
+            } else { p[id] = (p[id] === 'y') ? 'n' : 'y'; }
+            save(a, p, n, t, h);
+        }
+
+        function selLeave(type) {
+            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), n = JSON.parse(localStorage.getItem('e3_note') || '{}'), h = JSON.parse(localStorage.getItem('e3_his') || '{}');
+            a[pendingId] = 'leave'; n[pendingId] = type;
+            if(!h[pendingId]) h[pendingId] = {late:0, absent:0};
+            h[pendingId].absent++;
+            closeMenu(); save(a, null, n, null, h);
+        }
+
+        function closeMenu() { document.getElementById('leave-menu').style.display='none'; }
+        function save(a, p, n, t, h) {
+            if(a) localStorage.setItem('e3_att', JSON.stringify(a));
+            if(p) localStorage.setItem('e3_pho', JSON.stringify(p));
+            if(n) localStorage.setItem('e3_note', JSON.stringify(n));
+            if(t) localStorage.setItem('e3_time', JSON.stringify(t));
+            if(h) localStorage.setItem('e3_his', JSON.stringify(h));
+            render();
+        }
+
+        function render() {
+            const a = JSON.parse(localStorage.getItem('e3_att') || '{}'), p = JSON.parse(localStorage.getItem('e3_pho') || '{}'),
+                  n = JSON.parse(localStorage.getItem('e3_note') || '{}'), t = JSON.parse(localStorage.getItem('e3_time') || '{}'),
+                  h = JSON.parse(localStorage.getItem('e3_his') || '{}');
+
+            // 護法位渲染
+            [13, 41, 28, 27].forEach(id => updateS(document.getElementById('s-'+id), id, a, p, n, t));
+
+            // 主網格渲染 (強制 7 欄並保留空格)
+            const gAtt = document.getElementById('g-att'); gAtt.innerHTML = "";
+            layout.forEach(id => {
+                let el = document.createElement('div');
+                el.className = "s";
+                if(id === 0) { el.style.opacity = "0"; el.style.pointerEvents = "none"; }
+                else { el.onclick = () => handle(id); updateS(el, id, a, p, n, t); }
+                gAtt.appendChild(el);
+            });
+
+            // 手機同步
+            const gPhoPod = document.getElementById('g-pho-pod'); gPhoPod.innerHTML = document.querySelector('#v-att .podium-row').innerHTML;
+            const gPhoMain = document.getElementById('g-pho-main'); gPhoMain.innerHTML = "";
+            layout.forEach(id => {
+                let el = document.createElement('div'); el.className = "s";
+                if(id === 0) { el.style.opacity = "0"; }
+                else { el.onclick = () => handle(id); updateS(el, id, a, p, n, t); }
+                gPhoMain.appendChild(el);
+            });
+            gPhoPod.querySelectorAll('.s').forEach(el => {
+                const id = parseInt(el.innerText); if(id) el.onclick = () => handle(id);
+            });
+
+            // 累積次數
+            const rBody = document.getElementById('rec-body'); rBody.innerHTML = "";
+            for(let i=1; i<=41; i++) {
+                let data = h[i] || {late:0, absent:0};
+                rBody.innerHTML += `<tr><td>${i}號</td><td>${data.late}次</td><td>${data.absent}次</td></tr>`;
+            }
+            calc(a, p, n);
+        }
+
+        function updateS(el, id, a, p, n, t) {
+            if(!el || !id) return;
+            let s = a[id] || 'present'; el.className = "s " + s;
+            if(curV === 'pho' && p[id] === 'y') el.classList.add('ph-done');
+            el.innerHTML = "";
+            if(t[id]) { let ts = document.createElement('div'); ts.className = 'time-label'; ts.innerText = t[id]; el.appendChild(ts); }
+            let num = document.createElement('div'); num.innerText = id; el.appendChild(num);
+            if(s === 'leave') { let nl = document.createElement('div'); nl.className = 'note-label'; nl.innerText = n[id] || '假'; el.appendChild(nl); }
+        }
+
+        function calc(a, p, n) {
+            let pres=0, late=0, abs=0, lea=0, pho=0, v1=0, v2=0, v3=0, v4=0, absL=[], lateL=[];
+            for(let i=1; i<=41; i++) {
+                let s = a[i] || 'present';
+                if(s==='present') pres++; else if(s==='late') { late++; lateL.push(i); } else if(s==='absent') { abs++; absL.push(i); } else if(s==='leave') { lea++; absL.push(`${i}(${n[i]||'假'})`); }
+                if(p[i]==='y') pho++;
+                if(s==='leave') { if(n[i]==='事') v1++; else if(n[i]==='公') v2++; else if(n[i]==='病') v3++; else if(n[i]==='喪') v4++; }
+            }
+            document.getElementById('d1_v').innerText = Math.round((pres/41)*100) + "%";
+            document.getElementById('d2_v').innerText = pres + late;
+            document.getElementById('d3_v').innerText = pho;
+            document.getElementById('txt-abs').innerText = absL.join(', ') || '無';
+            document.getElementById('txt-late').innerText = lateL.join(', ') || '無';
+            document.getElementById('st-p').innerText = pres; document.getElementById('st-l').innerText = late;
+            document.getElementById('st-v1').innerText=v1; document.getElementById('st-v2').innerText=v2;
+            document.getElementById('st-v3').innerText=v3; document.getElementById('st-v4').innerText=v4;
+        }
+
+        function copyReport() {
+            const text = `電三孝點名回報：\n缺席/請假：${document.getElementById('txt-abs').innerText}\n遲到：${document.getElementById('txt-late').innerText}\n實到人數：${document.getElementById('d2_v').innerText}`;
+            navigator.clipboard.writeText(text).then(() => alert("回報內容已複製！"));
+        }
+
+        function allPhone() { let p = {}; for(let i=1; i<=41; i++) p[i] = 'y'; localStorage.setItem('e3_pho', JSON.stringify(p)); render(); }
+        function dailyReset() { if(confirm("重置今日數據？")) { localStorage.removeItem('e3_att'); localStorage.removeItem('e3_pho'); localStorage.removeItem('e3_note'); localStorage.removeItem('e3_time'); location.reload(); } }
+        function hardReset() { if(confirm("永久清除累積紀錄？")) { localStorage.clear(); location.reload(); } }
+        
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false}); }, 1000);
+        window.onload = render;
+    </script>
+</body>
+</html>
