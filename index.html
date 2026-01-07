@@ -3,67 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝戰情中心 v101</title>
+    <title>電三孝 v102 科技純白</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
-            --bg: #ffffff; --text: #1c1c1e; --border: #f2f2f7;
+            --bg: #ffffff; --text: #1c1c1e; --border: #f2f2f7; --card: #f8f8fa;
         }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
         
-        .header { width: 90%; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        .dashboard { width: 90%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
-        .dash-card { background: #f9f9fb; padding: 10px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .dash-card big { display: block; font-size: 1.2rem; font-weight: 800; }
-        .dash-card small { font-size: 0.6rem; color: #8e8e93; font-weight: bold; }
+        /* 頂部極簡標題 */
+        .header { width: 92%; padding: 10px 0; display: flex; justify-content: space-between; align-items: flex-end; }
+        h1 { margin: 0; font-size: 1.2rem; font-weight: 900; letter-spacing: 1px; }
 
-        .main-container { width: 95%; height: calc(100vh - 220px); overflow-y: auto; }
+        /* 數據儀表板 */
+        .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+        .dash-card { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
+        .dash-card big { display: block; font-size: 1.1rem; font-weight: 800; }
+        .dash-card small { font-size: 0.55rem; color: #8e8e93; font-weight: bold; }
+
+        /* 自動名單列 */
+        .live-list { width: 92%; background: #fff; padding: 5px 0; font-size: 0.75rem; border-bottom: 1px solid var(--border); margin-bottom: 10px; min-height: 20px; }
+        .tag-red { color: var(--absent); font-weight: bold; margin-right: 10px; }
+        .tag-orange { color: var(--warning); font-weight: bold; margin-right: 10px; }
+
+        .main-container { width: 95%; height: calc(100vh - 250px); overflow-y: auto; }
         .view { display: none; }
         .view.active { display: block; }
 
-        /* 座位區佈局 */
-        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 20px; }
-        .podium-box { grid-column: 4; height: 40px; border: 1px solid #ddd; background: #f2f2f7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #888; letter-spacing: 2px; }
+        /* 縮小化座位佈局 */
+        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 15px; }
+        .podium-box { grid-column: 4; height: 32px; border: 1px dashed #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; color: #bbb; letter-spacing: 2px; }
 
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
-        .s { aspect-ratio: 1.5; background: #fff; border: 1.5px solid #eee; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; cursor: pointer; color: #d1d1d6; transition: 0.1s; }
-        .s small { font-size: 0.55rem; font-weight: normal; margin-top: 1px; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px 6px; }
+        .s { aspect-ratio: 1.4; background: #fff; border: 1px solid #eee; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.9rem; font-weight: 700; cursor: pointer; color: #d1d1d6; transition: 0.1s; }
+        .s small { font-size: 0.45rem; margin-top: 1px; }
 
         /* 狀態色彩 */
-        .present { color: var(--primary); border-color: var(--primary); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255,149,0,0.03); }
-        .absent { color: var(--absent); border-color: var(--absent); background: rgba(255,59,48,0.03); }
-        .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.03); }
-        .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
+        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.4); }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255,149,0,0.05); }
+        .absent { color: var(--absent); border-color: var(--absent); background: rgba(255,59,48,0.05); }
+        .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
+        .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; box-shadow: 0 2px 6px rgba(88,86,214,0.3); }
 
-        /* 分頁欄 */
-        .tab-bar { position: fixed; bottom: 0; width: 100%; background: #fff; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 0 25px; }
-        .tab-btn { border: none; background: none; color: #8e8e93; font-size: 0.75rem; font-weight: bold; cursor: pointer; }
-        .tab-btn.active { color: var(--primary); }
-
-        /* 統計細項 */
-        .stat-group { width: 90%; margin: 10px auto; background: #f9f9fb; border-radius: 15px; padding: 5px; border: 1px solid var(--border); }
-        .stat-row { padding: 12px 15px; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
-        .stat-row:last-child { border: none; }
-        .stat-row b { color: var(--primary); }
+        /* 液態懸浮導航 */
+        .tab-bar { position: fixed; bottom: 25px; width: 85%; max-width: 400px; height: 55px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.4); border-radius: 30px; display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); z-index: 2000; }
+        .tab-btn { border: none; background: none; color: #8e8e93; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .tab-btn.active { color: var(--primary); transform: translateY(-2px); }
 
         /* 選單 Overlay */
-        #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
-        .menu-content { background: #fff; padding: 20px; border-radius: 20px; width: 80%; max-width: 300px; text-align: center; }
-        .menu-btn { display: block; width: 100%; padding: 15px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; background: #f2f2f7; color: var(--text); }
+        #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); z-index: 3000; justify-content: center; align-items: center; }
+        .menu-content { background: #fff; padding: 20px; border-radius: 25px; width: 80%; max-width: 280px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        .menu-btn { display: block; width: 100%; padding: 14px; margin: 8px 0; border: none; border-radius: 12px; font-weight: bold; font-size: 0.95rem; cursor: pointer; background: var(--card); color: var(--text); transition: 0.2s; }
+        .menu-btn:active { transform: scale(0.95); background: #eee; }
     </style>
 </head>
 <body>
 
     <header class="header">
-        <h1 style="margin:0; font-size:1.4rem;">電三孝</h1>
-        <div id="clock" style="font-size:0.8rem; color:#888;">00:00:00</div>
+        <h1>電三孝戰略區</h1>
+        <div id="clock" style="font-size: 0.75rem; font-weight: bold; color: var(--primary);">00:00:00</div>
     </header>
 
     <div class="dashboard">
         <div class="dash-card"><small id="d1_l">出席率</small><big id="d1_v">--</big></div>
         <div class="dash-card"><small id="d2_l">在座</small><big id="d2_v">--</big></div>
-        <div class="dash-card"><small id="d3_l">異常</small><big id="d3_v" style="color:var(--absent)">--</big></div>
+        <div class="dash-card"><small id="d3_l">異常</small><big id="d3_v">--</big></div>
+    </div>
+
+    <div class="live-list" id="live-list-abs">
+        <span class="tag-red">缺/假：</span><span id="list-abs">無</span>
+    </div>
+    <div class="live-list" id="live-list-late" style="border:none;">
+        <span class="tag-orange">遲到：</span><span id="list-late">無</span>
     </div>
 
     <div class="main-container">
@@ -71,7 +82,7 @@
             <div class="podium-row">
                 <div class="s" id="s-13" style="grid-column:2" onclick="handle(13)">13</div>
                 <div class="s" id="s-41" style="grid-column:3" onclick="handle(41)">41</div>
-                <div class="podium-box">講桌</div>
+                <div class="podium-box">PODIUM</div>
                 <div class="s" id="s-28" style="grid-column:5" onclick="handle(28)">28</div>
                 <div class="s" id="s-27" style="grid-column:6" onclick="handle(27)">27</div>
             </div>
@@ -84,33 +95,27 @@
         </div>
 
         <div id="v-sta" class="view">
-            <div class="stat-group">
-                <div class="stat-row"><span>應到人數</span><b>41 人</b></div>
-                <div class="stat-row"><span>實到 (出席)</span><b id="st-p">0</b></div>
-                <div class="stat-row"><span>遲到</span><b id="st-late" style="color:var(--warning)">0</b></div>
-                <div class="stat-row"><span>缺席 (未到)</span><b id="st-absent" style="color:var(--absent)">0</b></div>
-            </div>
-            <div class="stat-group">
-                <div class="stat-row"><span>事假</span><b id="st-v1" style="color:var(--leave)">0</b></div>
-                <div class="stat-row"><span>公假</span><b id="st-v2" style="color:var(--leave)">0</b></div>
-                <div class="stat-row"><span>病假</span><b id="st-v3" style="color:var(--leave)">0</b></div>
-                <div class="stat-row"><span>喪假</span><b id="st-v4" style="color:var(--leave)">0</b></div>
+            <div style="padding: 15px; background: var(--card); border-radius: 15px; border:1px solid var(--border);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">事假 <b id="st-v1">0</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">公假 <b id="st-v2">0</b></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">病假 <b id="st-v3">0</b></div>
+                <div style="display:flex; justify-content:space-between;">喪假 <b id="st-v4">0</b></div>
             </div>
         </div>
 
         <div id="v-set" class="view" style="text-align:center; padding-top:40px;">
-            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:15px 30px; border-radius:12px; font-weight:bold;">重置數據</button>
+            <button onclick="dailyReset()" style="background:var(--absent); color:#fff; border:none; padding:12px 30px; border-radius:30px; font-weight:bold; box-shadow: 0 4px 15px rgba(255,59,48,0.3);">重置系統</button>
         </div>
     </div>
 
     <div id="leave-menu">
         <div class="menu-content">
-            <h3 id="menu-title">請假類型</h3>
+            <h3 style="margin-top:0; font-size:1rem;">選擇假別</h3>
             <button class="menu-btn" onclick="selectLeave('事假')">事假</button>
             <button class="menu-btn" onclick="selectLeave('公假')">公假</button>
             <button class="menu-btn" onclick="selectLeave('病假')">病假</button>
             <button class="menu-btn" onclick="selectLeave('喪假')">喪假</button>
-            <button class="menu-btn" style="background:#fff; border:1px solid #ddd;" onclick="closeMenu()">取消</button>
+            <button class="menu-btn" style="background:#fff; border:1px solid #ddd;" onclick="closeMenu()">返回</button>
         </div>
     </div>
 
@@ -148,21 +153,19 @@
             } else {
                 pho[id] = (pho[id] === 'y') ? 'n' : 'y';
             }
-            saveAndRender(att, pho, note);
+            save(att, pho, note);
         }
 
         function selectLeave(type) {
             let att = JSON.parse(localStorage.getItem('e3_att') || '{}');
             let note = JSON.parse(localStorage.getItem('e3_note') || '{}');
-            att[pendingId] = 'leave';
-            note[pendingId] = type;
-            closeMenu();
-            saveAndRender(att, null, note);
+            att[pendingId] = 'leave'; note[pendingId] = type;
+            closeMenu(); save(att, null, note);
         }
 
         function closeMenu() { document.getElementById('leave-menu').style.display='none'; }
 
-        function saveAndRender(att, pho, note) {
+        function save(att, pho, note) {
             if(att) localStorage.setItem('e3_att', JSON.stringify(att));
             if(pho) localStorage.setItem('e3_pho', JSON.stringify(pho));
             if(note) localStorage.setItem('e3_note', JSON.stringify(note));
@@ -170,10 +173,7 @@
         }
 
         function render() {
-            const att = JSON.parse(localStorage.getItem('e3_att') || '{}');
-            const pho = JSON.parse(localStorage.getItem('e3_pho') || '{}');
-            const note = JSON.parse(localStorage.getItem('e3_note') || '{}');
-
+            const att = JSON.parse(localStorage.getItem('e3_att') || '{}'), pho = JSON.parse(localStorage.getItem('e3_pho') || '{}'), note = JSON.parse(localStorage.getItem('e3_note') || '{}');
             const gAtt = document.getElementById('g-att'); gAtt.innerHTML = "";
             [13,41,28,27].forEach(id => updateS(document.getElementById('s-'+id), id, att, pho, note));
             layout.forEach(id => {
@@ -182,8 +182,6 @@
                 else { el.className="s"; el.innerText=id; el.onclick=()=>handle(id); updateS(el, id, att, pho, note); }
                 gAtt.appendChild(el);
             });
-
-            // 手機同步
             const gPhoPod = document.getElementById('g-pho-pod'); gPhoPod.innerHTML = document.querySelector('#v-att .podium-row').innerHTML;
             const gPhoMain = document.getElementById('g-pho-main'); gPhoMain.innerHTML = "";
             layout.forEach(id => {
@@ -193,7 +191,6 @@
                 gPhoMain.appendChild(el);
             });
             gPhoPod.querySelectorAll('.s').forEach(el => el.onclick = () => handle(el.innerText.split('\n')[0]));
-
             calc(att, pho, note);
         }
 
@@ -203,39 +200,35 @@
             el.className = "s " + s;
             if(curView === 'pho' && pho[id] === 'y') el.classList.add('ph-done');
             if(s === 'leave') {
-                let sm = document.createElement('small'); sm.innerText = note[id] || '請假';
+                let sm = document.createElement('small'); sm.innerText = note[id] || '假';
                 el.innerHTML = id + "<br>"; el.appendChild(sm);
             } else { el.innerText = id; }
         }
 
         function calc(att, pho, note) {
-            let p=0, l=0, a=0, v=0, ph=0;
-            let v1=0, v2=0, v3=0, v4=0;
+            let p=0, l=0, a=0, v=0, ph=0, v1=0, v2=0, v3=0, v4=0, absList=[], lateList=[];
             for(let i=1; i<=41; i++) {
                 let s = att[i] || 'present';
-                if(s==='present') p++; else if(s==='late') l++; else if(s==='absent') a++; else if(s==='leave') v++;
+                if(s==='present') p++; else if(s==='late') { l++; lateList.push(i); } else if(s==='absent') { a++; absList.push(i); } else if(s==='leave') { v++; absList.push(i); }
                 if(pho[i]==='y') ph++;
                 if(s==='leave') {
                     if(note[i]==='事假') v1++; else if(note[i]==='公假') v2++; else if(note[i]==='病假') v3++; else if(note[i]==='喪假') v4++;
                 }
             }
             if(curView === 'att') {
-                document.getElementById('d1_l').innerText="出席率"; document.getElementById('d1_v').innerText=Math.round((p/41)*100)+"%";
-                document.getElementById('d2_l').innerText="在座"; document.getElementById('d2_v').innerText=p;
-                document.getElementById('d3_l').innerText="異常"; document.getElementById('d3_v').innerText=l+a+v;
+                document.getElementById('d1_v').innerText=Math.round((p/41)*100)+"%";
+                document.getElementById('d2_v').innerText=p; document.getElementById('d3_v').innerText=l+a+v;
             } else {
-                document.getElementById('d1_l').innerText="繳交率"; document.getElementById('d1_v').innerText=Math.round((ph/41)*100)+"%";
-                document.getElementById('d2_l').innerText="已交"; document.getElementById('d2_v').innerText=ph;
-                document.getElementById('d3_l').innerText="未交"; document.getElementById('d3_v').innerText=41-ph;
+                document.getElementById('d1_v').innerText=Math.round((ph/41)*100)+"%";
+                document.getElementById('d2_v').innerText=ph; document.getElementById('d3_v').innerText=41-ph;
             }
-            document.getElementById('st-p').innerText=p+" 人";
-            document.getElementById('st-late').innerText=l+" 人";
-            document.getElementById('st-absent').innerText=a+" 人";
-            document.getElementById('st-v1').innerText=v1+" 人"; document.getElementById('st-v2').innerText=v2+" 人";
-            document.getElementById('st-v3').innerText=v3+" 人"; document.getElementById('st-v4').innerText=v4+" 人";
+            document.getElementById('list-abs').innerText = absList.length ? absList.sort((a,b)=>a-b).join(', ') : '無';
+            document.getElementById('list-late').innerText = lateList.length ? lateList.sort((a,b)=>a-b).join(', ') : '無';
+            document.getElementById('st-v1').innerText=v1; document.getElementById('st-v2').innerText=v2;
+            document.getElementById('st-v3').innerText=v3; document.getElementById('st-v4').innerText=v4;
         }
 
-        function dailyReset() { if(confirm("確定重置數據？")) { localStorage.clear(); location.reload(); } }
+        function dailyReset() { if(confirm("重置數據？")) { localStorage.clear(); location.reload(); } }
         setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
         window.onload = render;
     </script>
