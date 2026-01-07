@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝指揮中心</title>
+    <title>電三孝點名系統 v80</title>
     <style>
         :root {
             --primary: #00f2ff; --warning: #ffb700; --accent: #ff0055;
@@ -12,38 +12,38 @@
         body { margin: 0; background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
         .glass-panel { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 20px; }
         
-        .header { width: 90%; max-width: 600px; padding: 25px 0 10px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .header { width: 90%; max-width: 600px; padding: 20px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
         #title-area { display: flex; flex-direction: column; }
-        #main-title { font-size: 2.2rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 15px var(--primary); line-height: 1; }
-        #live-clock { font-size: 0.9rem; color: var(--primary); font-family: monospace; margin-top: 8px; opacity: 0.8; letter-spacing: 1px; }
+        #main-title { font-size: 2rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 15px var(--primary); }
+        #live-clock { font-size: 0.85rem; color: var(--primary); font-family: monospace; margin-top: 5px; opacity: 0.8; }
 
-        .random-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); padding: 10px 15px; border-radius: 15px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .random-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
 
-        .marquee-box { width: 90%; max-width: 600px; padding: 10px; margin: 15px 0; overflow: hidden; white-space: nowrap; border-left: 4px solid var(--primary); background: rgba(0, 242, 255, 0.05); border-radius: 4px; cursor: pointer; }
+        .marquee-box { width: 90%; max-width: 600px; padding: 10px; margin: 10px 0; overflow: hidden; white-space: nowrap; border-left: 4px solid var(--primary); background: rgba(0, 242, 255, 0.05); border-radius: 4px; cursor: pointer; }
         .marquee-text { display: inline-block; animation: scroll 18s linear infinite; font-size: 0.85rem; color: var(--primary); }
         @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 
-        .dashboard { width: 90%; max-width: 600px; padding: 20px; display: flex; justify-content: space-around; margin-bottom: 20px; }
-        .dash-item { text-align: center; }
-        .dash-item big { display: block; font-size: 1.8rem; font-weight: 900; color: var(--primary); }
-        .dash-item small { font-size: 0.65rem; opacity: 0.5; letter-spacing: 1px; }
+        .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 15px; }
+        .dash-item { text-align: center; cursor: pointer; }
+        .dash-item big { display: block; font-size: 1.6rem; font-weight: 900; color: var(--primary); }
+        .dash-item small { font-size: 0.6rem; opacity: 0.5; letter-spacing: 1px; }
 
-        .page { width: 95%; max-width: 600px; padding-bottom: 120px; }
-        .chart-wrap { position: relative; width: 100%; padding: 10px 0; }
-        .podium { width: 100%; height: 35px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: rgba(255,255,255,0.2); letter-spacing: 10px; }
+        .page { width: 95%; max-width: 600px; padding-bottom: 100px; }
+        .chart-wrap { position: relative; width: 100%; padding: 5px 0; }
+        .podium { width: 100%; height: 35px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: rgba(255,255,255,0.1); letter-spacing: 8px; }
         
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
-        .s { aspect-ratio: 1.6; border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; background: rgba(255,255,255,0.02); position: relative; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
+        .s { aspect-ratio: 1.6; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: 0.1s; background: rgba(255,255,255,0.02); position: relative; }
         
         .present { color: var(--primary); border-color: rgba(0, 242, 255, 0.2); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.15); }
-        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.15); }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.1); }
+        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); }
 
-        .spec { position: absolute; top: 10px; width: calc((100% - 48px) / 7); }
+        .spec { position: absolute; top: 5px; width: calc((100% - 48px) / 7); }
         #s-13 { left: calc(((100% - 48px) / 7) + 8px); }
         #s-41 { left: calc((((100% - 48px) / 7) + 8px) * 2); }
 
-        .nav-footer { position: fixed; bottom: 30px; width: 90%; max-width: 500px; display: flex; padding: 10px; border-radius: 50px; justify-content: center; }
+        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 10px; border-radius: 50px; justify-content: center; }
         .reset-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; }
     </style>
 </head>
@@ -52,19 +52,19 @@
     <div class="header">
         <div id="title-area">
             <span id="main-title">電三孝</span>
-            <div id="live-clock">2026/01/07 22:53:00</div>
+            <div id="live-clock">0000/00/00 00:00:00</div>
         </div>
         <button class="random-btn" onclick="randomPick()">🎯 隨機抽籤</button>
     </div>
 
     <div class="marquee-box glass-panel" onclick="editAnnounce()">
-        <div class="marquee-text" id="announcement">⚡ 指令：點擊此處編輯今日重點... 例如：第一節小考、下午記得帶實習服... </div>
+        <div class="marquee-text" id="announcement">⚡ 點擊此處編輯今日公告... </div>
     </div>
 
     <div class="dashboard glass-panel">
         <div class="dash-item"><small>達成率</small><big id="rate-val">100%</big></div>
         <div class="dash-item"><small>在座</small><big id="p-num">41</big></div>
-        <div class="dash-item"><small>缺假</small><big id="a-num" style="color:var(--accent)">0</big></div>
+        <div class="dash-item" onclick="showAbsentList()"><small>缺/假</small><big id="a-num" style="color:var(--accent)">0</big></div>
     </div>
 
     <div class="page">
@@ -99,3 +99,104 @@
             const grid = document.getElementById('main-grid');
             const data = JSON.parse(localStorage.getItem('e3_st') || '{}');
             const savedAnn = localStorage.getItem('e3_ann');
+            if(savedAnn) document.getElementById('announcement').innerText = "⚡ " + savedAnn;
+
+            [13, 41].forEach(id => {
+                const el = document.getElementById(`s-${id}`);
+                el.className = `s spec ${data[id] || 'present'}`;
+            });
+
+            layout.forEach(id => {
+                if (id === 0) {
+                    grid.appendChild(document.createElement('div')).style.opacity = "0";
+                } else {
+                    const el = document.createElement('div');
+                    el.className = `s ${data[id] || 'present'}`;
+                    el.id = `s-${id}`;
+                    el.innerText = id;
+                    el.onclick = () => t(id);
+                    grid.appendChild(el);
+                }
+            });
+
+            setInterval(updateClock, 1000);
+            updateClock();
+            updateDashboard();
+        }
+
+        function t(id) {
+            const el = document.getElementById(`s-${id}`);
+            const isSp = el.classList.contains('spec');
+            if(el.classList.contains('present')) el.className = `s ${isSp?'spec':''} late`;
+            else if(el.classList.contains('late')) el.className = `s ${isSp?'spec':''} absent`;
+            else el.className = `s ${isSp?'spec':''} present`;
+            saveData();
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            const allSeats = document.querySelectorAll('.s');
+            let p = 0, a = 0;
+            allSeats.forEach(el => {
+                if(el.classList.contains('present')) p++;
+                if(el.classList.contains('late') || el.classList.contains('absent')) a++;
+            });
+            document.getElementById('p-num').innerText = p;
+            document.getElementById('a-num').innerText = a;
+            document.getElementById('rate-val').innerText = Math.round((p / TOTAL_SEATS) * 100) + "%";
+        }
+
+        function showAbsentList() {
+            const list = Array.from(document.querySelectorAll('.s.late, .s.absent'))
+                          .map(el => el.id ? el.id.split('-')[1] : el.innerText)
+                          .sort((a,b) => a-b);
+            if(list.length === 0) alert("今日無人缺席，全體在座！");
+            else alert("目前的缺席/遲到名單：\n座號 " + list.join(', '));
+        }
+
+        function saveData() {
+            const state = {};
+            document.querySelectorAll('.s').forEach(el => {
+                const id = el.id ? el.id.split('-')[1] : el.innerText;
+                if(id && id !== "undefined") {
+                    state[id] = el.classList.contains('late') ? 'late' : (el.classList.contains('absent') ? 'absent' : 'present');
+                }
+            });
+            localStorage.setItem('e3_st', JSON.stringify(state));
+        }
+
+        function randomPick() {
+            const presents = Array.from(document.querySelectorAll('.s.present')).map(el => el.id ? el.id.split('-')[1] : el.innerText);
+            if(presents.length === 0) return alert("目前無人在座");
+            let count = 0;
+            const shuffle = setInterval(() => {
+                document.getElementById('main-title').innerText = presents[Math.floor(Math.random() * presents.length)];
+                document.getElementById('main-title').style.color = "var(--warning)";
+                if(++count > 12) {
+                    clearInterval(shuffle);
+                    alert("🎯 抽籤結果：座號 " + document.getElementById('main-title').innerText);
+                    document.getElementById('main-title').innerText = "電三孝";
+                    document.getElementById('main-title').style.color = "#fff";
+                }
+            }, 80);
+        }
+
+        function editAnnounce() {
+            const msg = prompt("修改今日公告：", document.getElementById('announcement').innerText.replace('⚡ ', ''));
+            if(msg !== null) {
+                document.getElementById('announcement').innerText = "⚡ " + msg;
+                localStorage.setItem('e3_ann', msg);
+            }
+        }
+
+        function dailyReset() {
+            if(confirm("重置今日數據？")) {
+                localStorage.removeItem('e3_st');
+                location.reload();
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
