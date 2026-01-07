@@ -3,48 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝點名系統 v80</title>
+    <title>電三孝指揮中心 v84</title>
     <style>
         :root {
-            --primary: #00f2ff; --warning: #ffb700; --accent: #ff0055;
-            --bg: #05070a; --glass: rgba(255, 255, 255, 0.03); --border: rgba(255, 255, 255, 0.1);
+            --primary: #007aff; /* iOS 專業藍 */
+            --warning: #ff9500; /* 暖橘 */
+            --accent: #ff3b30;  /* 警示紅 */
+            --bg: #f2f2f7;      /* 淺灰背景 */
+            --glass: rgba(255, 255, 255, 0.7);
+            --border: rgba(0, 0, 0, 0.05);
+            --text: #1c1c1e;
         }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
-        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 20px; }
+        body { margin: 0; background: radial-gradient(circle at center, #ffffff 0%, var(--bg) 100%); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
+        
+        /* 磨砂玻璃面板 */
+        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
         
         .header { width: 90%; max-width: 600px; padding: 20px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
         #title-area { display: flex; flex-direction: column; }
-        #main-title { font-size: 2rem; font-weight: 900; letter-spacing: 2px; text-shadow: 0 0 15px var(--primary); }
-        #live-clock { font-size: 0.85rem; color: var(--primary); font-family: monospace; margin-top: 5px; opacity: 0.8; }
+        #main-title { font-size: 2rem; font-weight: 800; letter-spacing: 1px; color: var(--text); }
+        #live-clock { font-size: 0.85rem; color: var(--primary); font-family: monospace; margin-top: 5px; font-weight: bold; }
 
-        .random-btn { background: rgba(0, 242, 255, 0.1); border: 1px solid var(--primary); color: var(--primary); padding: 8px 12px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: bold; }
+        .random-btn { background: var(--primary); color: #fff; border: none; padding: 8px 16px; border-radius: 12px; cursor: pointer; font-size: 0.8rem; font-weight: bold; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.2); }
 
-        .marquee-box { width: 90%; max-width: 600px; padding: 10px; margin: 10px 0; overflow: hidden; white-space: nowrap; border-left: 4px solid var(--primary); background: rgba(0, 242, 255, 0.05); border-radius: 4px; cursor: pointer; }
-        .marquee-text { display: inline-block; animation: scroll 18s linear infinite; font-size: 0.85rem; color: var(--primary); }
+        .marquee-box { width: 90%; max-width: 600px; padding: 10px; margin: 10px 0; overflow: hidden; white-space: nowrap; border-left: 4px solid var(--primary); background: rgba(0, 122, 255, 0.05); border-radius: 4px; cursor: pointer; }
+        .marquee-text { display: inline-block; animation: scroll 18s linear infinite; font-size: 0.85rem; color: var(--primary); font-weight: 500; }
         @keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 
         .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .dash-item { text-align: center; cursor: pointer; }
-        .dash-item big { display: block; font-size: 1.6rem; font-weight: 900; color: var(--primary); }
-        .dash-item small { font-size: 0.6rem; opacity: 0.5; letter-spacing: 1px; }
+        .dash-item { text-align: center; }
+        .dash-item big { display: block; font-size: 1.6rem; font-weight: 800; color: var(--text); }
+        .dash-item small { font-size: 0.6rem; opacity: 0.5; letter-spacing: 1px; font-weight: bold; }
 
-        .page { width: 95%; max-width: 600px; padding-bottom: 100px; }
-        .chart-wrap { position: relative; width: 100%; padding: 5px 0; }
-        .podium { width: 100%; height: 35px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 35px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: rgba(255,255,255,0.1); letter-spacing: 8px; }
-        
+        /* 分頁 */
+        .page { width: 95%; max-width: 600px; display: none; padding-bottom: 120px; height: calc(100vh - 350px); overflow-y: auto; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .chart-wrap { position: relative; width: 100%; padding-top: 50px; } 
+        .podium { width: 100%; height: 35px; background: rgba(0,0,0,0.02); border-radius: 10px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aaa; letter-spacing: 8px; }
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; }
-        .s { aspect-ratio: 1.6; border: 1px solid var(--border); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: 0.1s; background: rgba(255,255,255,0.02); position: relative; }
         
-        .present { color: var(--primary); border-color: rgba(0, 242, 255, 0.2); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.1); }
-        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); }
-
-        .spec { position: absolute; top: 5px; width: calc((100% - 48px) / 7); }
+        /* 座位樣式 */
+        .s { aspect-ratio: 1.6; border: 1px solid rgba(0,0,0,0.05); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: 0.2s; background: #fff; font-weight: 600; color: #8e8e93; }
+        .spec { position: absolute; top: 0px; z-index: 10; width: calc((100% - 48px) / 7); }
         #s-13 { left: calc(((100% - 48px) / 7) + 8px); }
         #s-41 { left: calc((((100% - 48px) / 7) + 8px) * 2); }
+        
+        /* 狀態色彩 */
+        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.2); background: #fff; }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 149, 0, 0.05); }
+        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 59, 48, 0.05); }
 
-        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 10px; border-radius: 50px; justify-content: center; }
-        .reset-btn { background: transparent; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.3); padding: 8px 20px; border-radius: 20px; font-size: 0.7rem; cursor: pointer; }
+        .row { padding: 14px 10px; border-bottom: 1px solid rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; }
+
+        /* 底部導航 */
+        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 6px; border-radius: 50px; justify-content: space-around; gap: 5px; background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .nav-btn { flex: 1; padding: 12px; border: none; background: transparent; color: #8e8e93; font-weight: bold; cursor: pointer; border-radius: 40px; transition: 0.3s; font-size: 0.9rem; }
+        .nav-btn.btn-active { background: #fff; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+        .reset-btn { background: none; border: 1px solid rgba(0,0,0,0.05); color: #aaa; padding: 10px; border-radius: 12px; width: 100%; margin-top: 20px; font-size: 0.7rem; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -54,7 +72,7 @@
             <span id="main-title">電三孝</span>
             <div id="live-clock">0000/00/00 00:00:00</div>
         </div>
-        <button class="random-btn" onclick="randomPick()">🎯 隨機抽籤</button>
+        <button class="random-btn" onclick="randomPick()">🎯 抽籤</button>
     </div>
 
     <div class="marquee-box glass-panel" onclick="editAnnounce()">
@@ -64,25 +82,50 @@
     <div class="dashboard glass-panel">
         <div class="dash-item"><small>達成率</small><big id="rate-val">100%</big></div>
         <div class="dash-item"><small>在座</small><big id="p-num">41</big></div>
-        <div class="dash-item" onclick="showAbsentList()"><small>缺/假</small><big id="a-num" style="color:var(--accent)">0</big></div>
+        <div class="dash-item"><small>缺/遲</small><big id="a-num" style="color:var(--accent)">0</big></div>
     </div>
 
-    <div class="page">
+    <div id="p1" class="page active">
         <div class="chart-wrap">
-            <div class="podium">COMMANDER PODIUM</div>
             <div class="s spec present" id="s-13" onclick="t(13)">13</div>
             <div class="s spec present" id="s-41" onclick="t(41)">41</div>
-            <div class="grid" id="main-grid"></div>
+            <div class="podium">COMMANDER PODIUM</div>
+            <div id="main-grid" class="grid"></div>
+        </div>
+        <button onclick="dailyReset()" class="reset-btn">🔄 重置今日點名數據</button>
+    </div>
+
+    <div id="p2" class="page">
+        <div class="glass-panel" style="padding: 20px;">
+            <h3 style="margin:0 0 15px 0; font-size:1rem;">⏱ 今日點名日誌</h3>
+            <div id="log-list"></div>
         </div>
     </div>
 
-    <nav class="nav-footer glass-panel">
-        <button class="reset-btn" onclick="dailyReset()">🔄 RESET DATA</button>
+    <div id="p3" class="page">
+        <div class="glass-panel" style="padding: 20px;">
+            <h3 style="margin:0 0 15px 0; font-size:1rem;">📊 累計遲到排行</h3>
+            <div id="stat-list"></div>
+            <button onclick="clearStats()" style="width:100%; margin-top:30px; background:none; border:1px solid rgba(255,0,0,0.1); color:rgba(255,0,0,0.3); padding:8px; border-radius:10px; font-size:0.7rem;">清空累計數據</button>
+        </div>
+    </div>
+
+    <nav class="nav-footer">
+        <button class="nav-btn btn-active" onclick="go(1)">點名</button>
+        <button class="nav-btn" onclick="go(2)">日誌</button>
+        <button class="nav-btn" onclick="go(3)">排行</button>
     </nav>
 
     <script>
         const layout = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
         const TOTAL_SEATS = 41;
+
+        function go(n) {
+            document.querySelectorAll('.page').forEach((p, i) => p.classList.toggle('active', i+1 === n));
+            document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('btn-active', i+1 === n));
+            if(n===2) renderLogs();
+            if(n===3) renderStats();
+        }
 
         function updateClock() {
             const now = new Date();
@@ -97,6 +140,7 @@
 
         function init() {
             const grid = document.getElementById('main-grid');
+            grid.innerHTML = "";
             const data = JSON.parse(localStorage.getItem('e3_st') || '{}');
             const savedAnn = localStorage.getItem('e3_ann');
             if(savedAnn) document.getElementById('announcement').innerText = "⚡ " + savedAnn;
@@ -127,31 +171,30 @@
         function t(id) {
             const el = document.getElementById(`s-${id}`);
             const isSp = el.classList.contains('spec');
-            if(el.classList.contains('present')) el.className = `s ${isSp?'spec':''} late`;
-            else if(el.classList.contains('late')) el.className = `s ${isSp?'spec':''} absent`;
-            else el.className = `s ${isSp?'spec':''} present`;
+            const time = new Date().toLocaleTimeString('zh-TW', {hour12:false});
+            
+            if(el.classList.contains('present')) {
+                el.className = `s ${isSp?'spec':''} late`;
+                addLog(id, time); addStat(id);
+            } else if(el.classList.contains('late')) {
+                el.className = `s ${isSp?'spec':''} absent`;
+            } else {
+                el.className = `s ${isSp?'spec':''} present`;
+            }
             saveData();
             updateDashboard();
         }
 
         function updateDashboard() {
-            const allSeats = document.querySelectorAll('.s');
+            const all = document.querySelectorAll('.s');
             let p = 0, a = 0;
-            allSeats.forEach(el => {
+            all.forEach(el => {
                 if(el.classList.contains('present')) p++;
                 if(el.classList.contains('late') || el.classList.contains('absent')) a++;
             });
             document.getElementById('p-num').innerText = p;
             document.getElementById('a-num').innerText = a;
             document.getElementById('rate-val').innerText = Math.round((p / TOTAL_SEATS) * 100) + "%";
-        }
-
-        function showAbsentList() {
-            const list = Array.from(document.querySelectorAll('.s.late, .s.absent'))
-                          .map(el => el.id ? el.id.split('-')[1] : el.innerText)
-                          .sort((a,b) => a-b);
-            if(list.length === 0) alert("今日無人缺席，全體在座！");
-            else alert("目前的缺席/遲到名單：\n座號 " + list.join(', '));
         }
 
         function saveData() {
@@ -165,24 +208,47 @@
             localStorage.setItem('e3_st', JSON.stringify(state));
         }
 
+        function addLog(id, time) {
+            let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+            logs.unshift({id: id, time: time});
+            localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
+        }
+
+        function renderLogs() {
+            const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
+            document.getElementById('log-list').innerHTML = logs.map(o => `<div class="row"><span>座號 ${o.id}</span><span style="color:var(--warning); font-weight:bold;">${o.time}</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">尚無紀錄</div>';
+        }
+
+        function addStat(id) {
+            let stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+            stats[id] = (stats[id] || 0) + 1;
+            localStorage.setItem('e3_stats', JSON.stringify(stats));
+        }
+
+        function renderStats() {
+            const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+            const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
+            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `<div class="row"><span>座號 ${id}</span><span style="font-weight:bold;">${count} 次</span></div>`).join('') || '<div style="opacity:0.2;text-align:center;padding:20px;">尚無數據</div>';
+        }
+
         function randomPick() {
-            const presents = Array.from(document.querySelectorAll('.s.present')).map(el => el.id ? el.id.split('-')[1] : el.innerText);
-            if(presents.length === 0) return alert("目前無人在座");
+            const list = Array.from(document.querySelectorAll('.s.present')).map(el => el.id ? el.id.split('-')[1] : el.innerText);
+            if(list.length === 0) return alert("無人在座");
             let count = 0;
             const shuffle = setInterval(() => {
-                document.getElementById('main-title').innerText = presents[Math.floor(Math.random() * presents.length)];
+                document.getElementById('main-title').innerText = list[Math.floor(Math.random() * list.length)];
                 document.getElementById('main-title').style.color = "var(--warning)";
                 if(++count > 12) {
                     clearInterval(shuffle);
-                    alert("🎯 抽籤結果：座號 " + document.getElementById('main-title').innerText);
+                    alert("🎯 結果：座號 " + document.getElementById('main-title').innerText);
                     document.getElementById('main-title').innerText = "電三孝";
-                    document.getElementById('main-title').style.color = "#fff";
+                    document.getElementById('main-title').style.color = "var(--text)";
                 }
             }, 80);
         }
 
         function editAnnounce() {
-            const msg = prompt("修改今日公告：", document.getElementById('announcement').innerText.replace('⚡ ', ''));
+            const msg = prompt("修改公告：", document.getElementById('announcement').innerText.replace('⚡ ', ''));
             if(msg !== null) {
                 document.getElementById('announcement').innerText = "⚡ " + msg;
                 localStorage.setItem('e3_ann', msg);
@@ -190,9 +256,15 @@
         }
 
         function dailyReset() {
-            if(confirm("重置今日數據？")) {
-                localStorage.removeItem('e3_st');
+            if(confirm("確定重置今日數據？")) {
+                localStorage.removeItem('e3_st'); localStorage.removeItem('e3_lg');
                 location.reload();
+            }
+        }
+
+        function clearStats() {
+            if(confirm("確定永久清除所有累積數據？")) {
+                localStorage.removeItem('e3_stats'); renderStats();
             }
         }
 
