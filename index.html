@@ -3,98 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝戰術中心 v96</title>
+    <title>電三孝點名系統 v98</title>
     <style>
         :root {
-            --primary: #00f2ff; --warning: #ffb700; --accent: #ff0055; --phone: #bd00ff;
-            --bg: #05070a; --glass: rgba(20, 25, 35, 0.9); --border: rgba(255, 255, 255, 0.1);
+            --primary: #007aff; --warning: #ff9500; --accent: #ff3b30; --phone: #5856d6;
+            --bg: #f2f2f7; --glass: rgba(255, 255, 255, 0.85); --text: #1c1c1e;
         }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        body { margin: 0; background: radial-gradient(circle at center, #ffffff 0%, var(--bg) 100%); color: var(--text); font-family: -apple-system, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow: hidden; }
+        .glass-panel { background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255,255,255,0.4); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         
-        .main-container { width: 98vw; height: 95vh; max-width: 1100px; display: grid; grid-template-columns: 260px 1fr; gap: 15px; }
-
-        .sidebar { display: flex; flex-direction: column; gap: 15px; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 20px; padding: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .header { width: 90%; max-width: 600px; padding: 20px 0 10px; display: flex; justify-content: space-between; align-items: flex-end; }
+        #main-title { font-size: 2rem; font-weight: 800; color: var(--text); }
         
-        #main-title { font-size: 1.8rem; font-weight: 900; color: var(--primary); text-shadow: 0 0 15px rgba(0,242,255,0.5); }
-        .stat-box { margin-bottom: 15px; padding: 10px; border-left: 3px solid var(--primary); background: rgba(0,242,255,0.05); }
-        .stat-box big { font-size: 2rem; font-weight: 900; display: block; }
+        .mode-switch { background: #e5e5ea; padding: 4px; border-radius: 14px; display: flex; gap: 4px; }
+        .m-btn { border: none; padding: 8px 14px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; cursor: pointer; color: #8e8e93; background: transparent; transition: 0.2s; }
+        .m-btn.active { background: #fff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
 
-        .content { display: flex; flex-direction: column; gap: 15px; }
-        .m-btn { flex: 1; padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .m-btn.active { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
+        .dashboard { width: 90%; max-width: 600px; padding: 15px; display: flex; justify-content: space-around; margin-bottom: 15px; }
+        .dash-item { text-align: center; }
+        .dash-item big { display: block; font-size: 1.6rem; font-weight: 800; color: var(--text); }
+        .dash-item small { font-size: 0.6rem; opacity: 0.5; font-weight: bold; }
 
-        .board { flex-grow: 1; padding: 20px; overflow-y: auto; }
+        .page { width: 95%; max-width: 600px; padding-bottom: 100px; height: calc(100vh - 320px); overflow-y: auto; }
+        .chart-wrap { position: relative; width: 100%; padding-top: 10px; } 
         
-        /* 講桌區 (只有 13, 41) */
-        .podium-area { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-bottom: 20px; }
-        .podium-box { grid-column: 4; border: 1px dashed #333; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #444; height: 45px; }
+        /* 講桌第一排護法 (28, 13, Podium, 41, 27) */
+        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px 8px; margin-bottom: 20px; align-items: center; }
+        .podium-box { grid-column: 4; height: 40px; border: 1px dashed rgba(0,0,0,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aaa; letter-spacing: 4px; }
 
-        /* 主網格 */
-        .main-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-
-        .s { aspect-ratio: 1.5; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; cursor: pointer; transition: 0.2s; color: #444; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
+        .s { aspect-ratio: 1.6; border: 1px solid rgba(0,0,0,0.05); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; cursor: pointer; transition: 0.1s; background: #fff; font-weight: 600; color: #8e8e93; position: relative; }
         
-        .present { color: var(--primary); border-color: var(--primary); box-shadow: inset 0 0 10px rgba(0,242,255,0.1); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 183, 0, 0.1); }
-        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 0, 85, 0.1); }
-        .leave { color: var(--phone); border-color: var(--phone); background: rgba(189, 0, 255, 0.1); }
+        /* 色彩狀態 */
+        .present { color: var(--primary); border-color: rgba(0, 122, 255, 0.2); }
+        .late { color: var(--warning); border-color: var(--warning); background: rgba(255, 149, 0, 0.05); }
+        .absent { color: var(--accent); border-color: var(--accent); background: rgba(255, 59, 48, 0.05); }
+        .leave { color: #bd00ff; border-color: #bd00ff; background: rgba(189, 0, 255, 0.05); }
+        
+        /* 手機模式樣式 */
+        .phone-mode .s.ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; box-shadow: 0 4px 12px rgba(88, 86, 214, 0.2); }
 
-        .phone-mode .s.ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; box-shadow: 0 0 15px var(--phone); }
+        .nav-footer { position: fixed; bottom: 25px; width: 90%; max-width: 500px; display: flex; padding: 10px; border-radius: 50px; justify-content: center; }
+        .reset-btn { background: none; border: none; color: #ccc; font-size: 0.7rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="glass-card" style="height: 100%; display: flex; flex-direction: column;">
-                <div id="main-title">電三孝</div>
-                <div style="font-size:0.8rem; opacity:0.5; margin-bottom:20px;">COMMAND CENTER</div>
-                <div class="stat-box"><small>達成率</small><big id="v1">100%</big></div>
-                <div class="stat-box"><small>在座</small><big id="v2">41</big></div>
-                <div class="stat-box" style="border-color:var(--accent);"><small>異常</small><big id="v3" style="color:var(--accent)">0</big></div>
-                <button class="m-btn" style="background:var(--primary); color:#000; margin-top:auto;" onclick="randomPick()">🎯 隨機抽籤</button>
-                <button class="m-btn" style="margin-top:10px; font-size:0.7rem;" onclick="dailyReset()">RESET DATA</button>
-            </div>
-        </div>
-
-        <div class="content">
-            <div style="display:flex; gap:10px;">
-                <button class="m-btn active" id="b-att" onclick="setMode('attend')">點名模式</button>
-                <button class="m-btn" id="b-pho" onclick="setMode('phone')">收手機模式</button>
-            </div>
-
-            <div class="glass-card board" id="board-container">
-                <div class="podium-area">
-                    <div style="grid-column:3" class="s present" id="s-13" onclick="handleTap(13)">13</div>
-                    <div class="podium-box">PODIUM</div>
-                    <div style="grid-column:5" class="s present" id="s-41" onclick="handleTap(41)">41</div>
-                </div>
-
-                <div class="main-grid" id="main-grid"></div>
-            </div>
+    <div class="header">
+        <span id="main-title">電三孝</span>
+        <div class="mode-switch glass-panel">
+            <button class="m-btn active" id="b-att" onclick="setMode('attend')">點名</button>
+            <button class="m-btn" id="b-pho" onclick="setMode('phone')">手機</button>
         </div>
     </div>
 
+    <div class="dashboard glass-panel">
+        <div class="dash-item"><small id="l1">出席率</small><big id="v1">100%</big></div>
+        <div class="dash-item"><small id="l2">在座</small><big id="v2">41</big></div>
+        <div class="dash-item"><small id="l3">缺假</small><big id="v3" style="color:var(--accent)">0</big></div>
+    </div>
+
+    <div class="page active">
+        <div class="chart-wrap" id="board-container">
+            <div class="podium-row">
+                <div class="s present" id="s-28" style="grid-column: 2" onclick="h(28)">28</div>
+                <div class="s present" id="s-13" style="grid-column: 3" onclick="h(13)">13</div>
+                <div class="podium-box">講桌</div>
+                <div class="s present" id="s-41" style="grid-column: 5" onclick="h(41)">41</div>
+                <div class="s present" id="s-27" style="grid-column: 6" onclick="h(27)">27</div>
+            </div>
+
+            <div id="main-grid" class="grid"></div>
+        </div>
+    </div>
+
+    <nav class="nav-footer glass-panel">
+        <button class="reset-btn" onclick="dailyReset()">🔄 RESET DATA</button>
+    </nav>
+
     <script>
-        // 精確匹配圖片：2 號在網格第一位，28, 27 在中間
-        const gridSeats = [
+        const layout = [
             2, 12, 23, 25, 34, 3, 1,
             33, 39, 4, 19, 15, 18, 24,
             30, 40, 5, 16, 35, 29, 9,
             36, 32, 14, 37, 17, 31, 8,
-            7, 22, 11, 26, 38, 28, 27,
-            0, 0, 0, 0, 0, 0, 0 // 補齊
+            7, 22, 11, 26, 38, 0, 0, 0, 0
         ];
 
-        let currentMode = 'attend';
+        let mode = 'attend';
 
         function setMode(m) {
-            currentMode = m;
+            mode = m;
             document.getElementById('b-att').classList.toggle('active', m === 'attend');
             document.getElementById('b-pho').classList.toggle('active', m === 'phone');
             document.getElementById('board-container').classList.toggle('phone-mode', m === 'phone');
-            updateDashboard();
+            updateDash();
         }
 
         function init() {
@@ -103,33 +106,34 @@
             const att = JSON.parse(localStorage.getItem('e3_st') || '{}');
             const pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
 
-            // 初始化講桌兩翼
-            [13, 41].forEach(id => renderSeat(document.getElementById(`s-${id}`), id, att, pho));
+            // 初始化講桌第一排
+            [28, 13, 41, 27].forEach(id => renderS(document.getElementById(`s-${id}`), id, att, pho));
 
-            // 初始化主網格 (包含 2 號)
-            gridSeats.forEach(id => {
+            // 初始化主網格
+            layout.forEach(id => {
                 const el = document.createElement('div');
                 if (id === 0) { el.style.opacity = "0"; }
                 else {
                     el.className = "s"; el.id = `s-${id}`; el.innerText = id;
-                    el.onclick = () => handleTap(id);
-                    renderSeat(el, id, att, pho);
+                    el.onclick = () => h(id);
+                    renderS(el, id, att, pho);
+                    grid.appendChild(el);
                 }
-                grid.appendChild(el);
             });
-            updateDashboard();
+            updateDash();
         }
 
-        function renderSeat(el, id, att, pho) {
+        function renderS(el, id, att, pho) {
             if(!el) return;
             el.className = "s " + (att[id] || 'present');
             if(pho[id] === 'y') el.classList.add('ph-done');
         }
 
-        function handleTap(id) {
+        function h(id) {
             let att = JSON.parse(localStorage.getItem('e3_st') || '{}');
             let pho = JSON.parse(localStorage.getItem('e3_ph') || '{}');
-            if(currentMode === 'attend') {
+
+            if(mode === 'attend') {
                 const s = att[id] || 'present';
                 if(s === 'present') att[id] = 'late';
                 else if(s === 'late') att[id] = 'absent';
@@ -143,7 +147,7 @@
             init();
         }
 
-        function updateDashboard() {
+        function updateDash() {
             const seats = document.querySelectorAll('.s:not([style*="opacity:0"])');
             let p = 0, ph = 0, a = 0;
             seats.forEach(s => {
@@ -153,16 +157,17 @@
             });
             const total = 41;
             document.getElementById('v1').innerText = Math.round((p/total)*100) + "%";
-            document.getElementById('v2').innerText = (currentMode === 'attend') ? p : ph;
-            document.getElementById('v3').innerText = (currentMode === 'attend') ? a : (total - ph);
+            document.getElementById('v2').innerText = (mode === 'attend') ? p : ph;
+            document.getElementById('v3').innerText = (mode === 'attend') ? a : (total - ph);
+            
+            if(mode === 'attend') {
+                document.getElementById('l1').innerText = "出席率"; document.getElementById('l2').innerText = "在座"; document.getElementById('l3').innerText = "缺假";
+            } else {
+                document.getElementById('l1').innerText = "繳交率"; document.getElementById('l2').innerText = "已交"; document.getElementById('l3').innerText = "未交";
+            }
         }
 
-        function randomPick() {
-            const list = Array.from(document.querySelectorAll('.s.present')).map(s => s.innerText);
-            if(list.length) alert("🎯 抽中座號：" + list[Math.floor(Math.random() * list.length)]);
-        }
-
-        function dailyReset() { if(confirm("確定重置？")) { localStorage.clear(); location.reload(); } }
+        function dailyReset() { if(confirm("重置數據？")) { localStorage.clear(); location.reload(); } }
         window.onload = init;
     </script>
 </body>
