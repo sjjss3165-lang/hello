@@ -2,89 +2,98 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電三孝指揮中心 v47</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>電三孝指揮中心 v52</title>
     <style>
         :root {
             --primary: #00d4ff; --accent: #f72585; --warning: #ffb703;
             --bg: #0b0f19; --card: rgba(255, 255, 255, 0.05); --border: rgba(255, 255, 255, 0.1);
         }
-        body {
-            margin: 0; background: var(--bg); color: #e2e8f0; font-family: sans-serif;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
+        body { margin: 0; background: var(--bg); color: #e2e8f0; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
 
-        /* 頁面切換機制 */
-        .page { width: 95%; max-width: 600px; padding: 15px; display: none; padding-bottom: 90px; }
-        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        /* 頁面切換控制 */
+        .page { width: 95%; max-width: 600px; padding: 10px; display: none; padding-bottom: 100px; }
+        .page.active { display: block; animation: fadeIn 0.2s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 導航列 */
-        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(10, 12, 18, 0.98); display: flex; border-top: 1px solid var(--border); z-index: 1000; }
-        .nav-btn { flex: 1; text-align: center; color: #475569; font-size: 0.8rem; cursor: pointer; display: flex; flex-direction: column; justify-content: center; }
-        .nav-btn.active { color: var(--primary); font-weight: bold; }
-
-        /* 座位區佈局 */
-        .chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-        .teacher-area { grid-column: span 7; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 15px; align-items: flex-end; }
-        .desk { grid-column: 4 / 7; background: rgba(255,255,255,0.03); height: 35px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #444; border: 1px dashed var(--border); }
-        
-        .s { 
-            aspect-ratio: 1.2; border: 1.5px solid var(--border); border-radius: 6px; 
-            display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; font-size: 1.1rem; font-weight: bold; transition: 0.2s;
+        /* 頂部名單看板 */
+        .report-panel { 
+            width: 100%; background: var(--card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; 
+            gap: 10px; text-align: center; margin-bottom: 10px;
         }
-        .mini { height: 35px; aspect-ratio: auto; font-size: 0.9rem; }
+        .report-box div { font-weight: bold; font-size: 1rem; min-height: 1.2rem; margin-top: 4px;}
+
+        /* 座位區 */
+        .chart-wrap { position: relative; width: 100%; margin-top: 10px; }
+        .podium { width: 100%; height: 35px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #444; margin-bottom: 12px; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+
+        .s { aspect-ratio: 1.2; border: 1.5px solid var(--border); border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.2rem; font-weight: bold; transition: 0.2s; }
+        .spec { position: absolute; top: 0; height: 35px; width: calc((100% - 48px) / 7); font-size: 1rem; border-width: 1px; }
+        #s-13 { left: calc((100% - 48px) / 7 + 8px); }
+        #s-41 { left: calc(((100% - 48px) / 7 + 8px) * 2); }
 
         .present { border-color: var(--primary); color: var(--primary); }
-        .absent { border-color: var(--accent); color: var(--accent); background: rgba(247, 37, 133, 0.15); }
-        .late { border-color: var(--warning); color: var(--warning); background: rgba(255, 183, 3, 0.15); }
+        .absent { border-color: var(--accent); color: var(--accent); background: rgba(247, 37, 133, 0.1); }
+        .late { border-color: var(--warning); color: var(--warning); background: rgba(255, 183, 3, 0.1); }
 
-        /* 第二頁元件 */
+        /* 導航按鈕 (翻頁按鈕) */
+        .nav-footer { position: fixed; bottom: 20px; width: 95%; max-width: 600px; display: flex; gap: 10px; z-index: 1000; }
+        .nav-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-p { background: var(--primary); color: #000; }
+        .btn-s { background: #1e293b; color: #fff; border: 1px solid var(--border); }
+
+        /* 數據清單樣式 */
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        #gacha-num { font-size: 4rem; text-align: center; color: var(--primary); font-weight: 900; margin: 10px 0; }
-        .log-list { font-family: monospace; font-size: 0.85rem; height: 250px; overflow-y: auto; color: #94a3b8; }
-        .log-item { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .list-container { font-family: monospace; height: 450px; overflow-y: auto; }
+        .row { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; justify-content: space-between; align-items: center; }
+        .rank-badge { background: var(--warning); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 900; }
     </style>
 </head>
 <body>
 
     <div id="p1" class="page active">
-        <div id="clock" style="text-align:center; font-size:2.5rem; color:var(--primary); margin: 10px 0;">00:00:00</div>
+        <div id="clock" style="text-align:center; font-size:2rem; color:var(--primary); margin-bottom: 10px;">00:00:00</div>
         
-        <div class="chart" id="chart-container">
-            <div class="teacher-area">
-                <div style="grid-column: 2;"><div class="s mini present" id="s-13" onclick="t(13)">13</div></div>
-                <div style="grid-column: 3;"><div class="s mini present" id="s-41" onclick="t(41)">41</div></div>
-                <div class="desk">講桌 / PODIUM</div>
+        <div class="report-panel">
+            <div class="report-box" onclick="copyList('absent-list', '缺席')">
+                <small style="color:var(--accent)">❌ 複製缺席</small>
+                <div id="absent-list" style="color:var(--accent)">NONE</div>
             </div>
+            <div class="report-box" onclick="copyList('late-list', '遲到')">
+                <small style="color:var(--warning)">⏳ 複製遲到</small>
+                <div id="late-list" style="color:var(--warning)">NONE</div>
+            </div>
+        </div>
+
+        <div class="chart-wrap">
+            <div class="podium">講桌 PODIUM</div>
+            <div class="s spec present" id="s-13" onclick="t(13)">13</div>
+            <div class="s spec present" id="s-41" onclick="t(41)">41</div>
+            <div class="grid" id="main-grid"></div>
         </div>
     </div>
 
     <div id="p2" class="page">
-        <h3 style="color:var(--primary); text-align:center; font-weight:300;">數據分析中心</h3>
-        
-        <div class="card" style="display:flex; justify-content:space-around; text-align:center;">
-            <div><div id="cnt-a" style="color:var(--accent); font-size:1.5rem; font-weight:bold;">0</div><small>缺席</small></div>
-            <div><div id="cnt-l" style="color:var(--warning); font-size:1.5rem; font-weight:bold;">0</div><small>遲到</small></div>
-            <div><div id="cnt-p" style="color:var(--primary); font-size:1.5rem; font-weight:bold;">41</div><small>在座</small></div>
-        </div>
-
+        <h3 style="color:var(--primary); margin: 0 0 15px 0;">🕒 今日到校時間</h3>
         <div class="card">
-            <small style="color:var(--warning)">隨機抽人 (自動過濾缺席)</small>
-            <div id="gacha-num">??</div>
-            <button onclick="startGacha()" style="width:100%; padding:10px; background:var(--primary); border:none; border-radius:8px; font-weight:bold; cursor:pointer;">START</button>
-        </div>
-
-        <div class="card">
-            <small style="color:var(--warning)">🕒 到校時間登記日誌</small>
-            <div id="log-list" class="log-list"></div>
+            <div id="log-list" class="list-container"></div>
         </div>
     </div>
 
-    <div class="nav">
-        <div class="nav-btn active" id="b1" onclick="go(1)">📍 點名板</div>
-        <div class="nav-btn" id="b2" onclick="go(2)">📊 數據中心</div>
+    <div id="p3" class="page">
+        <h3 style="color:var(--warning); margin: 0 0 15px 0;">🏆 累計遲到次數表</h3>
+        <div class="card">
+            <div id="stat-list" class="list-container"></div>
+        </div>
+        <button onclick="resetStats()" style="width:100%; background:none; border:none; color:#333; font-size:0.7rem;">清除長期統計數據</button>
+    </div>
+
+    <div class="nav-footer">
+        <button class="nav-btn btn-p" id="b1" onclick="go(1)">📍 點名板</button>
+        <button class="nav-btn btn-s" id="b2" onclick="go(2)">⏱ 時間</button>
+        <button class="nav-btn btn-s" id="b3" onclick="go(3)">📊 統計</button>
     </div>
 
     <script>
@@ -92,86 +101,99 @@
         
         function go(n) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => { b.classList.replace('btn-p','btn-s'); });
             document.getElementById('p'+n).classList.add('active');
-            document.getElementById('b'+n).classList.add('active');
-            if(n===2) updateStats();
+            document.getElementById('b'+n).classList.replace('btn-s','btn-p');
+            if(n===2) renderLogs();
+            if(n===3) renderStats();
         }
 
         function init() {
-            const chart = document.getElementById('chart-container');
+            const grid = document.getElementById('main-grid');
             const data = JSON.parse(localStorage.getItem('e3_st') || '{}');
-            
             [13, 41].forEach(id => {
                 const el = document.getElementById(`s-${id}`);
-                el.className = `s mini ${data[id] || 'present'}`;
+                el.className = `s spec ${data[id] || 'present'}`;
             });
-
             layout.forEach(id => {
                 const el = document.createElement('div');
                 if (id === 0) el.style.opacity = "0";
                 else {
                     el.className = `s ${data[id] || 'present'}`;
-                    el.id = `s-${id}`;
-                    el.innerText = id;
+                    el.id = `s-${id}`; el.innerText = id;
                     el.onclick = () => t(id);
                 }
-                chart.appendChild(el);
+                grid.appendChild(el);
             });
             setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false}); }, 1000);
-            renderLogs();
-            updateStats();
+            update();
         }
 
         function t(id) {
             const el = document.getElementById(`s-${id}`);
-            const isMini = el.classList.contains('mini');
-            const now = new Date();
-            const time = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0');
+            const isSpec = el.classList.contains('spec');
+            const time = new Date().toLocaleTimeString('zh-TW', {hour12:false});
             
-            if(el.classList.contains('present')) el.className = isMini ? "s mini absent" : "s absent";
-            else if(el.classList.contains('absent')) {
-                el.className = isMini ? "s mini late" : "s late";
+            if(el.classList.contains('present')) {
+                el.className = `s ${isSpec?'spec':''} absent`;
+            } else if(el.classList.contains('absent')) {
+                el.className = `s ${isSpec?'spec':''} late`;
+                // 1. 紀錄今日時間
                 let logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-                logs.unshift(`[${time}] 座號 ${id} 到校`);
+                logs.unshift({id: id, time: time});
                 localStorage.setItem('e3_lg', JSON.stringify(logs.slice(0, 50)));
-                renderLogs();
-            } else el.className = isMini ? "s mini present" : "s present";
-            
-            save(); updateStats();
+                // 2. 累計遲到次數
+                let stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+                stats[id] = (stats[id] || 0) + 1;
+                localStorage.setItem('e3_stats', JSON.stringify(stats));
+            } else {
+                el.className = `s ${isSpec?'spec':''} present`;
+            }
+            save(); update();
         }
 
-        function updateStats() {
-            const a = document.querySelectorAll('.absent').length;
-            const l = document.querySelectorAll('.late').length;
-            document.getElementById('cnt-a').innerText = a;
-            document.getElementById('cnt-l').innerText = l;
-            document.getElementById('cnt-p').innerText = 41 - a;
-        }
-
-        function startGacha() {
-            const ok = Array.from(document.querySelectorAll('.s:not(.absent)'));
-            if(!ok.length) return;
-            let i = 0;
-            const timer = setInterval(() => {
-                document.getElementById('gacha-num').innerText = ok[Math.floor(Math.random()*ok.length)].innerText;
-                if(i++ > 15) clearInterval(timer);
-            }, 50);
+        function update() {
+            const a = Array.from(document.querySelectorAll('.absent')).map(el => el.innerText).sort((x,y)=>x-y);
+            const l = Array.from(document.querySelectorAll('.late')).map(el => el.innerText).sort((x,y)=>x-y);
+            document.getElementById('absent-list').innerText = a.join(', ') || "NONE";
+            document.getElementById('late-list').innerText = l.join(', ') || "NONE";
         }
 
         function renderLogs() {
             const logs = JSON.parse(localStorage.getItem('e3_lg') || '[]');
-            document.getElementById('log-list').innerHTML = logs.map(t => `<div class="log-item">${t}</div>`).join('');
+            document.getElementById('log-list').innerHTML = logs.map(o => `
+                <div class="row"><span>座號 ${o.id}</span><span style="color:var(--warning)">${o.time}</span></div>
+            `).join('');
+        }
+
+        function renderStats() {
+            const stats = JSON.parse(localStorage.getItem('e3_stats') || '{}');
+            const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
+            document.getElementById('stat-list').innerHTML = sorted.map(([id, count]) => `
+                <div class="row">
+                    <span>座號 ${id}</span>
+                    <div><span class="rank-badge">${count} 次</span></div>
+                </div>
+            `).join('') || '<div style="text-align:center;color:#444;margin-top:20px;">尚無紀錄</div>';
         }
 
         function save() {
             const d = {};
             document.querySelectorAll('.s').forEach(el => {
-                const id = el.id ? el.id.split('-')[1] : el.innerText;
+                const id = el.id.split('-')[1] || el.innerText;
                 d[id] = el.classList.contains('absent') ? 'absent' : (el.classList.contains('late') ? 'late' : 'present');
             });
             localStorage.setItem('e3_st', JSON.stringify(d));
         }
+
+        function copyList(id, label) {
+            const text = document.getElementById(id).innerText;
+            if(text === "NONE") return;
+            navigator.clipboard.writeText(label + "名單：" + text);
+            alert(label + "名單已複製");
+        }
+
+        function resetStats() { if(confirm("確定要重置「累計次數」嗎？這無法還原！")) { localStorage.removeItem('e3_stats'); renderStats(); } }
 
         window.onload = init;
     </script>
