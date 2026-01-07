@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電三孝旗艦指揮中心 v34</title>
+    <title>電三孝智慧管理系統 v31</title>
     <style>
         :root {
             --primary: #00d4ff; --accent: #f72585; --warning: #ffb703;
@@ -19,103 +19,108 @@
             border: 1px solid var(--border); border-radius: 24px; padding: 25px;
             box-shadow: 0 40px 100px rgba(0,0,0,0.5); margin: 20px 0;
         }
-        #clock { font-size: 3rem; font-weight: 200; color: var(--primary); text-align: center; }
-        .progress-container { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin: 15px 0; overflow: hidden; }
-        #attendance-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--primary)); transition: 0.5s; }
-
+        #clock { font-size: 3.2rem; font-weight: 200; color: var(--primary); text-align: center; margin-bottom: 5px; }
+        
         .info-panel { 
-            background: rgba(0,0,0,0.4); border-radius: 12px; padding: 12px; border: 1px solid var(--border); 
-            display: flex; justify-content: space-around; align-items: center;
+            background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; margin: 20px 0; 
+            border: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center;
         }
         .info-item { text-align: center; flex: 1; }
-        .info-label { font-size: 0.6rem; color: #94a3b8; letter-spacing: 1px; margin-bottom: 3px; }
-        .info-value { font-size: 1.1rem; font-weight: bold; }
+        .info-label { font-size: 0.65rem; color: #94a3b8; letter-spacing: 1px; margin-bottom: 5px; }
+        .info-value { font-size: 1.2rem; font-weight: bold; color: #fff; }
 
-        .report-area { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .report-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; border: 1px solid var(--border); position: relative; cursor: pointer; }
-        .report-box.late { border-color: var(--warning); }
-        .report-box.absent { border-color: var(--accent); }
+        .late-list-box {
+            background: rgba(255, 183, 3, 0.05); border: 1px dashed var(--warning);
+            border-radius: 12px; padding: 15px; margin-top: 20px;
+        }
+        .late-list-content { color: var(--warning); font-family: monospace; font-size: 0.9rem; word-break: break-all; }
 
-        /* 座位表 Grid */
-        .seating-chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 10px; }
-        
-        /* 講桌區調整：縮短講桌，精確對齊 */
-        .teacher-area { grid-column: span 7; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 45px; margin-top: 20px; position: relative; }
-        .teacher-desk { grid-column: 3 / 6; background: rgba(255,255,255,0.08); height: 35px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; letter-spacing: 5px; color: #94a3b8; border: 1px dashed var(--border); }
-        
-        /* 13、41 號精確對齊下方第 2、3 欄位 */
-        .special-seat { position: absolute; top: -45px; width: 100%; height: 38px; border: 1px solid var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-sizing: border-box;}
-        #pos-13 { grid-column: 2; position: relative; }
-        #pos-41 { grid-column: 3; position: relative; }
-
+        .seating-chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-top: 20px; }
         .seat {
             aspect-ratio: 1.1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
             border-radius: 8px; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; cursor: pointer; transition: 0.15s; position: relative;
+            justify-content: center; cursor: pointer; transition: 0.2s; position: relative; padding: 2px;
         }
-        .seat.present { border-color: var(--primary); background: rgba(0, 212, 255, 0.05); }
-        .seat.absent { border-color: var(--accent); background: rgba(247, 37, 133, 0.3); }
-        .seat.late { border-color: var(--warning); background: rgba(255, 183, 3, 0.3); }
-        .seat-no { font-size: 0.5rem; position: absolute; top: 4px; left: 6px; opacity: 0.5; }
-        .seat-name { font-size: 0.8rem; font-weight: bold; }
+        .seat.present { background: rgba(0, 212, 255, 0.12); border-color: var(--primary); }
+        .seat.absent { background: rgba(247, 37, 133, 0.25); border-color: var(--accent); }
+        .seat.late { background: rgba(255, 183, 3, 0.25); border-color: var(--warning); }
+        .seat-no { font-size: 0.55rem; position: absolute; top: 4px; left: 6px; opacity: 0.6; }
+        .seat-name { font-size: 0.85rem; font-weight: bold; }
 
-        .btn { border: none; font-weight: bold; cursor: pointer; display: block; margin: 30px auto 0; padding: 8px 20px; border-radius: 12px; background: var(--accent); color: white; opacity: 0.4; font-size: 0.7rem; }
+        .teacher-desk { grid-column: span 7; background: rgba(255,255,255,0.1); height: 40px; margin-bottom: 50px; margin-top: 40px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; letter-spacing: 8px; color: #94a3b8; border: 1px dashed var(--border); position: relative;}
+        .special-seat { position: absolute; top: -50px; width: 55px; height: 40px; background: rgba(0,212,255,0.1); border: 1px solid var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer;}
+
+        .btn { width: auto; padding: 8px 20px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 30px; display: block; margin-left: auto; margin-right: auto; }
+        .btn-primary { background: var(--primary); color: #000; opacity: 0.4; font-size: 0.7rem; }
+
         #login-wall { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); display: flex; justify-content: center; align-items: center; z-index: 999; }
+        input[type="password"] { width: 200px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; text-align: center; }
     </style>
 </head>
 <body>
 
     <div id="login-wall">
-        <div style="text-align:center;">
-            <h2 style="color:var(--primary); letter-spacing:5px;">COMMAND</h2>
-            <input type="password" id="pass" placeholder="PASSWORD" style="padding:12px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:white; text-align:center;"><br>
-            <button class="btn" style="opacity:1; background:var(--primary); color:#000; width:220px; font-size:1rem; margin-top:10px;" onclick="doLogin()">ACCESS</button>
+        <div class="dashboard" style="max-width: 300px; text-align:center;">
+            <h3 style="color:var(--primary)">電三孝管理系統</h3>
+            <input type="password" id="pass" placeholder="Password">
+            <button class="btn btn-primary" style="opacity:1; font-size:1rem; margin-top:15px;" onclick="doLogin()">UNLOCK</button>
         </div>
     </div>
 
-    <div id="main-content" style="display: none; width: 100%; flex-direction: column; align-items: center;">
+    <div id="main-content" style="display: none; width: 100%; align-items: center; flex-direction: column;">
         <div class="dashboard">
             <div id="clock">00:00:00</div>
-            <div class="progress-container"><div id="attendance-bar"></div></div>
-
+            
             <div class="info-panel">
                 <div class="info-item" style="border-right: 1px solid var(--border);">
-                    <div class="info-label">LESSON</div>
+                    <div class="info-label">目前課程</div>
                     <div id="current-lesson" class="info-value">--</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">TIME LEFT</div>
+                    <div class="info-label">下課倒數</div>
                     <div id="timer" class="info-value">--</div>
                 </div>
             </div>
 
-            <div class="report-area">
-                <div class="report-box absent" onclick="copyText('absent-text')">
-                    <div class="info-label" style="color:var(--accent);">❌ 缺席座號</div>
-                    <div id="absent-text" style="font-size:1.1rem; font-weight:bold;">NONE</div>
-                </div>
-                <div class="report-box late" onclick="copyText('late-text')">
-                    <div class="info-label" style="color:var(--warning);">⏳ 遲到座號</div>
-                    <div id="late-text" style="font-size:1.1rem; font-weight:bold;">NONE</div>
+            <div class="late-list-box" id="late-box" style="display:none;">
+                <div class="info-label" style="color:var(--warning); margin-bottom:10px;">📋 遲到登記名單</div>
+                <div id="late-text" class="late-list-content"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                <span style="font-size:0.75rem; color:var(--primary); letter-spacing:2px; font-weight: bold;">SEATING PLAN</span>
+                <div style="font-size:0.8rem;">
+                    出: <b id="p-count" style="color:var(--primary)">0</b> | 
+                    缺: <b id="a-count" style="color:var(--accent)">0</b> | 
+                    遲: <b id="l-count" style="color:var(--warning)">0</b>
                 </div>
             </div>
 
             <div class="seating-chart" id="chart">
-                <div class="teacher-area">
-                    <div id="pos-13"><div class="special-seat" id="s-13" onclick="toggleSeat(13)"></div></div>
-                    <div id="pos-41"><div class="special-seat" id="s-41" onclick="toggleSeat(41)"></div></div>
-                    <div class="teacher-desk">講桌</div>
+                <div class="teacher-desk">
+                    講桌 / BLACKBOARD
+                    <div class="special-seat" style="left: 20%;" id="s-13" onclick="toggleSeat(13)"><span style="font-size:0.65rem;">13</span></div>
+                    <div class="special-seat" style="left: 45%;" id="s-41" onclick="toggleSeat(41)"><span style="font-size:0.65rem;">41</span></div>
                 </div>
-                </div>
+            </div>
             
-            <button class="btn" onclick="resetSeats()">RESET DATA</button>
+            <button class="btn btn-primary" onclick="resetSeats()">RESET ALL SEATS</button>
         </div>
     </div>
 
     <script>
         const AUTH = "1234";
         const students = {"1":"林湘凌","2":"邱婉琳","3":"駱昱彣","4":"施雅瑄","5":"項睿廷","6":"杜柏昂","7":"陳志倫","8":"顏銘徵","9":"林尚廷","10":"徐得軒","11":"蔡丞恩","12":"邱宥睿","13":"石浩文","14":"王品堯","15":"周辰旭","16":"王淮謙","17":"林易澄","18":"黃存豪","19":"柳凱博","20":"孫沂鈞","21":"馮靖富","22":"陳佑瑜","23":"施邦佑","24":"范舜為","25":"許翔硯","26":"陳敬恩","27":"陳學洋","28":"江郁昌","29":"鄭閎楷","30":"江承恩","31":"洪畯楷","32":"鄭聿廷","33":"何承恩","34":"張議澧","35":"蔡品宇","36":"曾柏諺","37":"詹詠全","38":"方廷祐","39":"陳傳叡","40":"周彥成","41":"吳柏諺"};
-        const seatMapping = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
+        
+        const seatMapping = [
+            2, 0, 0, 6, 20, 10, 21,
+            12, 23, 25, 34, 3, 1, 33,
+            39, 4, 19, 15, 18, 24, 30,
+            40, 5, 16, 35, 29, 9, 36,
+            32, 14, 37, 17, 31, 8, 7,
+            22, 11, 26, 38, 0, 0, 0
+        ];
+
         const schedule = {
             1: ["國文", "英語會話", "英語文", "進階數學", "應電助教", "應電助教", "應電助教", "彈性"],
             2: ["體育", "電機主任", "電機主任", "閱讀老師", "休息", "數學老師", "休息", "課輔"],
@@ -129,27 +134,23 @@
                 document.getElementById('login-wall').style.display='none';
                 document.getElementById('main-content').style.display='flex';
                 init();
-            } else alert("ACCESS DENIED");
+            } else alert("密碼錯誤");
         }
 
         function init() {
             const chart = document.getElementById('chart');
-            const savedData = JSON.parse(localStorage.getItem('e3x_data') || '{}');
-
             [13, 41].forEach(id => {
                 const s = document.getElementById(`s-${id}`);
-                const state = savedData[id] || 'present';
-                s.className = `special-seat ${state}`;
-                s.id = `s-${id}`;
-                s.innerHTML = `<span style="font-size:0.5rem;position:absolute;top:2px;left:4px;opacity:0.5;">${id}</span><div style="font-size:0.7rem;font-weight:bold;">${students[id].substring(1)}</div>`;
+                s.className = 'special-seat present';
+                s.innerHTML = `<span class="seat-no">${id}</span><div class="seat-name" style="font-size:0.65rem; margin-left:5px;">${students[id].substring(1)}</div>`;
             });
 
             seatMapping.forEach(id => {
                 const seat = document.createElement('div');
-                if (id === 0) seat.style.opacity = "0";
-                else {
-                    const state = savedData[id] || 'present';
-                    seat.className = `seat ${state}`;
+                if (id === 0) {
+                    seat.style.opacity = "0";
+                } else {
+                    seat.className = 'seat present';
                     seat.id = `s-${id}`;
                     seat.innerHTML = `<span class="seat-no">${id}</span><div class="seat-name">${students[id]}</div>`;
                     seat.onclick = () => toggleSeat(id);
@@ -163,44 +164,42 @@
 
         function toggleSeat(id) {
             const seat = document.getElementById(`s-${id}`);
-            if(seat.classList.contains('present')) seat.classList.replace('present','absent');
-            else if(seat.classList.contains('absent')) seat.classList.replace('absent','late');
-            else seat.classList.replace('late','present');
-            saveCurrentState();
+            if(seat.classList.contains('present')) seat.classList.replace('present', 'absent');
+            else if(seat.classList.contains('absent')) seat.classList.replace('absent', 'late');
+            else seat.classList.replace('late', 'present');
             updateStats();
         }
 
-        function saveCurrentState() {
-            const data = {};
-            document.querySelectorAll('.seat, .special-seat').forEach(s => {
-                if(s.id) {
-                    const id = s.id.split('-')[1];
-                    if(s.classList.contains('absent')) data[id] = 'absent';
-                    else if(s.classList.contains('late')) data[id] = 'late';
-                    else data[id] = 'present';
-                }
-            });
-            localStorage.setItem('e3x_data', JSON.stringify(data));
-        }
-
         function updateStats() {
-            const absents = Array.from(document.querySelectorAll('.absent')).map(s => s.id.split('-')[1]).sort((a,b)=>a-b);
-            const lates = Array.from(document.querySelectorAll('.late')).map(s => s.id.split('-')[1]).sort((a,b)=>a-b);
-            document.getElementById('absent-text').innerText = absents.length ? absents.join('、') : "NONE";
-            document.getElementById('late-text').innerText = lates.length ? lates.join('、') : "NONE";
-            const percent = ((41 - absents.length) / 41) * 100;
-            document.getElementById('attendance-bar').style.width = percent + "%";
-        }
+            const lates = document.querySelectorAll('.late');
+            document.getElementById('p-count').innerText = document.querySelectorAll('.present').length;
+            document.getElementById('a-count').innerText = document.querySelectorAll('.absent').length;
+            document.getElementById('l-count').innerText = lates.length;
 
-        function copyText(id) {
-            const text = document.getElementById(id).innerText;
-            if(text === "NONE") return;
-            navigator.clipboard.writeText(text);
-            alert("已複製座號");
+            // 處理遲到清單顯示
+            const lateBox = document.getElementById('late-box');
+            const lateText = document.getElementById('late-text');
+            if (lates.length > 0) {
+                lateBox.style.display = 'block';
+                let list = [];
+                lates.forEach(s => {
+                    const id = s.id.split('-')[1];
+                    list.push(`${id}${students[id]}`);
+                });
+                lateText.innerText = list.join('、'); // 用頓號隔開成一條
+            } else {
+                lateBox.style.display = 'none';
+            }
         }
 
         function resetSeats() {
-            if(confirm("確定重置？")) { localStorage.removeItem('e3x_data'); location.reload(); }
+            if(confirm("重置所有座位狀態？")) {
+                document.querySelectorAll('.seat, .special-seat').forEach(s => {
+                    s.classList.remove('absent','late');
+                    s.classList.add('present');
+                });
+                updateStats();
+            }
         }
 
         function updateTime() {
@@ -208,17 +207,22 @@
             const day = now.getDay();
             const currentSecs = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
             document.getElementById('clock').innerText = now.toLocaleTimeString('zh-TW', {hour12:false});
-            let lessonText = "OFF", timerText = "--";
+            
+            let lessonText = "休息時間";
+            let timerText = "IDLE";
             const startTimes = ["08:00", "09:00", "10:00", "11:00", "13:10", "14:10", "15:10", "16:10"];
             const endTimes = ["08:50", "09:50", "10:50", "11:50", "14:00", "15:00", "16:00", "17:00"];
+            
             if (day >= 1 && day <= 5) {
                 for (let i = 0; i < 8; i++) {
-                    const sSecs = startTimes[i].split(':').map(Number)[0]*3600 + startTimes[i].split(':').map(Number)[1]*60;
-                    const eSecs = endTimes[i].split(':').map(Number)[0]*3600 + endTimes[i].split(':').map(Number)[1]*60;
+                    const [sh, sm] = startTimes[i].split(':').map(Number);
+                    const [eh, em] = endTimes[i].split(':').map(Number);
+                    const sSecs = sh*3600 + sm*60;
+                    const eSecs = eh*3600 + em*60;
                     if (currentSecs >= sSecs && currentSecs < eSecs) {
-                        lessonText = schedule[day][i];
+                        lessonText = `${schedule[day][i]}`;
                         const diff = eSecs - currentSecs;
-                        timerText = Math.floor(diff/60) + ":" + (diff%60).toString().padStart(2,'0');
+                        timerText = `${Math.floor(diff/60)}分${diff%60}秒`;
                         break;
                     }
                 }
