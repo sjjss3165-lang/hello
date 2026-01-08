@@ -2,230 +2,209 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>CPBL 鑽石對決 Pro</title>
+    <title>CPBL Strategy Duel Pro</title>
     <style>
-        :root { --grass: #15803d; --dirt: #92400e; --accent: #00f2ff; --bg: #020617; }
-        body { background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
+        :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
         
-        /* 頂部計分板 */
-        .header { width: 100%; background: #1e293b; padding: 10px; border-bottom: 3px solid var(--accent); display: flex; justify-content: space-around; align-items: center; }
-        .scoreboard { background: #000; padding: 10px; border-radius: 8px; font-family: 'Courier New', monospace; min-width: 250px; text-align: center; border: 2px solid #334155; }
-        .bso { font-size: 1.2rem; letter-spacing: 5px; }
-        .on { color: #facc15; text-shadow: 0 0 5px #facc15; }
-        .out-on { color: #ef4444; text-shadow: 0 0 5px #ef4444; }
+        /* 專業計分板 */
+        .line-score { width: 100%; background: #000; padding: 10px 0; border-bottom: 2px solid var(--accent); }
+        .score-table { margin: 0 auto; border-collapse: collapse; text-align: center; font-family: monospace; }
+        .score-table th { color: #64748b; font-size: 0.7rem; padding: 0 8px; }
+        .score-table td { font-size: 1.1rem; font-weight: bold; padding: 2px 8px; border: 1px solid #1e293b; }
+        .team-label { color: var(--accent); width: 80px; text-align: left; }
+        .total { color: var(--accent); border-left: 2px solid var(--accent) !important; }
 
-        /* 遊戲場景 */
-        .game-view { position: relative; margin-top: 20px; }
-        canvas { border-radius: 15px; border: 4px solid #334155; background: #15803d; cursor: crosshair; }
+        .main-content { display: flex; width: 100vw; height: calc(100vh - 100px); }
+        .side-panel { width: 280px; background: rgba(15, 23, 42, 0.9); border-right: 1px solid #334155; padding: 15px; display: flex; flex-direction: column; }
+        .canvas-area { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b 0%, #050a15 100%); }
         
-        .overlay-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; font-weight: 900; color: #fbbf24; text-shadow: 0 0 20px #000; display: none; pointer-events: none; z-index: 100; }
-        .log { width: 800px; height: 80px; background: rgba(0,0,0,0.8); margin-top: 10px; padding: 10px; font-size: 0.9rem; color: #4ade80; overflow-y: auto; border-radius: 8px; border: 1px solid #334155; }
+        /* BSO 燈號 */
+        .bso-box { background: #000; padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #334155; }
+        .light-row { display: flex; gap: 8px; align-items: center; margin: 5px 0; }
+        .light { width: 14px; height: 14px; border-radius: 50%; background: #2d3748; }
+        .light.s { background: #facc15; box-shadow: 0 0 10px #facc15; }
+        .light.b { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
+        .light.o { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+
+        canvas { border: 2px solid #475569; border-radius: 12px; cursor: crosshair; }
+        .log { flex: 1; background: rgba(0,0,0,0.5); padding: 10px; font-size: 0.8rem; color: #4ade80; overflow-y: auto; border-radius: 5px; font-family: monospace; }
+        .overlay { position: absolute; font-size: 4rem; font-weight: 900; color: #fbbf24; display: none; pointer-events: none; z-index: 100; text-shadow: 0 0 20px #000; }
     </style>
 </head>
 <body>
 
-<div class="header">
-    <div class="scoreboard">
-        <div id="inning-display">1 局上 (防守)</div>
-        <div style="font-size: 1.5rem;">我: <span id="my-score">0</span> | 電腦: <span id="ai-score">0</span></div>
-    </div>
-    <div class="bso">
-        S <span id="s1">○</span><span id="s2">○</span> 
-        B <span id="b1">○</span><span id="b2">○</span><span id="b3">○</span> 
-        O <span id="o1">○</span><span id="o2">○</span>
-    </div>
-    <div id="base-map" style="font-size: 1.5rem; color: #94a3b8;">◇ ◇ ◇</div>
+<div class="line-score">
+    <table class="score-table">
+        <tr id="headers"><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th class="total">R</th><th class="total">H</th></tr>
+        <tr><td class="team-label">PLAYER</td><td id="p1">-</td><td id="p2">-</td><td id="p3">-</td><td id="p4">-</td><td id="p5">-</td><td id="p6">-</td><td id="p7">-</td><td id="p8">-</td><td id="p9">-</td><td id="pr" class="total">0</td><td id="ph" class="total">0</td></tr>
+        <tr><td class="team-label">CPU</td><td id="c1">-</td><td id="c2">-</td><td id="c3">-</td><td id="c4">-</td><td id="c5">-</td><td id="c6">-</td><td id="c7">-</td><td id="c8">-</td><td id="c9">-</td><td id="cr" class="total">0</td><td id="ch" class="total">0</td></tr>
+    </table>
 </div>
 
-<div class="game-view">
-    <div id="msg" class="overlay-msg">攻守交換</div>
-    <canvas id="field" width="800" height="500"></canvas>
-</div>
+<div class="main-content">
+    <div class="side-panel">
+        <div class="bso-box">
+            <div class="light-row">B <div id="b1" class="light"></div><div id="b2" class="light"></div><div id="b3" class="light"></div></div>
+            <div class="light-row">S <div id="s1" class="light"></div><div id="s2" class="light"></div></div>
+            <div class="light-row">O <div id="o1" class="light"></div><div id="o2" class="light"></div></div>
+        </div>
+        
+        <div id="active-player" style="background:var(--panel); padding:10px; border-radius:5px; border-left:4px solid var(--accent); margin-bottom:10px;">
+            <div style="font-size:0.7rem; opacity:0.6">CURRENT UNIT</div>
+            <div id="p-name" style="font-weight:bold; font-size:1.1rem">古林睿煬</div>
+            <div id="p-desc" style="font-size:0.75rem; color:var(--accent)">157km / 獅</div>
+        </div>
 
-<div class="log" id="log">> 比賽開始！你先防守，請點擊九宮格投球。</div>
+        <div class="log" id="log">> 點擊九宮格進行投球...</div>
+    </div>
+
+    <div class="canvas-area">
+        <div id="overlay" class="overlay">攻守交換</div>
+        <canvas id="gameCanvas" width="600" height="500"></canvas>
+    </div>
+</div>
 
 <script>
-    const canvas = document.getElementById('field');
+    const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     
-    let game = {
-        inning: 1, isTop: true, // true: 1上(防守), false: 1下(進攻)
-        scoreMy: 0, scoreAi: 0,
-        strikes: 0, balls: 0, outs: 0,
-        bases: [false, false, false],
-        isAnimating: false,
-        ball: { x: 400, y: 450, active: false }
+    // 中職名單
+    const rosters = {
+        p: [{name:"古林睿煬", team:"獅", v:157}, {name:"徐若熙", team:"龍", v:154}],
+        b: [{name:"林安可", team:"獅", p:95}, {name:"陳傑憲", team:"獅", p:60}]
     };
 
-    function drawField() {
-        ctx.clearRect(0, 0, 800, 500);
-        // 畫草地與紅土
-        ctx.fillStyle = '#15803d'; ctx.fillRect(0,0,800,500);
-        ctx.fillStyle = '#92400e'; 
-        ctx.beginPath(); ctx.moveTo(400, 480); ctx.arc(400, 480, 400, -Math.PI, 0); ctx.fill(); // 外野弧線
-        
-        // 畫內野鑽石
-        ctx.fillStyle = '#16a34a';
-        ctx.beginPath(); ctx.moveTo(400, 480); ctx.lineTo(520, 360); ctx.lineTo(400, 240); ctx.lineTo(280, 360); ctx.closePath(); ctx.fill();
-        
-        // 畫壘包
-        ctx.fillStyle = '#fff';
-        const b = 10;
-        ctx.fillRect(400-b/2, 480-b/2, b, b); // 本壘
-        ctx.fillRect(520-b/2, 360-b/2, b, b); // 一壘
-        ctx.fillRect(400-b/2, 240-b/2, b, b); // 二壘
-        ctx.fillRect(280-b/2, 360-b/2, b, b); // 三壘
+    let state = {
+        inning: 1, isTop: true, 
+        pScore: 0, cScore: 0, pHits: 0, cHits: 0,
+        b: 0, s: 0, o: 0,
+        isAnim: false, pIdx: 0, bIdx: 0
+    };
 
-        // 畫投打姿勢 (骨架)
-        drawPlayers();
-    }
+    function drawWorld(frame = 0) {
+        ctx.clearRect(0,0,600,500);
+        
+        // 1. 九宮格好球帶
+        ctx.strokeStyle = "rgba(0, 242, 255, 0.4)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(200, 100, 200, 200);
+        for(let i=1; i<3; i++) {
+            ctx.beginPath(); ctx.moveTo(200+i*66, 100); ctx.lineTo(200+i*66, 300); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(200, 100+i*66); ctx.lineTo(400, 100+i*66); ctx.stroke();
+        }
 
-    function drawPlayers() {
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
-        // 投手
-        ctx.beginPath(); ctx.arc(400, 320, 8, 0, Math.PI*2); ctx.stroke();
-        ctx.moveTo(400, 328); ctx.lineTo(400, 350); ctx.stroke();
-        // 打者
-        ctx.beginPath(); ctx.arc(370, 470, 8, 0, Math.PI*2); ctx.stroke();
-        ctx.moveTo(370, 478); ctx.lineTo(370, 495); ctx.stroke();
+        // 2. 投手骨架動畫
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
+        let pitchX = 300, pitchY = 420;
+        ctx.beginPath(); ctx.arc(pitchX, pitchY-60, 12, 0, Math.PI*2); ctx.stroke(); // 頭
+        ctx.moveTo(pitchX, pitchY-48); ctx.lineTo(pitchX, pitchY); // 身體
+        
+        let legOffset = (frame > 0 && frame < 15) ? -25 : 0;
+        ctx.moveTo(pitchX, pitchY); ctx.lineTo(pitchX-15, pitchY+35); // 左腳
+        ctx.moveTo(pitchX, pitchY); ctx.lineTo(pitchX+15, pitchY+35+legOffset); // 右腳抬腿
+        ctx.stroke();
+
+        // 3. 打者靜態位
+        ctx.beginPath(); ctx.arc(220, 120, 10, 0, Math.PI*2); ctx.stroke();
+        ctx.moveTo(220, 130); ctx.lineTo(220, 170); ctx.stroke();
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        if (game.isAnimating) return;
+        if(state.isAnim) return;
         const rect = canvas.getBoundingClientRect();
-        const tx = e.clientX - rect.left;
-        const ty = e.clientY - rect.top;
+        const tx = e.clientX - rect.left, ty = e.clientY - rect.top;
 
-        if (game.isTop) { // 防守：你投球
-            game.isAnimating = true;
-            animatePitch(tx, ty, resolveDefense);
-        } else { // 進攻：你打擊
-            if (game.ball.active) {
-                const dist = Math.sqrt((tx - game.ball.x)**2 + (ty - game.ball.y)**2);
-                if (dist < 30) resolveOffense(true, dist);
-            }
+        if(state.isTop) { // 防守：你投
+            runPitchSequence(tx, ty);
+        } else { // 進攻：你打
+            handleSwing(tx, ty);
         }
     });
 
-    function animatePitch(tx, ty, callback) {
-        let frame = 0;
-        const startX = 400, startY = 340;
+    function runPitchSequence(tx, ty) {
+        state.isAnim = true;
+        let f = 0;
         const anim = () => {
-            frame++;
-            drawField();
-            let p = frame / 20;
-            game.ball.x = startX + (tx - startX) * p;
-            game.ball.y = startY + (ty - startY) * p;
-            game.ball.active = true;
-            
-            ctx.beginPath(); ctx.arc(game.ball.x, game.ball.y, 4+p*10, 0, Math.PI*2);
-            ctx.fillStyle = "#fff"; ctx.fill();
-
-            if (frame < 20) requestAnimationFrame(anim);
-            else {
-                game.ball.active = false;
-                game.isAnimating = false;
-                callback(tx, ty);
-            }
+            f++; drawWorld(f);
+            if(f < 20) requestAnimationFrame(anim);
+            else moveBall(tx, ty);
         };
         anim();
     }
 
-    // 防守邏輯 (你投，電腦打)
-    function resolveDefense(tx, ty) {
-        let inZone = tx > 350 && tx < 450 && ty > 430 && ty < 500;
-        if (inZone) {
-            if (Math.random() < 0.25) { // 電腦安打率
-                addLog("!! 電腦擊出安打 !!");
-                advanceBases(false);
-                resetCount();
+    function moveBall(tx, ty) {
+        let f = 0;
+        const bAnim = () => {
+            f++; let p = f/15;
+            drawWorld(20);
+            let cx = 300 + (tx-300)*p;
+            let cy = 360 + (ty-360)*p;
+            ctx.beginPath(); ctx.arc(cx, cy, 4+p*12, 0, Math.PI*2);
+            ctx.fillStyle = "#fff"; ctx.fill();
+            if(f < 15) requestAnimationFrame(bAnim);
+            else resolve(tx, ty);
+        };
+        bAnim();
+    }
+
+    function resolve(x, y) {
+        state.isAnim = false;
+        let inZone = x > 200 && x < 400 && y > 100 && y < 300;
+        
+        if(state.isTop) { // 你投，CPU打
+            if(inZone && Math.random() < 0.25) {
+                state.cScore++; state.cHits++; addLog("CPU 安打！");
             } else {
-                game.strikes++;
-                addLog("好球！");
-                if (game.strikes >= 3) { game.outs++; addLog("三振電腦！"); resetCount(); }
+                if(inZone) { state.s++; addLog("好球！"); }
+                else { state.b++; addLog("壞球。"); }
+                if(state.s >= 3) { state.o++; state.s = 0; state.b = 0; addLog("K！"); }
             }
-        } else {
-            game.balls++;
-            addLog("壞球。");
-            if (game.balls >= 4) { advanceBases(false); resetCount(); addLog("保送。"); }
         }
-        checkSwap();
+        checkInning();
         updateUI();
     }
 
-    // 進攻邏輯 (電腦投，你打)
-    function resolveOffense(isHit, dist) {
-        game.ball.active = false;
-        if (isHit) {
-            game.isAnimating = false;
-            if (dist < 10) { addLog("!!! 全壘打 !!!"); scorePoints(true); } 
-            else { addLog("你擊出安打！"); advanceBases(true); }
-            resetCount();
-        }
-        updateUI();
-    }
-
-    function advanceBases(isPlayer) {
-        if (game.bases[2]) { scorePoints(isPlayer); game.bases[2] = false; }
-        if (game.bases[1]) { game.bases[2] = true; game.bases[1] = false; }
-        if (game.bases[0]) { game.bases[1] = true; game.bases[0] = false; }
-        game.bases[0] = true;
-        updateUI();
-    }
-
-    function scorePoints(isPlayer) {
-        if (isPlayer) game.scoreMy++; else game.scoreAi++;
-        addLog(isPlayer ? "你得到 1 分！" : "電腦得到 1 分！");
-    }
-
-    function checkSwap() {
-        if (game.outs >= 3) {
-            game.outs = 0; resetCount();
-            game.bases = [false, false, false];
-            game.isTop = !game.isTop;
-            if (game.isTop) game.inning++;
-            
-            showMsg("攻守交換");
-            if (!game.isTop) setTimeout(aiPitchLoop, 2000);
-        }
-    }
-
-    function aiPitchLoop() {
-        if (game.isTop || game.isAnimating) return;
-        addLog("電腦投球中...");
-        animatePitch(380 + Math.random()*40, 460 + Math.random()*40, (x, y) => {
-            if (!game.isTop) {
-                game.strikes++; addLog("你沒揮棒，好球！");
-                if (game.strikes >= 3) { game.outs++; resetCount(); }
-                checkSwap(); updateUI();
-                setTimeout(aiPitchLoop, 1500);
+    function checkInning() {
+        if(state.o >= 3) {
+            state.o = 0; state.s = 0; state.b = 0;
+            state.isTop = !state.isTop;
+            const ov = document.getElementById('overlay');
+            ov.style.display = 'block';
+            setTimeout(() => { ov.style.display = 'none'; }, 1000);
+            if(!state.isTop) {
+                addLog("--- 下半局：你打擊 ---");
+                setTimeout(cpuPitch, 2000);
+            } else {
+                state.inning++;
+                addLog(`--- 第 ${state.inning} 局 ---`);
             }
-        });
+        }
     }
 
-    function resetCount() { game.strikes = 0; game.balls = 0; }
+    function cpuPitch() {
+        if(state.isTop) return;
+        runPitchSequence(200+Math.random()*200, 100+Math.random()*200);
+    }
 
     function updateUI() {
-        document.getElementById('my-score').innerText = game.scoreMy;
-        document.getElementById('ai-score').innerText = game.scoreAi;
-        document.getElementById('inning-display').innerText = `${game.inning} 局 ${game.isTop ? '上 (防守)' : '下 (進攻)'}`;
-        
-        document.getElementById('s1').className = game.strikes >= 1 ? 'on' : '';
-        document.getElementById('s2').className = game.strikes >= 2 ? 'on' : '';
-        document.getElementById('b1').className = game.balls >= 1 ? 'on' : '';
-        document.getElementById('b2').className = game.balls >= 2 ? 'on' : '';
-        document.getElementById('b3').className = game.balls >= 3 ? 'on' : '';
-        document.getElementById('o1').className = game.outs >= 1 ? 'out-on' : '';
-        document.getElementById('o2').className = game.outs >= 2 ? 'out-on' : '';
+        // 更新記分板
+        const prefix = state.isTop ? 'c' : 'p';
+        const scoreId = state.isTop ? `c${state.inning}` : `p${state.inning}`;
+        const scoreVal = state.isTop ? state.cScore : state.pScore;
+        document.getElementById(scoreId).innerText = scoreVal;
+        document.getElementById('pr').innerText = state.pScore;
+        document.getElementById('cr').innerText = state.cScore;
+        document.getElementById('ph').innerText = state.pHits;
+        document.getElementById('ch').innerText = state.cHits;
 
-        let bStr = ""; game.bases.forEach(b => bStr += b ? "◆ " : "◇ ");
-        document.getElementById('base-map').innerText = bStr;
-    }
+        // 更新 BSO
+        for(let i=1; i<=3; i++) document.getElementById(`b${i}`).className = i <= state.b ? 'light b' : 'light';
+        for(let i=1; i<=2; i++) document.getElementById(`s${i}`).className = i <= state.s ? 'light s' : 'light';
+        for(let i=1; i<=2; i++) document.getElementById(`o${i}`).className = i <= state.o ? 'light o' : 'light';
 
-    function showMsg(txt) {
-        const m = document.getElementById('msg');
-        m.innerText = txt; m.style.display = 'block';
-        setTimeout(() => m.style.display = 'none', 1500);
+        const p = state.isTop ? rosters.p[state.pIdx] : rosters.b[state.bIdx];
+        document.getElementById('p-name').innerText = p.name;
     }
 
     function addLog(m) {
@@ -233,7 +212,7 @@
         l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
     }
 
-    drawField();
+    drawWorld();
     updateUI();
 </script>
 </body>
