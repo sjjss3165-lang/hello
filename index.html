@@ -2,210 +2,190 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>CPBL Data Master | 中職策略對決</title>
+    <title>CPBL Manager | 中職總教練模式</title>
     <style>
-        :root { --accent: #00f2ff; --panel: rgba(15, 23, 42, 0.9); --bg: #020617; }
-        body { background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; display: flex; height: 100vh; margin: 0; overflow: hidden; }
+        :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; }
+        body { background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
         
-        .sidebar { width: 340px; background: var(--panel); border-right: 1px solid var(--accent); padding: 20px; display: flex; flex-direction: column; z-index: 10; }
-        .main-view { flex: 1; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* 賽前設定介面 */
+        #setup-screen { width: 90%; max-width: 1000px; padding: 20px; display: block; }
+        .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .pool-section, .lineup-section { background: var(--panel); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
+        .player-item { background: #0f172a; padding: 8px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: space-between; cursor: pointer; border: 1px solid transparent; }
+        .player-item:hover { border-color: var(--accent); }
+        .player-item.selected { background: var(--accent); color: #000; }
         
-        /* 球員卡片強化 */
-        .card { background: linear-gradient(145deg, #1e293b, #020617); border: 1px solid #334155; padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 5px solid var(--accent); }
-        .player-header { display: flex; justify-content: space-between; align-items: center; }
-        .team-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; background: #334155; }
-        .stats-row { display: flex; gap: 15px; font-size: 0.8rem; margin-top: 8px; color: #94a3b8; }
-        .avg-highlight { color: var(--accent); font-weight: bold; }
-
-        canvas { border: 2px solid #1e293b; border-radius: 20px; background: radial-gradient(circle, #1e293b 0%, #050a15 100%); cursor: crosshair; }
+        /* 遊戲介面 (隱藏) */
+        #game-screen { display: none; width: 100%; flex-direction: column; align-items: center; }
         
-        .console { flex: 1; background: #000; border-radius: 8px; padding: 12px; font-family: 'Courier New', monospace; font-size: 0.85rem; overflow-y: auto; color: #00ff00; border: 1px solid #1e293b; }
-        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 15px; }
+        .scoreboard { background: #1e293b; width: 90%; max-width: 800px; margin: 10px; border-radius: 8px; text-align: center; }
+        .game-area { display: flex; gap: 20px; width: 95%; max-width: 1000px; height: 500px; }
+        canvas { border: 2px solid var(--accent); border-radius: 20px; background: #000; cursor: crosshair; }
         
-        button { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
-        button:hover { background: var(--accent); color: #000; }
-        
-        .hr-text { position: absolute; font-size: 4rem; font-weight: 900; color: #fbbf24; text-shadow: 0 0 20px #f59e0b; display: none; animation: pop 1s ease-out; pointer-events: none; }
-        @keyframes pop { 0% { transform: scale(0); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+        .btn-main { background: var(--accent); color: #000; padding: 15px 40px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.2rem; margin-top: 20px; }
+        .list-title { border-bottom: 2px solid var(--accent); margin-bottom: 10px; padding-bottom: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <h2 style="color: var(--accent); margin-top: 0;">CPBL STRATEGY</h2>
-    
-    <div class="card">
-        <div class="player-header">
-            <span id="p-name" style="font-weight:bold">投手載入中</span>
-            <span class="team-tag" id="p-team">-</span>
+<div id="setup-screen">
+    <h1 style="color: var(--accent); text-align: center;">CPBL 戰術室：球員名單設定</h1>
+    <div class="setup-grid">
+        <div class="pool-section">
+            <div class="list-title">選手大名單 (點選加入先發)</div>
+            <div id="player-pool"></div>
         </div>
-        <div class="stats-row">
-            ERA: <span id="p-era">0.00</span> | VELO: <span id="p-velo">150k</span>
+        <div class="lineup-section">
+            <div class="list-title">我的先發打序 (1-9 棒)</div>
+            <div id="my-lineup"></div>
+            <div class="list-title" style="margin-top:20px;">投手上場順序 (SP/RP/CP)</div>
+            <div id="my-pitchers"></div>
+            <button class="btn-main" onclick="startGame()" style="width:100%">確認名單，進入球場</button>
         </div>
-    </div>
-
-    <div class="card">
-        <div class="player-header">
-            <span id="b-name" style="font-weight:bold">打者載入中</span>
-            <span class="team-tag" id="b-team">-</span>
-        </div>
-        <div class="stats-row">
-            AVG: <span id="b-avg" class="avg-highlight">.000</span> | HR: <span id="b-hr">0</span>
-        </div>
-    </div>
-
-    <div style="font-size: 0.9rem; margin-bottom: 10px;">
-        本局紀錄: 安打 <span id="game-hits">0</span> / 打數 <span id="game-ab">0</span> 
-        (打率: <span id="live-avg" class="avg-highlight">.000</span>)
-    </div>
-    
-    <div class="console" id="log">> 初始化數據...</div>
-    
-    <div class="controls">
-        <button onclick="setPitch('Fastball')">4縫線速球</button>
-        <button onclick="setPitch('Slider')">橫向滑球</button>
-        <button onclick="setPitch('Fork')">指叉掉落</button>
-        <button onclick="setPitch('Curve')">曲球速差</button>
     </div>
 </div>
 
-<div class="main-view">
-    <div id="hr-text" class="hr-text">HOME RUN!</div>
-    <div style="margin-bottom:10px; opacity:0.6">點擊九宮格投球</div>
-    <canvas id="gameCanvas" width="450" height="450"></canvas>
+<div id="game-screen">
+    <div class="scoreboard">
+        <h2 id="match-title">實況對決</h2>
+        <div id="bso" style="font-size: 1.5rem; letter-spacing: 10px; margin-bottom: 10px;">B ○○○ S ○○ O ○○</div>
+    </div>
+    <div class="game-area">
+        <div style="width: 200px;">
+            <div id="current-hitter-card" style="background:var(--panel); padding:15px; border-radius:8px;">
+                <div style="font-size:0.8rem; opacity:0.6">當前打者</div>
+                <div id="hitter-name" style="font-size:1.4rem; font-weight:bold;">-</div>
+                <div id="hitter-stats">AVG: -</div>
+            </div>
+            <div id="log" style="margin-top:10px; height:250px; overflow-y:auto; font-size:0.8rem; color:#00ff00; background:#000; padding:10px;"></div>
+        </div>
+        <canvas id="gameCanvas" width="500" height="500"></canvas>
+    </div>
 </div>
 
 <script>
-    // 擴充球員名單與能力值 (根據 CPBL 生涯數據)
-    const pitchers = [
-        { name: "古林睿煬", team: "統一", era: 1.66, velo: 157, breaking: 82 },
-        { name: "徐若熙", team: "味全", era: 2.12, velo: 154, breaking: 94 },
-        { name: "黃子鵬", team: "樂天", era: 3.20, velo: 142, breaking: 88 },
-        { name: "德保拉", team: "中信", era: 2.98, velo: 148, breaking: 85 },
-        { name: "陳仕朋", team: "富邦", era: 3.50, velo: 144, breaking: 80 }
-    ];
-    const batters = [
-        { name: "林安可", team: "統一", avg: .275, hr: 22, power: 94 },
-        { name: "陳傑憲", team: "統一", avg: .330, hr: 5, power: 65 },
-        { name: "江坤宇", team: "中信", avg: .295, hr: 3, power: 60 },
-        { name: "張育成", team: "富邦", avg: .280, hr: 15, power: 92 },
-        { name: "朱育賢", team: "樂天", avg: .285, hr: 18, power: 88 },
-        { name: "吉力吉撈", team: "味全", avg: .270, hr: 23, power: 96 }
+    // 擴充球員池
+    const ALL_PLAYERS = [
+        { name: "陳傑憲", team: "獅", avg: .332, power: 65, type: 'B' },
+        { name: "林安可", team: "獅", avg: .275, power: 95, type: 'B' },
+        { name: "王柏融", team: "台鋼", avg: .300, power: 85, type: 'B' },
+        { name: "張育成", team: "富邦", avg: .285, power: 98, type: 'B' },
+        { name: "江坤宇", team: "象", avg: .298, power: 55, type: 'B' },
+        { name: "陳晨威", team: "猿", avg: .310, power: 70, type: 'B' },
+        { name: "朱育賢", team: "猿", avg: .282, power: 90, type: 'B' },
+        { name: "吉力吉撈", team: "龍", avg: .270, power: 96, type: 'B' },
+        { name: "詹子賢", team: "象", avg: .288, power: 80, type: 'B' },
+        { name: "古林睿煬", team: "獅", era: 1.66, velo: 157, type: 'P' },
+        { name: "徐若熙", team: "龍", era: 2.10, velo: 154, type: 'P' },
+        { name: "黃子鵬", team: "猿", era: 3.15, velo: 145, type: 'P' },
+        { name: "陳凱倫", team: "傳奇", avg: .260, power: 60, type: 'B' }
     ];
 
-    let state = {
-        p: pitchers[0], b: batters[0],
-        hits: 0, ab: 0, outs: 0,
-        pitchType: 'Fastball',
-        active: false
-    };
+    let myLineup = [];
+    let myPitchers = [];
+    let currentGame = { hitterIdx: 0, pitcherIdx: 0, outs: 0, ballActive: false };
 
+    // 初始化名單挑選
+    function initSetup() {
+        const pool = document.getElementById('player-pool');
+        ALL_PLAYERS.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'player-item';
+            div.innerHTML = `<span>${p.name} (${p.team})</span> <span>${p.type === 'P' ? 'ERA:'+p.era : 'AVG:'+p.avg}</span>`;
+            div.onclick = () => selectPlayer(p, div);
+            pool.appendChild(div);
+        });
+    }
+
+    function selectPlayer(p, el) {
+        if(p.type === 'B' && myLineup.length < 9) {
+            myLineup.push(p);
+            document.getElementById('my-lineup').innerHTML += `<div class="player-item">${myLineup.length}. ${p.name}</div>`;
+            el.style.opacity = '0.3';
+            el.onclick = null;
+        } else if(p.type === 'P' && myPitchers.length < 3) {
+            myPitchers.push(p);
+            const roles = ['先發(SP)', '中繼(RP)', '救援(CP)'];
+            document.getElementById('my-pitchers').innerHTML += `<div class="player-item">${roles[myPitchers.length-1]}: ${p.name}</div>`;
+            el.style.opacity = '0.3';
+            el.onclick = null;
+        }
+    }
+
+    function startGame() {
+        if(myLineup.length < 9 || myPitchers.length < 1) return alert("請選滿 9 位打者與至少 1 位投手！");
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        nextAtBat();
+    }
+
+    // 遊戲核心邏輯 (延續 6.0 並加入名單)
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    function init() {
-        updateStats();
-        drawZone();
-        addLog("歡迎來到 CPBL 數據對局。投手：古林睿煬，打者：林安可。");
+    function nextAtBat() {
+        const hitter = myLineup[currentGame.hitterIdx];
+        document.getElementById('hitter-name').innerText = hitter.name;
+        document.getElementById('hitter-stats').innerText = `AVG: .${hitter.avg*1000} | 戰力: ${hitter.power}`;
+        addLog(`現在輪到第 ${currentGame.hitterIdx+1} 棒：${hitter.name}`);
+        setTimeout(aiPitch, 1500);
     }
 
-    function drawZone() {
-        ctx.clearRect(0, 0, 450, 450);
-        ctx.strokeStyle = "#334155";
-        for(let i=1; i<3; i++){
-            ctx.beginPath(); ctx.moveTo(75+i*100, 75); ctx.lineTo(75+i*100, 375); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(75, 75+i*100); ctx.lineTo(375, 75+i*100); ctx.stroke();
-        }
-        ctx.strokeStyle = varColor('--accent');
-        ctx.strokeRect(75, 75, 300, 300);
-    }
-
-    canvas.addEventListener('mousedown', (e) => {
-        if(state.active) return;
-        const rect = canvas.getBoundingClientRect();
-        pitchBall(e.clientX - rect.left, e.clientY - rect.top);
-    });
-
-    function pitchBall(tx, ty) {
-        state.active = true;
-        let f = 0, sx = 225, sy = 225;
+    function aiPitch() {
+        currentGame.ballActive = true;
+        let f = 0, sx = 250, sy = 250;
+        const tx = 100 + Math.random()*300, ty = 100 + Math.random()*300;
+        
         const anim = () => {
-            f++; let p = f/18;
-            let dx = (state.pitchType === 'Slider') ? p*45 : 0;
-            let dy = (state.pitchType === 'Fork') ? p*55 : 0;
+            f++; let p = f/25;
+            ctx.clearRect(0,0,500,500);
             drawZone();
-            let cx = sx + (tx-sx)*p + dx;
-            let cy = sy + (ty-sy)*p + dy;
-            ctx.beginPath(); ctx.arc(cx, cy, 6+p*14, 0, Math.PI*2);
+            let cx = sx + (tx-sx)*p;
+            let cy = sy + (ty-sy)*p;
+            ctx.beginPath(); ctx.arc(cx, cy, 5+p*15, 0, Math.PI*2);
             ctx.fillStyle = "#fff"; ctx.fill();
-            if(f < 18) requestAnimationFrame(anim);
-            else resolve(cx, cy);
+            currentGame.lastBall = {x:cx, y:cy, r:5+p*15};
+            if(f < 25 && currentGame.ballActive) requestAnimationFrame(anim);
+            else if(currentGame.ballActive) resolve(false);
         };
         anim();
     }
 
-    function resolve(x, y) {
-        state.active = false;
-        state.ab++;
-        let inZone = x > 75 && x < 375 && y > 75 && y < 375;
-        
-        // 核心打擊率算法：基礎機率 + 球員能力 + 邊角判定
-        let hitProb = state.b.avg - (state.p.era / 20);
-        if(!inZone) hitProb -= 0.15; // 壞球難打
-        
-        if(Math.random() < hitProb) {
-            state.hits++;
-            if(Math.random() < (state.b.power/200)) {
-                showHR();
-                addLog(`!!! ${state.b.name} 轟出全壘打 !!!`);
-            } else {
-                addLog(`${state.b.name} 擊出安打。`);
-            }
+    canvas.addEventListener('mousedown', (e) => {
+        if(!currentGame.ballActive) return;
+        const rect = canvas.getBoundingClientRect();
+        const dist = Math.sqrt((e.clientX-rect.left-currentGame.lastBall.x)**2 + (e.clientY-rect.top-currentGame.lastBall.y)**2);
+        if(dist < currentGame.lastBall.r + 15) resolve(true, dist);
+    });
+
+    function resolve(isHit, dist) {
+        currentGame.ballActive = false;
+        if(isHit) {
+            if(dist < 10) { addLog("全壘打！"); } else { addLog("擊出安打！"); }
         } else {
-            state.outs++;
-            addLog(inZone ? "三振！" : "打者選球，壞球一顆。");
+            addLog("揮棒落空！");
+            currentGame.outs++;
         }
         
-        if(state.outs >= 3) nextBatter();
-        updateStats();
+        if(currentGame.outs >= 3) {
+            currentGame.outs = 0;
+            addLog("三出局，換局。");
+        }
+        currentGame.hitterIdx = (currentGame.hitterIdx + 1) % 9;
+        setTimeout(nextAtBat, 2000);
     }
 
-    function nextBatter() {
-        state.outs = 0;
-        state.b = batters[Math.floor(Math.random()*batters.length)];
-        state.p = pitchers[Math.floor(Math.random()*pitchers.length)];
-        addLog(`--- 換人：${state.p.name} vs ${state.b.name} ---`);
-    }
-
-    function updateStats() {
-        document.getElementById('p-name').innerText = state.p.name;
-        document.getElementById('p-team').innerText = state.p.team;
-        document.getElementById('p-era').innerText = state.p.era;
-        document.getElementById('p-velo').innerText = state.p.velo + 'k';
-        document.getElementById('b-name').innerText = state.b.name;
-        document.getElementById('b-team').innerText = state.b.team;
-        document.getElementById('b-avg').innerText = state.b.avg.toFixed(3);
-        document.getElementById('game-hits').innerText = state.hits;
-        document.getElementById('game-ab').innerText = state.ab;
-        let lAvg = state.ab === 0 ? 0 : state.hits / state.ab;
-        document.getElementById('live-avg').innerText = lAvg.toFixed(3);
-    }
-
-    function showHR() {
-        const el = document.getElementById('hr-text');
-        el.style.display = 'block';
-        setTimeout(() => el.style.display = 'none', 1000);
+    function drawZone() {
+        ctx.strokeStyle = "#334155";
+        ctx.strokeRect(100, 100, 300, 300);
     }
 
     function addLog(m) {
-        const c = document.getElementById('log');
-        c.innerHTML = `<div>> ${m}</div>` + c.innerHTML;
+        const l = document.getElementById('log');
+        l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
     }
 
-    function setPitch(t) { state.pitchType = t; addLog(`投手準備投出：${t}`); }
-    function varColor(n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-
-    init();
+    initSetup();
 </script>
 </body>
 </html>
