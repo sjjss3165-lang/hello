@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝點名系統 v117</title>
+    <title>電三孝點名系統 v116</title>
     <style>
         :root {
             --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
@@ -14,73 +14,66 @@
         }
         body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; transition: 0.3s; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
-        /* 頂部導航 */
+        /* 頂部導航與鎖定鈕 */
         .header { width: 92%; padding: 12px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
         .clock-display { font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
         .top-btns { display: flex; gap: 8px; }
-        .icon-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; transition: 0.2s; user-select: none; }
-        .locked-border { border: 2px solid var(--absent) !important; color: var(--absent); }
-        .unlocked-border { border: 2px solid var(--primary) !important; color: var(--primary); }
+        .icon-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; }
+        .locked-border { border-color: var(--absent) !important; color: var(--absent) !important; }
 
-        /* 數據儀表板 */
         .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
         .dash-card { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
         .dash-card big { display: block; font-size: 1.1rem; font-weight: 800; }
         .dash-card small { font-size: 0.55rem; color: #8e8e93; font-weight: bold; }
 
-        /* 異常名單區 */
         .status-list-zone { width: 92%; padding: 10px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 12px; position: relative; }
         .status-item { font-size: 0.75rem; margin: 3px 0; display: flex; flex-wrap: wrap; line-height: 1.4; }
-        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
+        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.9rem; box-shadow: 0 4px 10px rgba(0,122,255,0.3); }
 
         .main-container { width: 95%; height: calc(100vh - 280px); overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
         .view { display: none; width: 100%; max-width: 400px; }
         .view.active { display: block; }
 
         /* 座位設定 */
-        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 15px; }
+        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 18px; }
         .podium-box { grid-column: 3 / span 3; height: 42px; border: 1.5px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #888; font-weight: bold; letter-spacing: 5px; }
 
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
         .s { width: 52px; height: 42px; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; cursor: pointer; color: #888; transition: 0.1s; position: relative; }
+        
         .time-label { position: absolute; top: 2px; font-size: 0.45rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; pointer-events: none; }
         .note-label { font-size: 0.55rem; font-weight: 800; margin-top: 10px; }
 
-        /* 狀態色彩 */
         .present { color: var(--primary); border-color: var(--primary); }
         .late { color: var(--warning); border-color: var(--warning); background: rgba(255,149,0,0.05); }
         .absent { color: var(--absent); border-color: var(--absent); background: rgba(255,59,48,0.05); }
         .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
         .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
 
-        /* 鎖定遮罩 */
-        .app-locked .s, .app-locked .menu-btn { cursor: not-allowed; opacity: 0.7; pointer-events: none; }
+        /* 鎖定遮罩樣式 */
+        .app-locked .s, .app-locked .menu-btn, .app-locked .copy-circle { cursor: not-allowed; opacity: 0.8; pointer-events: none; }
 
         /* 液態懸浮導航 */
         .tab-bar-wrap { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
         .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 50px; background: var(--card); backdrop-filter: blur(15px); border: 1px solid var(--border); border-radius: 25px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
+        .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .tab-btn.active { color: var(--primary); transform: scale(1.1); }
 
         #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 9999; justify-content: center; align-items: center; }
         .menu-content { background: var(--card); padding: 25px; border-radius: 25px; width: 260px; text-align: center; border: 1px solid var(--border); }
         .menu-btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; background: var(--border); color: var(--text); }
-        
+
         .record-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        .record-table td { padding: 10px; border-bottom: 1px solid var(--border); }
+        .record-table td { padding: 12px 10px; border-bottom: 1px solid var(--border); }
     </style>
 </head>
-<body class="app-locked">
-
-    <header class="header">
+<body class="app-locked"> <header class="header">
         <div>
             <div style="font-size: 0.6rem; font-weight: 800; color: #888; letter-spacing: 1px;">電三孝點名系統</div>
             <div id="live-clock" class="clock-display">00:00:00</div>
         </div>
         <div class="top-btns">
-            <button id="lock-btn" class="icon-btn locked-border" 
-                    onmousedown="startLockTimer()" onmouseup="endLockTimer()" 
-                    ontouchstart="startLockTimer()" ontouchend="endLockTimer()">🔒</button>
+            <button id="lock-btn" class="icon-btn locked-border" onclick="toggleLock()">🔒</button>
             <button class="icon-btn" onclick="toggleTheme()">🌓</button>
         </div>
     </header>
@@ -110,7 +103,7 @@
         </div>
 
         <div id="v-pho" class="view">
-            <button onclick="allPhone()" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px; border:none; background:var(--phone); color:#fff; font-weight:bold;">一鍵全班繳交</button>
+            <button onclick="allPhone()" id="all-pho-btn" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px; border:none; background:var(--phone); color:#fff; font-weight:bold;">標記全班繳交</button>
             <div id="g-pho-pod" class="podium-row"></div>
             <div id="g-pho-main" class="grid"></div>
         </div>
@@ -130,7 +123,7 @@
         <div id="v-rec" class="view">
             <div style="background:var(--card); border-radius:18px; border:1px solid var(--border); overflow:hidden;">
                 <table class="record-table" style="width:100%">
-                    <thead><tr style="font-size:0.7rem; color:#888;"><th style="padding:10px">座號</th><th style="padding:10px">遲到</th><th style="padding:10px">缺/假</th></tr></thead>
+                    <thead><tr style="font-size:0.7rem; color:#888; border-bottom:1px solid var(--border);"><th style="padding:10px">座號</th><th style="padding:10px">遲到</th><th style="padding:10px">缺/假</th></tr></thead>
                     <tbody id="rec-body"></tbody>
                 </table>
             </div>
@@ -164,26 +157,28 @@
     </div>
 
     <script>
-        const layout = [2,0,0,6,20,10,21, 12,23,25,34,3,1,33, 39,4,19,15,18,24,30, 40,5,16,35,29,9,36, 32,14,37,17,31,8,7, 22,11,26,38,0,0,0];
-        let isLocked = true, lockTimer, curV = 'att', pendingId = null;
+        const layout = [2,0,0,6,20,10,21,12,23,25,34,3,1,33,39,4,19,15,18,24,30,40,5,16,35,29,9,36,32,14,37,17,31,8,7,22,11,26,38,0,0,0];
+        let isLocked = true, curV = 'att', pendingId = null;
 
-        // 長按解鎖邏輯
-        function startLockTimer() {
-            lockTimer = setTimeout(() => {
-                isLocked = !isLocked;
-                document.body.classList.toggle('app-locked', isLocked);
-                const btn = document.getElementById('lock-btn');
-                btn.innerText = isLocked ? "🔒" : "🔓";
-                btn.classList.toggle('locked-border', isLocked);
-                btn.classList.toggle('unlocked-border', !isLocked);
-                // 震動回饋 (如果手機支援)
-                if (navigator.vibrate) navigator.vibrate(100);
-            }, 1500); // 長按 1.5 秒解鎖
+        function toggleLock() {
+            if(isLocked) {
+                let pw = prompt("請輸入權軍密碼 (教室代號)：", "");
+                if(pw === "305") { // 密碼設定為 305
+                    isLocked = false;
+                    document.body.classList.remove('app-locked');
+                    document.getElementById('lock-btn').innerText = "🔓";
+                    document.getElementById('lock-btn').classList.remove('locked-border');
+                    alert("權限已解鎖，現在可以編輯。");
+                } else { alert("密碼錯誤，禁止更改權限。"); }
+            } else {
+                isLocked = true;
+                document.body.classList.add('app-locked');
+                document.getElementById('lock-btn').innerText = "🔒";
+                document.getElementById('lock-btn').classList.add('locked-border');
+            }
         }
-        function endLockTimer() { clearTimeout(lockTimer); }
 
         function toggleTheme() { document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'; }
-        
         function sw(v) {
             curV = v;
             document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
