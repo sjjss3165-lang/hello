@@ -2,17 +2,18 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>WBC 2024：物理校準完全版</title>
+    <title>WBC 2024：王牌大作進化版</title>
     <style>
         :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; --strike: #facc15; --tw-blue: #0038a8; --jp-red: #bc002d; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; height: 100vh; }
         
-        /* 設定介面 */
+        /* 選人畫面 */
         #setup-screen { position: absolute; inset: 0; z-index: 1000; background: radial-gradient(circle, #001f3f, #000); padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
-        .setup-container { display: flex; gap: 20px; width: 95%; max-width: 1200px; height: 60vh; }
+        .setup-container { display: flex; gap: 20px; width: 95%; max-width: 1200px; height: 65vh; }
         .pool-box { flex: 1; background: rgba(255,255,255,0.05); border: 1.5px solid var(--tw-blue); border-radius: 12px; overflow-y: auto; padding: 15px; }
         .p-item { background: #0f172a; padding: 10px; margin: 5px 0; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.85rem; border: 1px solid transparent; }
-        .p-item.selected { border-color: var(--strike); opacity: 0.6; pointer-events: none; }
+        .p-item:hover { border-color: var(--accent); }
+        .p-item.selected { border-color: var(--strike); opacity: 0.4; pointer-events: none; }
 
         /* 遊戲介面 */
         #game-screen { display: none; width: 100%; height: 100vh; flex-direction: column; }
@@ -21,23 +22,26 @@
         .score-table td, th { padding: 4px 10px; border: 1px solid #1e293b; }
 
         .main-layout { display: flex; flex: 1; width: 100%; position: relative; }
-        .order-panel { width: 200px; background: rgba(0,0,0,0.85); padding: 15px; border-right: 1px solid #334155; }
-        .order-item { padding: 4px; border-radius: 4px; margin-bottom: 2px; color: #555; font-size: 0.8rem; }
+        .order-panel { width: 220px; background: rgba(0,0,0,0.85); padding: 15px; border-right: 1px solid #334155; }
+        .order-item { padding: 4px; border-radius: 4px; margin-bottom: 2px; color: #555; font-size: 0.8rem; display: flex; justify-content: space-between; }
         .order-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
         .canvas-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b, #050a15); }
-        canvas { border-radius: 10px; border: 1px solid #334155; }
+        canvas { border-radius: 10px; border: 1px solid #334155; transition: transform 0.1s; }
 
+        /* 側邊控制欄 */
         .sidebar { width: 280px; background: rgba(15, 23, 42, 0.95); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-left: 1px solid #334155; }
-        .btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; text-align: center; }
+        .pitch-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; }
         .btn.active { background: var(--accent); color: #000; font-weight: bold; }
         .sub-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 5px; }
 
         #sub-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e293b; border: 2px solid var(--accent); border-radius: 15px; padding: 20px; z-index: 2000; width: 300px; box-shadow: 0 0 50px #000; }
-        .sub-item { padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.9rem; }
+        .sub-item { padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 0.85rem; }
 
         #swing-btn { width: 100%; padding: 20px; font-size: 1.5rem; font-weight: 900; color: #fff; background: linear-gradient(to bottom, #ef4444, #991b1b); border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 #7f1d1d; }
-        
+        #swing-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #7f1d1d; }
+
         .light { width: 12px; height: 12px; border-radius: 50%; background: #2d3748; display: inline-block; margin: 0 4px; }
         .s-on { background: var(--strike); box-shadow: 0 0 10px var(--strike); }
         .b-on { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
@@ -48,29 +52,28 @@
         #timing-text { font-size: 2rem; font-weight: 900; color: #fff; text-shadow: 0 0 10px #000; }
         #result-text { font-size: 2.5rem; font-weight: 900; color: var(--strike); text-shadow: 0 0 20px #000; }
         
-        .log { height: 100px; background: #000; color: #4ade80; padding: 10px; font-size: 0.75rem; overflow-y: auto; border: 1px solid #334155; font-family: monospace; }
-        #start-btn { margin-top: 20px; padding: 12px 50px; font-size: 1.1rem; background: var(--tw-blue); color: white; border: none; border-radius: 30px; cursor: pointer; display: none; }
+        #start-btn { margin-top: 20px; padding: 12px 50px; background: var(--tw-blue); color: white; border: none; border-radius: 30px; cursor: pointer; display: none; }
+        
+        /* 狀態圖示 */
+        .cond-best { color: #f87171; } /* 臉紅 */
+        .cond-good { color: #facc15; } /* 好 */
+        .cond-bad { color: #60a5fa; }  /* 藍 */
     </style>
 </head>
 <body>
 
 <div id="setup-screen">
-    <h1 style="color:var(--accent)">WBC 2024 王牌調度：台日對決</h1>
-    <h3 id="setup-status">請挑選 中華隊：9 打者 + 1 投手 (古林、若熙已就位)</h3>
+    <h1 style="color:var(--accent)">WBC 2024：王牌大作進化版</h1>
+    <h3 id="setup-status">建立你的夢幻先發名單</h3>
     <div class="setup-container">
         <div class="pool-box"><h4>中華隊球員名單</h4><div id="tw-pool"></div></div>
-        <div class="pool-box"><h4 style="color:var(--strike);">先發名單</h4><div id="my-lineup-display"></div></div>
+        <div class="pool-box"><h4 style="color:var(--strike);">先發陣容</h4><div id="my-lineup-display"></div></div>
     </div>
-    <button id="start-btn" onclick="beginGame()">開始比賽</button>
+    <button id="start-btn" onclick="beginGame()">開始對決</button>
 </div>
 
 <div id="game-screen">
-    <div id="sub-modal">
-        <h4 id="modal-title" style="margin:0 0 10px 0; color:var(--accent);">板凳球員</h4>
-        <div id="sub-list"></div>
-        <button class="sub-btn" style="width:100%; margin-top:10px;" onclick="closeModal()">取消</button>
-    </div>
-
+    <div id="sub-modal"><h4 id="modal-title">換人</h4><div id="sub-list"></div><button class="sub-btn" style="width:100%; margin-top:10px;" onclick="closeModal()">取消</button></div>
     <div class="line-score">
         <table class="score-table">
             <tr><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>R</th><th>H</th></tr>
@@ -82,12 +85,8 @@
     <div class="main-layout">
         <div class="order-panel" id="order-ui"><div id="order-list"></div></div>
         <div class="canvas-container">
-            <div id="msg-ov" class="overlay" style="position:absolute; font-size:4rem; color:white; display:none; z-index:100; text-shadow:0 0 20px #000;">攻守交換</div>
-            <div class="feedback-overlay">
-                <div id="speed-text"></div>
-                <div id="timing-text"></div>
-                <div id="result-text"></div>
-            </div>
+            <div id="msg-ov" class="overlay" style="position:absolute; font-size:4rem; display:none; z-index:100; color:white; font-weight:bold;">攻守交換</div>
+            <div class="feedback-overlay"><div id="speed-text"></div><div id="timing-text"></div><div id="result-text"></div></div>
             <canvas id="fieldCanvas" width="550" height="450"></canvas>
         </div>
         <div class="sidebar">
@@ -97,16 +96,9 @@
                 O <div id="o1" class="light"></div><div id="o2" class="light"></div>
                 <div id="base-ui" style="margin-top:8px; color:var(--accent); letter-spacing:10px; font-size:1.3rem; text-align:center;">◇ ◇ ◇</div>
             </div>
-            <div id="pitch-ui">
-                <div class="pitch-menu" id="pitch-buttons"></div>
-                <button class="sub-btn" style="width:100%;" onclick="openSubModal('P')">🔄 更換投手</button>
-            </div>
-            <div id="bat-ui" style="display:none;">
-                <button id="swing-btn" onclick="swing()">SWING!</button>
-                <button class="sub-btn" style="width:100%;" onclick="openSubModal('B')">🔄 更換代打</button>
-            </div>
+            <div id="pitch-ui"><div class="pitch-menu" id="pitch-buttons"></div><button class="sub-btn" style="width:100%;" onclick="openSubModal('P')">🔄 更換投手</button></div>
+            <div id="bat-ui" style="display:none;"><button id="swing-btn" onclick="swing()">SWING!</button><button class="sub-btn" style="width:100%;" onclick="openSubModal('B')">🔄 更換代打</button></div>
             <div id="matchup" style="background:var(--panel); padding:10px; border-radius:5px; border-left:4px solid var(--tw-blue); font-size:0.8rem;"></div>
-            <div class="log" id="log">> 歷史對決準備開始...</div>
         </div>
     </div>
 </div>
@@ -116,40 +108,43 @@
     const ctx = canvas.getContext('2d');
 
     const TW_PLAYERS = [
-        { name: "古林睿煬 (2024)", type: "P", speed: 157, signature: ["極速火球", "滑球", "變速球", "曲球"] }, 
-        { name: "徐若熙 (2024)", type: "P", speed: 154, signature: ["消失指叉", "滑球", "火球", "曲球"] }, 
-        { name: "宋家豪", type: "P", speed: 151, signature: ["火球", "圈指變速球", "滑球", "伸卡"] }, // 已加入圈指變速球
-        { name: "張育成", type: "B", avg: .438 }, { name: "陳傑憲", type: "B", avg: .357 },
-        { name: "林立", type: "B", avg: .333 }, { name: "吉力吉撈", type: "B", avg: .310 },
-        { name: "江坤宇", type: "B", avg: .280 }, { name: "曾峻岳", type: "P", speed: 156, signature: ["火球", "滑球", "指叉"] },
-        { name: "鄭宗哲", type: "B", avg: .333 }, { name: "吳念庭", type: "B", avg: .300 },
-        { name: "王威晨", type: "B", avg: .250 }, { name: "陳晨威", type: "B", avg: .290 },
-        { name: "朱育賢", type: "B", avg: .282 },
-        { name: "黃子鵬", type: "P", speed: 145, signature: ["側投火球", "滑球", "二縫線"] }
+        { name: "古林睿煬 (2024)", type: "P", speed: 157, ctrl: 92, brk: 85, signature: ["極速火球", "滑球", "變速球"] }, 
+        { name: "徐若熙 (2024)", type: "P", speed: 154, ctrl: 88, brk: 98, signature: ["消失指叉", "滑球", "火球"] }, 
+        { name: "宋家豪", type: "P", speed: 151, ctrl: 90, brk: 95, signature: ["火球", "圈指變速球", "滑球"] }, 
+        { name: "張育成", type: "B", avg: .438, pwr: 95, spd: 75 },
+        { name: "吉力吉撈", type: "B", avg: .310, pwr: 98, spd: 40 },
+        { name: "陳傑憲", type: "B", avg: .357, pwr: 65, spd: 92 },
+        { name: "林立", type: "B", avg: .333, pwr: 85, spd: 85 },
+        { name: "江坤宇", type: "B", avg: .280, pwr: 55, spd: 80 },
+        { name: "鄭宗哲", type: "B", avg: .333, pwr: 60, spd: 95 },
+        { name: "曾峻岳", type: "P", speed: 156, ctrl: 80, brk: 88, signature: ["火球", "滑球", "指叉"] },
+        { name: "黃子鵬", type: "P", speed: 145, ctrl: 95, brk: 90, signature: ["側投火球", "滑球", "二縫線"] },
+        { name: "吳念庭", type: "B", avg: .300, pwr: 75, spd: 65 },
+        { name: "王威晨", type: "B", avg: .280, pwr: 50, spd: 88 },
+        { name: "陳晨威", type: "B", avg: .290, pwr: 55, spd: 99 },
+        { name: "朱育賢", type: "B", avg: .282, pwr: 90, spd: 45 }
     ];
 
     const JP_ORDER = [
-        { name: "Nootbaar", avg: .300 }, { name: "近藤健介", avg: .340 }, { name: "大谷翔平", avg: .435 },
-        { name: "村上宗隆", avg: .280 }, { name: "吉田正尚", avg: .409 }, { name: "岡本和真", avg: .300 },
-        { name: "山田哲人", avg: .250 }, { name: "源田壯亮", avg: .220 }, { name: "中村悠平", avg: .200 }
+        { name: "Nootbaar", avg: .300, pwr: 80 }, { name: "近藤健介", avg: .340, pwr: 75 }, { name: "大谷翔平", avg: .435, pwr: 99 },
+        { name: "村上宗隆", avg: .280, pwr: 98 }, { name: "吉田正尚", avg: .409, pwr: 85 }, { name: "岡本和真", avg: .300, pwr: 90 },
+        { name: "山田哲人", avg: .250, pwr: 80 }, { name: "源田壯亮", avg: .220, pwr: 50 }, { name: "中村悠平", avg: .200, pwr: 45 }
     ];
+    const JP_PITCHER = { name: "山本由伸", speed: 158, ctrl: 98, brk: 95, signature: ["火球", "彩虹曲球", "指叉球", "滑球"] };
 
-    const JP_PITCHER = { name: "山本由伸", speed: 158, signature: ["火球", "彩虹曲球", "指叉球", "滑球"] };
-
-    let myLineup = { B: [], P: null };
-    let dugout = [];
-    let state = {
+    let myLineup = { B: [], P: null }, dugout = [], state = {
         inning: 1, isTop: true, s: 0, b: 0, o: 0, pScore: 0, cScore: 0, pHits: 0, cHits: 0,
         twIdx: 0, jpIdx: 0, isAnim: false, pitchType: '', pitchFrame: 0,
-        bases: [false, false, false], isBallInFlight: false, trail: []
+        bases: [false, false, false], isBallInFlight: false, trail: [],
+        camScale: 1, conditions: {} // 儲存球員狀態
     };
 
     function initSetup() {
-        const pEl = document.getElementById('tw-pool');
+        const poolEl = document.getElementById('tw-pool');
         TW_PLAYERS.forEach((p, i) => {
-            const div = document.createElement('div');
-            div.className = 'p-item'; div.innerHTML = `<span>${p.name}</span> <span>${p.type=='P'?'投':'打'}</span>`;
-            div.onclick = () => selectPlayer(p, div); pEl.appendChild(div);
+            const div = document.createElement('div'); div.className = 'p-item';
+            div.innerHTML = `<span>${p.name}</span> <span>${p.type=='P'?'投':'打'}</span>`;
+            div.onclick = () => selectPlayer(p, div); poolEl.appendChild(div);
         });
     }
 
@@ -162,6 +157,8 @@
         if (myLineup.B.length === 9 && myLineup.P) document.getElementById('start-btn').style.display = 'block';
     }
 
+    function getCond() { const r = Math.random(); if(r > 0.8) return {v: 1.1, c: 'cond-best', icon: '●'}; if(r < 0.2) return {v: 0.9, c: 'cond-bad', icon: '●'}; return {v: 1.0, c: 'cond-good', icon: '●'}; }
+
     function beginGame() {
         const sel = [...myLineup.B.map(b=>b.name), myLineup.P.name];
         dugout = TW_PLAYERS.filter(p => !sel.includes(p.name));
@@ -172,21 +169,16 @@
     }
 
     function openSubModal(type) {
-        const modal = document.getElementById('sub-modal'), list = document.getElementById('sub-list'), title = document.getElementById('modal-title');
-        list.innerHTML = ''; title.innerText = type === 'P' ? "更換投手" : "更換代打";
-        const cands = dugout.filter(p => p.type === type);
-        if (cands.length === 0) list.innerHTML = "板凳空空如也";
-        cands.forEach(p => {
+        const modal = document.getElementById('sub-modal'), list = document.getElementById('sub-list');
+        list.innerHTML = '';
+        dugout.filter(p => p.type === type).forEach(p => {
             const div = document.createElement('div'); div.className = 'sub-item';
             div.innerHTML = `<span>${p.name}</span> <span>${type=='P'?'V:'+p.speed:'SUB'}</span>`;
             div.onclick = () => {
-                if(type === 'P') { myLineup.P = p; updatePitchMenu(); addLog(`投手更換：${p.name}`); }
-                else { myLineup.B[state.twIdx] = p; updateOrderUI(); addLog(`代打更換：${p.name}`); }
+                if(type === 'P') { myLineup.P = p; updatePitchMenu(); } else { myLineup.B[state.twIdx] = p; updateOrderUI(); }
                 dugout = dugout.filter(x => x.name !== p.name); closeModal(); updateUI();
-            };
-            list.appendChild(div);
-        });
-        modal.style.display = 'block';
+            }; list.appendChild(div);
+        }); modal.style.display = 'block';
     }
 
     function closeModal() { document.getElementById('sub-modal').style.display = 'none'; }
@@ -195,23 +187,22 @@
         const menu = document.getElementById('pitch-buttons'); menu.innerHTML = '';
         const currP = state.isTop ? myLineup.P : JP_PITCHER;
         currP.signature.forEach((s, i) => {
-            const btn = document.createElement('button');
-            btn.className = `btn ${i === 0 ? 'active' : ''}`; btn.innerText = s;
+            const btn = document.createElement('button'); btn.className = `btn ${i === 0 ? 'active' : ''}`; btn.innerText = s;
             if (i === 0) state.pitchType = s;
-            btn.onclick = () => {
-                state.pitchType = s; document.querySelectorAll('.pitch-menu .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-            };
+            btn.onclick = () => { state.pitchType = s; document.querySelectorAll('.pitch-menu .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); };
             menu.appendChild(btn);
         });
     }
 
     function updateOrderUI() {
-        const list = document.getElementById('order-list'); list.innerHTML = '';
-        const order = state.isTop ? JP_ORDER : myLineup.B;
-        const idx = state.isTop ? state.jpIdx : state.twIdx;
+        const list = document.getElementById('order-list'), order = state.isTop ? JP_ORDER : myLineup.B, idx = state.isTop ? state.jpIdx : state.twIdx;
+        list.innerHTML = ''; 
         order.forEach((p, i) => {
+            if(!state.conditions[p.name]) state.conditions[p.name] = getCond();
+            const cond = state.conditions[p.name];
             const div = document.createElement('div'); div.className = `order-item ${i === idx ? 'active' : ''}`;
-            div.innerText = `${i+1}. ${p.name}`; list.appendChild(div);
+            div.innerHTML = `<span>${i+1}. ${p.name}</span> <span class="${cond.c}">${cond.icon}</span>`;
+            list.appendChild(div);
         });
     }
 
@@ -222,15 +213,14 @@
             ctx.moveTo(175, 100+i*66.6); ctx.lineTo(375, 100+i*66.6); ctx.stroke();
         }
         if (state.trail.length > 1) {
-            ctx.beginPath(); ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1.5;
             ctx.moveTo(state.trail[0].x, state.trail[0].y);
             for(let i=1; i<state.trail.length; i++) ctx.lineTo(state.trail[i].x, state.trail[i].y); ctx.stroke();
         }
         let leg = (f > 0 && f < 12) ? -35 : 0;
         ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.arc(275, 360, 12, 0, Math.PI*2); ctx.stroke();
-        ctx.moveTo(275, 372); ctx.lineTo(275, 410); ctx.moveTo(275, 410); ctx.lineTo(260, 445);
-        ctx.moveTo(275, 410); ctx.lineTo(290, 445+leg); ctx.stroke();
+        ctx.moveTo(275, 372); ctx.lineTo(275, 410); ctx.moveTo(275, 410); ctx.lineTo(260, 445); ctx.moveTo(275, 410); ctx.lineTo(290, 445+leg); ctx.stroke();
     }
 
     canvas.addEventListener('mousedown', (e) => {
@@ -241,36 +231,29 @@
     function startPitch(tx, ty) {
         state.isAnim = true; state.trail = []; let f = 0;
         const anim = () => {
-            f++; render(f);
-            if(f < 18) requestAnimationFrame(anim);
+            f++; render(f); if(f < 18) requestAnimationFrame(anim);
             else {
                 let bf = 0; const p = state.isTop ? myLineup.P : JP_PITCHER;
-                let sB = p.speed;
-                if (state.pitchType.includes("火球")) sB += 2;
-                if (state.pitchType.includes("變速") || state.pitchType.includes("指叉")) sB -= 12;
-                const spd = Math.floor(sB + (Math.random()*4-2));
+                const spdBase = p.speed - (state.pitchType.includes("變速") ? 12 : 0);
+                const spd = Math.floor(spdBase + (Math.random()*4-2));
                 document.getElementById('speed-text').innerText = spd + " km/h";
                 document.getElementById('speed-text').style.display = 'block';
 
                 const fly = () => {
                     bf++; state.pitchFrame = bf; state.isBallInFlight = true;
                     let pVal = bf/22; render(18);
-                    let cF = pVal > 0.5 ? Math.pow(pVal - 0.5, 2) * 5 : 0;
+                    // 擬真：由遠及近 縮放
+                    let ballSize = 2 + (pVal * 18); 
+                    let cF = pVal > 0.4 ? Math.pow(pVal - 0.4, 2) * 5 : 0;
                     let dx = 0, dy = 0;
-
-                    // 物理校準：右投手視角 (對捕手/打者)
-                    // 滑球/曲球：向左偏 (dx 為負)
-                    // 圈指變速球/伸卡：向右下偏 (dx 為正, dy 為正)
-                    
                     if(state.pitchType.includes("滑球")) dx = cF * -65; 
                     if(state.pitchType.includes("曲球")) { dx = cF * -55; dy = cF * 50; }
                     if(state.pitchType.includes("指叉")) dy = cF * 80;
-                    if(state.pitchType.includes("圈指變速球")) { dx = cF * 50; dy = cF * 60; }
-                    if(state.pitchType.includes("伸卡") || state.pitchType.includes("二縫線")) dx = cF * 45;
+                    if(state.pitchType.includes("圈指變速球")) { dx = cF * 45; dy = cF * 190; }
                     
                     let cx = 275 + (tx-275)*pVal + dx, cy = 370 + (ty-370)*pVal + dy;
                     state.trail.push({x: cx, y: cy});
-                    ctx.beginPath(); ctx.arc(cx, cy, 3+pVal*16, 0, Math.PI*2); ctx.fillStyle = "#fff"; ctx.fill();
+                    ctx.beginPath(); ctx.arc(cx, cy, ballSize, 0, Math.PI*2); ctx.fillStyle = "#fff"; ctx.fill();
                     if(bf < 22) requestAnimationFrame(fly); else resolve(cx, cy);
                 }; fly();
             }
@@ -281,21 +264,18 @@
         state.isAnim = false; state.isBallInFlight = false;
         let inZone = cx > 175 && cx < 375 && cy > 100 && cy < 300;
         let batter = state.isTop ? JP_ORDER[state.jpIdx] : myLineup.B[state.twIdx];
-
+        let cond = state.conditions[batter.name] || {v:1};
+        
         if (state.isTop) {
-            if (inZone && Math.random() < batter.avg) {
-                const quality = Math.random() > 0.8 ? 2 : 1;
-                showFeedback("", quality === 2 ? "JPN 長打！" : "JPN 安打！");
-                handleHit(quality);
-            } else if (inZone) {
-                state.s++; if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); }
-            } else {
-                state.b++; if (state.b >= 4) { addLog("保送上壘"); handleWalk(); }
-            }
+            if (inZone && Math.random() < (batter.avg * cond.v)) {
+                const q = Math.random() < (batter.pwr/160) ? 2 : 1;
+                showFeedback("", q === 2 ? "JPN 長打！" : "JPN 安打！"); handleHit(q);
+            } else if (inZone) { state.s++; if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); } }
+            else { state.b++; if (state.b >= 4) handleWalk(); }
         } else {
-            if (inZone) { state.s++; } else { state.b++; }
+            if (inZone) state.s++; else state.b++;
             if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); }
-            if (state.b >= 4) { handleWalk(); }
+            if (state.b >= 4) handleWalk();
         }
         checkInning(); updateUI();
     }
@@ -303,33 +283,41 @@
     function swing() {
         if (!state.isBallInFlight) return;
         state.isBallInFlight = false;
-        let timing = "TOO LATE";
+        let timing = "TOO LATE", batter = myLineup.B[state.twIdx];
+        let cond = state.conditions[batter.name] || {v:1};
+        
         if (state.pitchFrame >= 19 && state.pitchFrame <= 21) timing = "PERFECT";
         else if (state.pitchFrame >= 15 && state.pitchFrame <= 22) timing = "GOOD";
-        let batter = myLineup.B[state.twIdx];
-        if (timing === "PERFECT") { handleHit(2); showFeedback("PERFECT", "長打！"); }
-        else if (timing === "GOOD" && Math.random() < batter.avg) { handleHit(1); showFeedback("GOOD", "安打！"); }
-        else { state.s++; showFeedback(timing, "揮棒落空"); if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); } }
+
+        if (timing === "PERFECT") {
+            const isHR = Math.random() < (batter.pwr / 180 * cond.v);
+            handleHit(isHR ? 4 : 2); showFeedback("PERFECT", isHR ? "全壘打！" : "長打！");
+            if(isHR) shakeScreen();
+        } else if (timing === "GOOD" && Math.random() < (batter.avg * cond.v)) {
+            handleHit(1); showFeedback("GOOD", "安打！");
+        } else {
+            state.s++; showFeedback(timing, "揮棒落空");
+            if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); }
+        }
         checkInning(); updateUI();
     }
 
+    function shakeScreen() { canvas.style.transform = "translate(5px, 5px)"; setTimeout(()=>canvas.style.transform="translate(-5px, -5px)", 50); setTimeout(()=>canvas.style.transform="translate(0,0)", 100); }
+
     function handleHit(bases) {
-        let r = 0; for (let i = 2; i >= 0; i--) { if (state.bases[i]) { if (i + bases >= 3) { r++; state.bases[i] = false; } else { state.bases[i + bases] = true; state.bases[i] = false; } } }
-        state.bases[bases - 1] = true;
-        if (state.isTop) { state.cScore += r; state.cHits++; } else { state.pScore += r; state.pHits++; }
+        let r = 0; if(bases === 4) { r = state.bases.filter(b=>b).length + 1; state.bases = [false, false, false]; }
+        else { for (let i = 2; i >= 0; i--) { if (state.bases[i]) { if (i + bases >= 3) { r++; state.bases[i] = false; } else { state.bases[i + bases] = true; state.bases[i] = false; } } } state.bases[bases - 1] = true; }
+        if (state.isTop) state.cScore += r; else state.pScore += r;
         state.s = 0; state.b = 0; finishPA();
     }
 
-    function handleWalk() {
+    function handleWalk() { 
         let r = 0; if (state.bases[0] && state.bases[1] && state.bases[2]) r = 1; else if (state.bases[0] && state.bases[1]) state.bases[2] = true; else if (state.bases[0]) state.bases[1] = true;
         state.bases[0] = true; if (state.isTop) state.cScore += r; else state.pScore += r;
-        state.s = 0; state.b = 0; finishPA();
+        state.s = 0; state.b = 0; finishPA(); 
     }
 
-    function finishPA() {
-        if (state.isTop) state.jpIdx = (state.jpIdx + 1) % 9; else state.twIdx = (state.twIdx + 1) % 9;
-        updateOrderUI();
-    }
+    function finishPA() { if (state.isTop) state.jpIdx = (state.jpIdx + 1) % 9; else state.twIdx = (state.twIdx + 1) % 9; updateOrderUI(); }
 
     function checkInning() {
         if (state.o >= 3) {
@@ -352,17 +340,15 @@
 
     function updateUI() {
         document.getElementById('pr').innerText = state.pScore; document.getElementById('cr').innerText = state.cScore;
-        document.getElementById('ph').innerText = state.pHits; document.getElementById('ch').innerText = state.cHits;
         const curId = state.isTop ? `c${state.inning}` : `p${state.inning}`; if(document.getElementById(curId)) document.getElementById(curId).innerText = state.isTop ? state.cScore : state.pScore;
         document.getElementById('s1').className = state.s >= 1 ? 'light s-on' : 'light'; document.getElementById('s2').className = state.s >= 2 ? 'light s-on' : 'light';
         document.getElementById('b1').className = state.b >= 1 ? 'light b-on' : 'light'; document.getElementById('b2').className = state.b >= 2 ? 'light b-on' : 'light'; document.getElementById('b3').className = state.b >= 3 ? 'light b-on' : 'light';
         document.getElementById('o1').className = state.o >= 1 ? 'light o-on' : 'light'; document.getElementById('o2').className = state.o >= 2 ? 'light o-on' : 'light';
         document.getElementById('base-ui').innerText = state.bases.map(b => b ? "◆" : "◇").join(" ");
-        const p = state.isTop ? myLineup.P : JP_PITCHER; const b = state.isTop ? JP_ORDER[state.jpIdx] : myLineup.B[state.twIdx];
+        const p = state.isTop ? myLineup.P : JP_PITCHER, b = state.isTop ? JP_ORDER[state.jpIdx] : myLineup.B[state.twIdx];
         document.getElementById('matchup').innerText = `${p.name} vs ${b.name}`;
     }
 
-    function addLog(m) { const l = document.getElementById('log'); l.innerHTML = `<div>> ${m}</div>` + l.innerHTML; }
     initSetup();
 </script>
 </body>
