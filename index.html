@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>CPBL 終極選秀對決 | Diamond Strategist</title>
+    <title>CPBL 數據對決：選秀修正版</title>
     <style>
         :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; --strike: #facc15; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
@@ -19,19 +19,15 @@
         .line-score { width: 100%; background: #000; border-bottom: 2px solid var(--accent); padding: 5px 0; }
         .score-table { margin: 0 auto; border-collapse: collapse; font-family: monospace; text-align: center; }
         .score-table td, th { padding: 3px 10px; border: 1px solid #1e293b; font-weight: bold; }
-        .active-inning { background: rgba(0, 242, 255, 0.2); }
 
-        /* 遊戲布局 */
         #game-screen { display: none; width: 100%; height: 100vh; flex-direction: column; }
         .main-layout { display: flex; flex: 1; }
         .sidebar { width: 300px; background: rgba(15, 23, 42, 0.95); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid #334155; }
         
-        /* 球種與控制 */
-        .pitch-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .pitch-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
         .btn.active { background: var(--accent); color: #000; font-weight: bold; }
         
-        .bso-panel { background: #000; padding: 12px; border-radius: 10px; border: 1px solid #334155; }
         .light { width: 14px; height: 14px; border-radius: 50%; background: #2d3748; display: inline-block; margin: 0 4px; }
         .s-on { background: var(--strike); box-shadow: 0 0 10px var(--strike); }
         .o-on { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
@@ -46,11 +42,11 @@
 
 <div id="draft-screen">
     <h1 style="color:var(--accent); margin:0;">CPBL 選秀對決會</h1>
-    <div id="draft-info" style="margin:10px 0;">輪到你挑選球員 (需求: 10打 5投)</div>
+    <div id="draft-info" style="margin:10px 0;">輪到你挑選球員 (10打 5投)</div>
     <div class="draft-box">
         <div class="scroll-list" id="pool"></div>
-        <div class="scroll-list"><h3>我的隊伍</h3><div id="my-team"></div></div>
-        <div class="scroll-list"><h3>電腦隊伍</h3><div id="cpu-team"></div></div>
+        <div class="scroll-list"><h3>我的隊伍 (<span id="my-count">0</span>/15)</h3><div id="my-team"></div></div>
+        <div class="scroll-list"><h3>電腦隊伍 (<span id="cpu-count">0</span>/15)</h3><div id="cpu-team"></div></div>
     </div>
 </div>
 
@@ -62,32 +58,22 @@
             <tr id="row-c"><td>CPU</td><td id="c1">0</td><td id="c2">-</td><td id="c3">-</td><td id="c4">-</td><td id="c5">-</td><td id="c6">-</td><td id="c7">-</td><td id="c8">-</td><td id="c9">-</td><td id="cr">0</td><td id="ch">0</td></tr>
         </table>
     </div>
-
     <div class="main-layout">
         <div class="sidebar">
-            <div class="bso-panel">
+            <div style="background:#000; padding:12px; border-radius:10px;">
                 S <div id="s1" class="light"></div><div id="s2" class="light"></div><br>
                 O <div id="o1" class="light"></div><div id="o2" class="light"></div><br>
-                <div id="base-status" style="margin-top:10px; color:var(--accent); letter-spacing:8px;">◇ ◇ ◇</div>
+                <div style="margin-top:10px; color:var(--accent); letter-spacing:8px;">◇ ◇ ◇</div>
             </div>
-
-            <div id="pitch-selector">
-                <div style="font-size:0.7rem; opacity:0.6; margin-bottom:5px;">選擇球種</div>
-                <div class="pitch-menu">
-                    <button class="btn active" onclick="setPitch('Fastball', this)">速球</button>
-                    <button class="btn" onclick="setPitch('Slider', this)">滑球</button>
-                    <button class="btn" onclick="setPitch('Fork', this)">指叉</button>
-                    <button class="btn" onclick="setPitch('Curve', this)">曲球</button>
-                </div>
+            <div class="pitch-menu">
+                <button class="btn active" onclick="setPitch('Fastball', this)">速球</button>
+                <button class="btn" onclick="setPitch('Slider', this)">滑球</button>
+                <button class="btn" onclick="setPitch('Fork', this)">指叉</button>
+                <button class="btn" onclick="setPitch('Curve', this)">曲球</button>
             </div>
-
-            <div style="background:var(--panel); padding:10px; border-radius:5px; border-left:4px solid var(--accent);">
-                <div id="matchup">載入中...</div>
-            </div>
-
+            <div id="matchup" style="background:var(--panel); padding:10px; border-radius:5px; border-left:4px solid var(--accent); font-size:0.9rem;">載入中...</div>
             <div class="log" id="log">> 點擊九宮格投球</div>
         </div>
-
         <div class="canvas-container">
             <div id="msg-ov" class="overlay">攻守交換</div>
             <canvas id="fieldCanvas" width="600" height="500"></canvas>
@@ -98,133 +84,110 @@
 <script>
     const canvas = document.getElementById('fieldCanvas');
     const ctx = canvas.getContext('2d');
-
     const FULL_POOL = [
-        { name: "古林睿煬", type: "P", v: 157, era: 1.66, team: "獅" },
-        { name: "徐若熙", type: "P", v: 154, era: 2.10, team: "龍" },
-        { name: "曾峻岳", type: "P", v: 156, era: 2.50, team: "邦" },
-        { name: "德保拉", type: "P", v: 148, era: 2.98, team: "象" },
-        { name: "黃子鵬", type: "P", v: 145, era: 3.15, team: "猿" },
-        { name: "林凱威", type: "P", v: 151, era: 3.00, team: "龍" },
-        { name: "林安可", type: "B", avg: .275, pwr: 95, team: "獅" },
-        { name: "陳傑憲", type: "B", avg: .330, pwr: 60, team: "獅" },
-        { name: "張育成", type: "B", avg: .285, pwr: 98, team: "邦" },
-        { name: "江坤宇", type: "B", avg: .298, pwr: 55, team: "象" },
-        { name: "吉力吉撈", type: "B", avg: .270, pwr: 96, team: "龍" },
-        { name: "陳晨威", type: "B", avg: .310, pwr: 70, team: "猿" },
-        { name: "朱育賢", type: "B", avg: .282, pwr: 90, team: "猿" },
-        { name: "王柏融", type: "B", avg: .300, pwr: 85, team: "鋼" },
-        { name: "林立", type: "B", avg: .315, pwr: 80, team: "猿" },
-        { name: "王威晨", type: "B", avg: .310, pwr: 55, team: "象" },
-        { name: "詹子賢", type: "B", avg: .288, pwr: 82, team: "象" },
-        { name: "梁家榮", type: "B", avg: .320, pwr: 75, team: "猿" },
-        { name: "申皓瑋", type: "B", avg: .260, pwr: 85, team: "邦" },
-        { name: "李凱威", type: "B", avg: .302, pwr: 65, team: "龍" },
-        { name: "陳柏豪", type: "P", v: 149, era: 2.70, team: "猿" },
-        { name: "吳俊偉", type: "P", v: 152, era: 2.80, team: "象" },
-        { name: "陳韻文", type: "P", v: 150, era: 3.20, team: "獅" },
-        { name: "王尉永", type: "P", v: 150, era: 2.60, team: "邦" },
-        { name: "林柏佑", type: "P", v: 143, era: 3.80, team: "鋼" },
-        { name: "曾頌恩", type: "B", avg: .290, pwr: 88, team: "象" },
-        { name: "林智勝", type: "B", avg: .265, pwr: 90, team: "龍" },
-        { name: "邱智呈", type: "B", avg: .312, pwr: 68, team: "獅" },
-        { name: "戴培峰", type: "B", avg: .275, pwr: 72, team: "邦" },
-        { name: "魔鷹", type: "B", avg: .295, pwr: 99, team: "鋼" }
+        { name: "古林睿煬", type: "P", v: 157, era: 1.66, team: "獅" }, { name: "徐若熙", type: "P", v: 154, era: 2.10, team: "龍" },
+        { name: "曾峻岳", type: "P", v: 156, era: 2.50, team: "邦" }, { name: "德保拉", type: "P", v: 148, era: 2.98, team: "象" },
+        { name: "黃子鵬", type: "P", v: 145, era: 3.15, team: "猿" }, { name: "林凱威", type: "P", v: 151, era: 3.00, team: "龍" },
+        { name: "林安可", type: "B", avg: .275, team: "獅" }, { name: "陳傑憲", type: "B", avg: .330, team: "獅" },
+        { name: "張育成", type: "B", avg: .285, team: "邦" }, { name: "江坤宇", type: "B", avg: .298, team: "象" },
+        { name: "吉力吉撈", type: "B", avg: .270, team: "龍" }, { name: "陳晨威", type: "B", avg: .310, team: "猿" },
+        { name: "朱育賢", type: "B", avg: .282, team: "猿" }, { name: "王柏融", type: "B", avg: .300, team: "鋼" },
+        { name: "林立", type: "B", avg: .315, team: "猿" }, { name: "王威晨", type: "B", avg: .310, team: "象" },
+        { name: "詹子賢", type: "B", avg: .288, team: "象" }, { name: "梁家榮", type: "B", avg: .320, team: "猿" },
+        { name: "申皓瑋", type: "B", avg: .260, team: "邦" }, { name: "李凱威", type: "B", avg: .302, team: "龍" },
+        { name: "曾頌恩", type: "B", avg: .290, team: "象" }, { name: "林智勝", type: "B", avg: .265, team: "龍" },
+        { name: "邱智呈", type: "B", avg: .312, team: "獅" }, { name: "魔鷹", type: "B", avg: .295, team: "鋼" },
+        { name: "陳柏豪", type: "P", v: 149, era: 2.70, team: "猿" }, { name: "吳俊偉", type: "P", v: 152, era: 2.80, team: "象" },
+        { name: "陳韻文", type: "P", v: 150, era: 3.20, team: "獅" }, { name: "王尉永", type: "P", v: 150, era: 2.60, team: "邦" },
+        { name: "林柏佑", type: "P", v: 143, era: 3.80, team: "鋼" }, { name: "陳冠宇", type: "P", v: 147, era: 3.30, team: "猿" }
     ];
 
     let state = {
-        my: { B: [], P: [] },
-        cpu: { B: [], P: [] },
-        inning: 1, isTop: true, // 1上你投, 1下你打
-        s: 0, o: 0, pScore: 0, cScore: 0, pHits: 0, cHits: 0,
+        my: { B: [], P: [] }, cpu: { B: [], P: [] },
+        inning: 1, isTop: true, s: 0, o: 0, pScore: 0, cScore: 0, pHits: 0, cHits: 0,
         isAnim: false, pitchType: 'Fastball', turn: 'user'
     };
 
-    // 選秀
     function initDraft() {
-        const poolEl = document.getElementById('pool');
+        const pEl = document.getElementById('pool');
         FULL_POOL.forEach((p, i) => {
             const div = document.createElement('div');
             div.className = 'p-item'; div.id = `p-${i}`;
-            div.innerHTML = `<span>${p.name} (${p.team}) [${p.type}]</span> <span>${p.type==='P'?'E:'+p.era:'A:'+p.avg}</span>`;
-            div.onclick = () => userPick(i);
-            poolEl.appendChild(div);
+            div.innerHTML = `<span>${p.name} [${p.type}]</span> <span>${p.type=='P'?'E:'+p.era:'A:'+p.avg}</span>`;
+            div.onclick = () => userPick(i); pEl.appendChild(div);
         });
     }
 
     function userPick(idx) {
         if (state.turn !== 'user') return;
         const p = FULL_POOL[idx];
-        if (state.my[p.type].length >= (p.type==='B'?10:5)) return alert("該位置已滿！");
+        if (state.my[p.type].length >= (p.type=='B'?10:5)) return alert("該位置名額已滿！");
         state.my[p.type].push(p);
         updateDraft(idx, 'my');
-        if (isDraftOver()) return startGame();
-        state.turn = 'cpu'; setTimeout(cpuPick, 800);
+        if (isAllDone()) return finishDraft();
+        state.turn = 'cpu'; setTimeout(cpuPick, 600);
     }
 
     function cpuPick() {
-        const rem = FULL_POOL.filter((_, i) => !document.getElementById(`p-${i}`).classList.contains('picked'));
-        let target = rem.find(p => state.cpu[p.type].length < (p.type==='B'?10:5));
+        const unpicked = FULL_POOL.map((p, i) => ({...p, idx: i})).filter(p => !document.getElementById(`p-${p.idx}`).classList.contains('picked'));
+        let target = unpicked.find(p => state.cpu[p.type].length < (p.type=='B'?10:5));
         if (target) {
-            const idx = FULL_POOL.indexOf(target);
             state.cpu[target.type].push(target);
-            updateDraft(idx, 'cpu');
+            updateDraft(target.idx, 'cpu');
         }
-        if (isDraftOver()) return startGame();
+        if (isAllDone()) return finishDraft();
         state.turn = 'user';
     }
 
     function updateDraft(idx, team) {
-        const el = document.getElementById(`p-${idx}`);
-        el.classList.add('picked');
-        document.getElementById(team === 'my' ? 'my-team' : 'cpu-team').innerHTML += `<div style="font-size:0.8rem">${FULL_POOL[idx].name}</div>`;
+        document.getElementById(`p-${idx}`).classList.add('picked');
+        const list = document.getElementById(team == 'my' ? 'my-team' : 'cpu-team');
+        list.innerHTML += `<div style="font-size:0.75rem">${FULL_POOL[idx].name}</div>`;
+        document.getElementById(`${team}-count`).innerText = state[team].B.length + state[team].P.length;
     }
 
-    function isDraftOver() {
-        return (state.my.B.length + state.my.P.length === 15) && (state.cpu.B.length + state.cpu.P.length === 15);
+    function isAllDone() {
+        const myTotal = state.my.B.length + state.my.P.length;
+        const cpuTotal = state.cpu.B.length + state.cpu.P.length;
+        return myTotal === 15 && cpuTotal === 15;
     }
 
-    // 遊戲
-    function startGame() {
+    function finishDraft() {
         document.getElementById('draft-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'flex';
         render(); updateUI();
     }
 
+    // --- 遊戲邏輯 ---
     function render(frame = 0) {
         ctx.clearRect(0,0,600,500);
-        // 九宮格
         ctx.strokeStyle = "rgba(0, 242, 255, 0.3)"; ctx.strokeRect(200, 100, 200, 200);
         for(let i=1; i<3; i++) {
-            ctx.beginPath(); ctx.moveTo(200+i*66.6, 100); ctx.lineTo(200+i*66.6, 300); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(200, 100+i*66.6); ctx.lineTo(400, 100+i*66.6); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(200+i*66, 100); ctx.lineTo(200+i*66, 300); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(200, 100+i*66); ctx.lineTo(400, 100+i*66); ctx.stroke();
         }
-        // 投手抬腿
+        let leg = (frame > 0 && frame < 15) ? -25 : 0;
         ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
-        let legY = (frame > 0 && frame < 15) ? -25 : 0;
-        ctx.beginPath(); ctx.arc(300, 360, 12, 0, Math.PI*2); ctx.stroke(); // 頭
-        ctx.moveTo(300, 372); ctx.lineTo(300, 420); // 身
-        ctx.moveTo(300, 420); ctx.lineTo(285, 460); // 左腳
-        ctx.moveTo(300, 420); ctx.lineTo(315, 460 + legY); // 右腳抬起
-        ctx.stroke();
+        ctx.beginPath(); ctx.arc(300, 360, 12, 0, Math.PI*2); ctx.stroke();
+        ctx.moveTo(300, 372); ctx.lineTo(300, 420);
+        ctx.moveTo(300, 420); ctx.lineTo(285, 460);
+        ctx.moveTo(300, 420); ctx.lineTo(315, 460 + leg); ctx.stroke();
     }
 
     canvas.addEventListener('mousedown', (e) => {
-        if (state.isAnim) return;
-        const rect = canvas.getBoundingClientRect();
-        const tx = e.clientX - rect.left, ty = e.clientY - rect.top;
-        if (state.isTop) runAction(tx, ty);
+        if (state.isAnim || state.turn == 'cpu') return;
+        const r = canvas.getBoundingClientRect();
+        startAction(e.clientX-r.left, e.clientY-r.top);
     });
 
-    function setPitch(t, btn) {
+    function setPitch(t, b) {
         state.pitchType = t;
-        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('.btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
     }
 
-    function runAction(tx, ty) {
-        state.isAnim = true;
-        let f = 0;
+    function startAction(tx, ty) {
+        state.isAnim = true; let f = 0;
         const anim = () => {
             f++; render(f);
             if(f < 20) requestAnimationFrame(anim);
@@ -236,13 +199,10 @@
     function ballFly(tx, ty) {
         let f = 0;
         const anim = () => {
-            f++; let p = f/15;
-            render(20);
-            // 球種位移邏輯
-            let driftX = state.pitchType === 'Slider' ? p * 50 : 0;
-            let driftY = state.pitchType === 'Fork' ? p * 50 : 0;
-            let cx = 300 + (tx-300)*p + driftX;
-            let cy = 370 + (ty-370)*p + driftY;
+            f++; let p = f/15; render(20);
+            let dx = state.pitchType == 'Slider' ? p*50 : 0;
+            let dy = state.pitchType == 'Fork' ? p*50 : 0;
+            let cx = 300 + (tx-300)*p + dx; let cy = 370 + (ty-370)*p + dy;
             ctx.beginPath(); ctx.arc(cx, cy, 4+p*12, 0, Math.PI*2);
             ctx.fillStyle = "#fff"; ctx.fill();
             if(f < 15) requestAnimationFrame(anim);
@@ -253,33 +213,23 @@
 
     function resolve(x, y) {
         state.isAnim = false;
-        let inZone = x > 200 && x < 400 && y > 100 && y < 300;
-        let batter = state.isTop ? state.cpu.B[state.o % 10] : state.my.B[0];
-
-        if (inZone && Math.random() < batter.avg) {
-            if (state.isTop) { state.cScore++; state.cHits++; } 
-            else { state.pScore++; state.pHits++; }
-            addLog(`${batter.name} 擊出安打！`);
-        } else if (inZone) {
+        let inZ = x > 200 && x < 400 && y > 100 && y < 300;
+        let bat = state.isTop ? state.cpu.B[state.o % 10] : state.my.B[0];
+        if (inZ && Math.random() < bat.avg) {
+            if (state.isTop) { state.cScore++; state.cHits++; } else { state.pScore++; state.pHits++; }
+            addLog(`${bat.name} 安打！`);
+        } else if (inZ) {
             state.s++; addLog("好球！");
             if (state.s >= 3) { state.o++; state.s = 0; addLog("三振！"); }
-        } else {
-            addLog("壞球。");
-        }
+        } else addLog("壞球。");
         
         if (state.o >= 3) {
-            state.o = 0; state.s = 0;
-            state.isTop = !state.isTop;
+            state.o = 0; state.s = 0; state.isTop = !state.isTop;
             if (state.isTop) state.inning++;
-            showSwap();
-            if (!state.isTop) setTimeout(cpuAuto, 2000);
+            const o = document.getElementById('msg-ov'); o.style.display = 'block'; setTimeout(()=>o.style.display='none', 1500);
+            if (!state.isTop) setTimeout(() => startAction(200+Math.random()*200, 100+Math.random()*200), 2000);
         }
         updateUI();
-    }
-
-    function cpuAuto() {
-        if (state.isTop) return;
-        runAction(200+Math.random()*200, 100+Math.random()*200);
     }
 
     function updateUI() {
@@ -287,26 +237,14 @@
         document.getElementById(id).innerText = state.isTop ? state.cScore : state.pScore;
         document.getElementById('pr').innerText = state.pScore; document.getElementById('cr').innerText = state.cScore;
         document.getElementById('ph').innerText = state.pHits; document.getElementById('ch').innerText = state.cHits;
-        
         document.getElementById('s1').className = state.s >= 1 ? 'light s-on' : 'light';
         document.getElementById('s2').className = state.s >= 2 ? 'light s-on' : 'light';
         document.getElementById('o1').className = state.o >= 1 ? 'light o-on' : 'light';
         document.getElementById('o2').className = state.o >= 2 ? 'light o-on' : 'light';
-        
-        const p = state.isTop ? state.my.P[0] : state.cpu.P[0];
-        const b = state.isTop ? state.cpu.B[state.o % 10] : state.my.B[0];
-        document.getElementById('matchup').innerText = `${p.name} (投) vs ${b.name} (打)`;
+        document.getElementById('matchup').innerText = `${state.isTop?state.my.P[0].name:state.cpu.P[0].name} (投) vs ${state.isTop?state.cpu.B[0].name:state.my.B[0].name} (打)`;
     }
 
-    function addLog(m) {
-        const l = document.getElementById('log');
-        l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
-    }
-
-    function showSwap() {
-        const o = document.getElementById('msg-ov');
-        o.style.display = 'block'; setTimeout(()=>o.style.display='none', 1500);
-    }
+    function addLog(m) { const l = document.getElementById('log'); l.innerHTML = `<div>> ${m}</div>` + l.innerHTML; }
 
     initDraft();
 </script>
