@@ -2,182 +2,230 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>CPBL Manager | 中職總教練模式</title>
+    <title>CPBL 鑽石對決 Pro</title>
     <style>
-        :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; }
-        body { background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        :root { --grass: #15803d; --dirt: #92400e; --accent: #00f2ff; --bg: #020617; }
+        body { background: var(--bg); color: #fff; font-family: 'PingFang TC', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; }
         
-        /* 賽前設定介面 */
-        #setup-screen { width: 90%; max-width: 1000px; padding: 20px; display: block; }
-        .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .pool-section, .lineup-section { background: var(--panel); padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-        .player-item { background: #0f172a; padding: 8px; margin: 5px 0; border-radius: 4px; display: flex; justify-content: space-between; cursor: pointer; border: 1px solid transparent; }
-        .player-item:hover { border-color: var(--accent); }
-        .player-item.selected { background: var(--accent); color: #000; }
+        /* 頂部計分板 */
+        .header { width: 100%; background: #1e293b; padding: 10px; border-bottom: 3px solid var(--accent); display: flex; justify-content: space-around; align-items: center; }
+        .scoreboard { background: #000; padding: 10px; border-radius: 8px; font-family: 'Courier New', monospace; min-width: 250px; text-align: center; border: 2px solid #334155; }
+        .bso { font-size: 1.2rem; letter-spacing: 5px; }
+        .on { color: #facc15; text-shadow: 0 0 5px #facc15; }
+        .out-on { color: #ef4444; text-shadow: 0 0 5px #ef4444; }
+
+        /* 遊戲場景 */
+        .game-view { position: relative; margin-top: 20px; }
+        canvas { border-radius: 15px; border: 4px solid #334155; background: #15803d; cursor: crosshair; }
         
-        /* 遊戲介面 (隱藏) */
-        #game-screen { display: none; width: 100%; flex-direction: column; align-items: center; }
-        
-        .scoreboard { background: #1e293b; width: 90%; max-width: 800px; margin: 10px; border-radius: 8px; text-align: center; }
-        .game-area { display: flex; gap: 20px; width: 95%; max-width: 1000px; height: 500px; }
-        canvas { border: 2px solid var(--accent); border-radius: 20px; background: #000; cursor: crosshair; }
-        
-        .btn-main { background: var(--accent); color: #000; padding: 15px 40px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.2rem; margin-top: 20px; }
-        .list-title { border-bottom: 2px solid var(--accent); margin-bottom: 10px; padding-bottom: 5px; font-weight: bold; }
+        .overlay-msg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 4rem; font-weight: 900; color: #fbbf24; text-shadow: 0 0 20px #000; display: none; pointer-events: none; z-index: 100; }
+        .log { width: 800px; height: 80px; background: rgba(0,0,0,0.8); margin-top: 10px; padding: 10px; font-size: 0.9rem; color: #4ade80; overflow-y: auto; border-radius: 8px; border: 1px solid #334155; }
     </style>
 </head>
 <body>
 
-<div id="setup-screen">
-    <h1 style="color: var(--accent); text-align: center;">CPBL 戰術室：球員名單設定</h1>
-    <div class="setup-grid">
-        <div class="pool-section">
-            <div class="list-title">選手大名單 (點選加入先發)</div>
-            <div id="player-pool"></div>
-        </div>
-        <div class="lineup-section">
-            <div class="list-title">我的先發打序 (1-9 棒)</div>
-            <div id="my-lineup"></div>
-            <div class="list-title" style="margin-top:20px;">投手上場順序 (SP/RP/CP)</div>
-            <div id="my-pitchers"></div>
-            <button class="btn-main" onclick="startGame()" style="width:100%">確認名單，進入球場</button>
-        </div>
+<div class="header">
+    <div class="scoreboard">
+        <div id="inning-display">1 局上 (防守)</div>
+        <div style="font-size: 1.5rem;">我: <span id="my-score">0</span> | 電腦: <span id="ai-score">0</span></div>
     </div>
+    <div class="bso">
+        S <span id="s1">○</span><span id="s2">○</span> 
+        B <span id="b1">○</span><span id="b2">○</span><span id="b3">○</span> 
+        O <span id="o1">○</span><span id="o2">○</span>
+    </div>
+    <div id="base-map" style="font-size: 1.5rem; color: #94a3b8;">◇ ◇ ◇</div>
 </div>
 
-<div id="game-screen">
-    <div class="scoreboard">
-        <h2 id="match-title">實況對決</h2>
-        <div id="bso" style="font-size: 1.5rem; letter-spacing: 10px; margin-bottom: 10px;">B ○○○ S ○○ O ○○</div>
-    </div>
-    <div class="game-area">
-        <div style="width: 200px;">
-            <div id="current-hitter-card" style="background:var(--panel); padding:15px; border-radius:8px;">
-                <div style="font-size:0.8rem; opacity:0.6">當前打者</div>
-                <div id="hitter-name" style="font-size:1.4rem; font-weight:bold;">-</div>
-                <div id="hitter-stats">AVG: -</div>
-            </div>
-            <div id="log" style="margin-top:10px; height:250px; overflow-y:auto; font-size:0.8rem; color:#00ff00; background:#000; padding:10px;"></div>
-        </div>
-        <canvas id="gameCanvas" width="500" height="500"></canvas>
-    </div>
+<div class="game-view">
+    <div id="msg" class="overlay-msg">攻守交換</div>
+    <canvas id="field" width="800" height="500"></canvas>
 </div>
+
+<div class="log" id="log">> 比賽開始！你先防守，請點擊九宮格投球。</div>
 
 <script>
-    // 擴充球員池
-    const ALL_PLAYERS = [
-        { name: "陳傑憲", team: "獅", avg: .332, power: 65, type: 'B' },
-        { name: "林安可", team: "獅", avg: .275, power: 95, type: 'B' },
-        { name: "王柏融", team: "台鋼", avg: .300, power: 85, type: 'B' },
-        { name: "張育成", team: "富邦", avg: .285, power: 98, type: 'B' },
-        { name: "江坤宇", team: "象", avg: .298, power: 55, type: 'B' },
-        { name: "陳晨威", team: "猿", avg: .310, power: 70, type: 'B' },
-        { name: "朱育賢", team: "猿", avg: .282, power: 90, type: 'B' },
-        { name: "吉力吉撈", team: "龍", avg: .270, power: 96, type: 'B' },
-        { name: "詹子賢", team: "象", avg: .288, power: 80, type: 'B' },
-        { name: "古林睿煬", team: "獅", era: 1.66, velo: 157, type: 'P' },
-        { name: "徐若熙", team: "龍", era: 2.10, velo: 154, type: 'P' },
-        { name: "黃子鵬", team: "猿", era: 3.15, velo: 145, type: 'P' },
-        { name: "陳凱倫", team: "傳奇", avg: .260, power: 60, type: 'B' }
-    ];
-
-    let myLineup = [];
-    let myPitchers = [];
-    let currentGame = { hitterIdx: 0, pitcherIdx: 0, outs: 0, ballActive: false };
-
-    // 初始化名單挑選
-    function initSetup() {
-        const pool = document.getElementById('player-pool');
-        ALL_PLAYERS.forEach(p => {
-            const div = document.createElement('div');
-            div.className = 'player-item';
-            div.innerHTML = `<span>${p.name} (${p.team})</span> <span>${p.type === 'P' ? 'ERA:'+p.era : 'AVG:'+p.avg}</span>`;
-            div.onclick = () => selectPlayer(p, div);
-            pool.appendChild(div);
-        });
-    }
-
-    function selectPlayer(p, el) {
-        if(p.type === 'B' && myLineup.length < 9) {
-            myLineup.push(p);
-            document.getElementById('my-lineup').innerHTML += `<div class="player-item">${myLineup.length}. ${p.name}</div>`;
-            el.style.opacity = '0.3';
-            el.onclick = null;
-        } else if(p.type === 'P' && myPitchers.length < 3) {
-            myPitchers.push(p);
-            const roles = ['先發(SP)', '中繼(RP)', '救援(CP)'];
-            document.getElementById('my-pitchers').innerHTML += `<div class="player-item">${roles[myPitchers.length-1]}: ${p.name}</div>`;
-            el.style.opacity = '0.3';
-            el.onclick = null;
-        }
-    }
-
-    function startGame() {
-        if(myLineup.length < 9 || myPitchers.length < 1) return alert("請選滿 9 位打者與至少 1 位投手！");
-        document.getElementById('setup-screen').style.display = 'none';
-        document.getElementById('game-screen').style.display = 'flex';
-        nextAtBat();
-    }
-
-    // 遊戲核心邏輯 (延續 6.0 並加入名單)
-    const canvas = document.getElementById('gameCanvas');
+    const canvas = document.getElementById('field');
     const ctx = canvas.getContext('2d');
+    
+    let game = {
+        inning: 1, isTop: true, // true: 1上(防守), false: 1下(進攻)
+        scoreMy: 0, scoreAi: 0,
+        strikes: 0, balls: 0, outs: 0,
+        bases: [false, false, false],
+        isAnimating: false,
+        ball: { x: 400, y: 450, active: false }
+    };
 
-    function nextAtBat() {
-        const hitter = myLineup[currentGame.hitterIdx];
-        document.getElementById('hitter-name').innerText = hitter.name;
-        document.getElementById('hitter-stats').innerText = `AVG: .${hitter.avg*1000} | 戰力: ${hitter.power}`;
-        addLog(`現在輪到第 ${currentGame.hitterIdx+1} 棒：${hitter.name}`);
-        setTimeout(aiPitch, 1500);
+    function drawField() {
+        ctx.clearRect(0, 0, 800, 500);
+        // 畫草地與紅土
+        ctx.fillStyle = '#15803d'; ctx.fillRect(0,0,800,500);
+        ctx.fillStyle = '#92400e'; 
+        ctx.beginPath(); ctx.moveTo(400, 480); ctx.arc(400, 480, 400, -Math.PI, 0); ctx.fill(); // 外野弧線
+        
+        // 畫內野鑽石
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath(); ctx.moveTo(400, 480); ctx.lineTo(520, 360); ctx.lineTo(400, 240); ctx.lineTo(280, 360); ctx.closePath(); ctx.fill();
+        
+        // 畫壘包
+        ctx.fillStyle = '#fff';
+        const b = 10;
+        ctx.fillRect(400-b/2, 480-b/2, b, b); // 本壘
+        ctx.fillRect(520-b/2, 360-b/2, b, b); // 一壘
+        ctx.fillRect(400-b/2, 240-b/2, b, b); // 二壘
+        ctx.fillRect(280-b/2, 360-b/2, b, b); // 三壘
+
+        // 畫投打姿勢 (骨架)
+        drawPlayers();
     }
 
-    function aiPitch() {
-        currentGame.ballActive = true;
-        let f = 0, sx = 250, sy = 250;
-        const tx = 100 + Math.random()*300, ty = 100 + Math.random()*300;
-        
+    function drawPlayers() {
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 3;
+        // 投手
+        ctx.beginPath(); ctx.arc(400, 320, 8, 0, Math.PI*2); ctx.stroke();
+        ctx.moveTo(400, 328); ctx.lineTo(400, 350); ctx.stroke();
+        // 打者
+        ctx.beginPath(); ctx.arc(370, 470, 8, 0, Math.PI*2); ctx.stroke();
+        ctx.moveTo(370, 478); ctx.lineTo(370, 495); ctx.stroke();
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (game.isAnimating) return;
+        const rect = canvas.getBoundingClientRect();
+        const tx = e.clientX - rect.left;
+        const ty = e.clientY - rect.top;
+
+        if (game.isTop) { // 防守：你投球
+            game.isAnimating = true;
+            animatePitch(tx, ty, resolveDefense);
+        } else { // 進攻：你打擊
+            if (game.ball.active) {
+                const dist = Math.sqrt((tx - game.ball.x)**2 + (ty - game.ball.y)**2);
+                if (dist < 30) resolveOffense(true, dist);
+            }
+        }
+    });
+
+    function animatePitch(tx, ty, callback) {
+        let frame = 0;
+        const startX = 400, startY = 340;
         const anim = () => {
-            f++; let p = f/25;
-            ctx.clearRect(0,0,500,500);
-            drawZone();
-            let cx = sx + (tx-sx)*p;
-            let cy = sy + (ty-sy)*p;
-            ctx.beginPath(); ctx.arc(cx, cy, 5+p*15, 0, Math.PI*2);
+            frame++;
+            drawField();
+            let p = frame / 20;
+            game.ball.x = startX + (tx - startX) * p;
+            game.ball.y = startY + (ty - startY) * p;
+            game.ball.active = true;
+            
+            ctx.beginPath(); ctx.arc(game.ball.x, game.ball.y, 4+p*10, 0, Math.PI*2);
             ctx.fillStyle = "#fff"; ctx.fill();
-            currentGame.lastBall = {x:cx, y:cy, r:5+p*15};
-            if(f < 25 && currentGame.ballActive) requestAnimationFrame(anim);
-            else if(currentGame.ballActive) resolve(false);
+
+            if (frame < 20) requestAnimationFrame(anim);
+            else {
+                game.ball.active = false;
+                game.isAnimating = false;
+                callback(tx, ty);
+            }
         };
         anim();
     }
 
-    canvas.addEventListener('mousedown', (e) => {
-        if(!currentGame.ballActive) return;
-        const rect = canvas.getBoundingClientRect();
-        const dist = Math.sqrt((e.clientX-rect.left-currentGame.lastBall.x)**2 + (e.clientY-rect.top-currentGame.lastBall.y)**2);
-        if(dist < currentGame.lastBall.r + 15) resolve(true, dist);
-    });
-
-    function resolve(isHit, dist) {
-        currentGame.ballActive = false;
-        if(isHit) {
-            if(dist < 10) { addLog("全壘打！"); } else { addLog("擊出安打！"); }
+    // 防守邏輯 (你投，電腦打)
+    function resolveDefense(tx, ty) {
+        let inZone = tx > 350 && tx < 450 && ty > 430 && ty < 500;
+        if (inZone) {
+            if (Math.random() < 0.25) { // 電腦安打率
+                addLog("!! 電腦擊出安打 !!");
+                advanceBases(false);
+                resetCount();
+            } else {
+                game.strikes++;
+                addLog("好球！");
+                if (game.strikes >= 3) { game.outs++; addLog("三振電腦！"); resetCount(); }
+            }
         } else {
-            addLog("揮棒落空！");
-            currentGame.outs++;
+            game.balls++;
+            addLog("壞球。");
+            if (game.balls >= 4) { advanceBases(false); resetCount(); addLog("保送。"); }
         }
-        
-        if(currentGame.outs >= 3) {
-            currentGame.outs = 0;
-            addLog("三出局，換局。");
-        }
-        currentGame.hitterIdx = (currentGame.hitterIdx + 1) % 9;
-        setTimeout(nextAtBat, 2000);
+        checkSwap();
+        updateUI();
     }
 
-    function drawZone() {
-        ctx.strokeStyle = "#334155";
-        ctx.strokeRect(100, 100, 300, 300);
+    // 進攻邏輯 (電腦投，你打)
+    function resolveOffense(isHit, dist) {
+        game.ball.active = false;
+        if (isHit) {
+            game.isAnimating = false;
+            if (dist < 10) { addLog("!!! 全壘打 !!!"); scorePoints(true); } 
+            else { addLog("你擊出安打！"); advanceBases(true); }
+            resetCount();
+        }
+        updateUI();
+    }
+
+    function advanceBases(isPlayer) {
+        if (game.bases[2]) { scorePoints(isPlayer); game.bases[2] = false; }
+        if (game.bases[1]) { game.bases[2] = true; game.bases[1] = false; }
+        if (game.bases[0]) { game.bases[1] = true; game.bases[0] = false; }
+        game.bases[0] = true;
+        updateUI();
+    }
+
+    function scorePoints(isPlayer) {
+        if (isPlayer) game.scoreMy++; else game.scoreAi++;
+        addLog(isPlayer ? "你得到 1 分！" : "電腦得到 1 分！");
+    }
+
+    function checkSwap() {
+        if (game.outs >= 3) {
+            game.outs = 0; resetCount();
+            game.bases = [false, false, false];
+            game.isTop = !game.isTop;
+            if (game.isTop) game.inning++;
+            
+            showMsg("攻守交換");
+            if (!game.isTop) setTimeout(aiPitchLoop, 2000);
+        }
+    }
+
+    function aiPitchLoop() {
+        if (game.isTop || game.isAnimating) return;
+        addLog("電腦投球中...");
+        animatePitch(380 + Math.random()*40, 460 + Math.random()*40, (x, y) => {
+            if (!game.isTop) {
+                game.strikes++; addLog("你沒揮棒，好球！");
+                if (game.strikes >= 3) { game.outs++; resetCount(); }
+                checkSwap(); updateUI();
+                setTimeout(aiPitchLoop, 1500);
+            }
+        });
+    }
+
+    function resetCount() { game.strikes = 0; game.balls = 0; }
+
+    function updateUI() {
+        document.getElementById('my-score').innerText = game.scoreMy;
+        document.getElementById('ai-score').innerText = game.scoreAi;
+        document.getElementById('inning-display').innerText = `${game.inning} 局 ${game.isTop ? '上 (防守)' : '下 (進攻)'}`;
+        
+        document.getElementById('s1').className = game.strikes >= 1 ? 'on' : '';
+        document.getElementById('s2').className = game.strikes >= 2 ? 'on' : '';
+        document.getElementById('b1').className = game.balls >= 1 ? 'on' : '';
+        document.getElementById('b2').className = game.balls >= 2 ? 'on' : '';
+        document.getElementById('b3').className = game.balls >= 3 ? 'on' : '';
+        document.getElementById('o1').className = game.outs >= 1 ? 'out-on' : '';
+        document.getElementById('o2').className = game.outs >= 2 ? 'out-on' : '';
+
+        let bStr = ""; game.bases.forEach(b => bStr += b ? "◆ " : "◇ ");
+        document.getElementById('base-map').innerText = bStr;
+    }
+
+    function showMsg(txt) {
+        const m = document.getElementById('msg');
+        m.innerText = txt; m.style.display = 'block';
+        setTimeout(() => m.style.display = 'none', 1500);
     }
 
     function addLog(m) {
@@ -185,7 +233,8 @@
         l.innerHTML = `<div>> ${m}</div>` + l.innerHTML;
     }
 
-    initSetup();
+    drawField();
+    updateUI();
 </script>
 </body>
 </html>
