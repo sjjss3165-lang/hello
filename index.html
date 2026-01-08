@@ -2,292 +2,356 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>電三孝點名系統 v123</title>
+    <title>WBC 2024：王牌真實球種對決</title>
     <style>
-        :root {
-            --primary: #007aff; --warning: #ff9500; --absent: #ff3b30; --leave: #bd00ff; --phone: #5856d6;
-            --bg: #ffffff; --text: #1c1c1e; --border: #f2f2f7; --card: #f9f9fb;
-        }
-        [data-theme="dark"] {
-            --bg: #0a0a0c; --text: #ffffff; --border: #1c1c1e; --card: #161618;
-        }
-        * { user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; transition: 0.3s; min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; --strike: #facc15; --tw-blue: #0038a8; --jp-red: #bc002d; }
+        body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; height: 100vh; }
         
-        .header { width: 92%; padding: 12px 0 5px; display: flex; justify-content: space-between; align-items: flex-end; }
-        .clock-display { font-family: 'Courier New', monospace; font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: 1px; }
-        .top-btns { display: flex; gap: 8px; }
-        .icon-btn { background: var(--card); border: 1px solid var(--border); color: var(--text); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
-        .locked-border { border: 2px solid var(--absent) !important; color: var(--absent); }
-        .unlocked-border { border: 2px solid var(--primary) !important; color: var(--primary); }
+        /* 選人與遊戲介面 */
+        #setup-screen { position: absolute; inset: 0; z-index: 1000; background: radial-gradient(circle, #001f3f, #000); padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
+        .setup-container { display: flex; gap: 20px; width: 95%; max-width: 1200px; height: 65vh; }
+        .pool-box { flex: 1; background: rgba(255,255,255,0.05); border: 1.5px solid var(--tw-blue); border-radius: 12px; overflow-y: auto; padding: 15px; }
+        .p-item { background: #0f172a; padding: 10px; margin: 5px 0; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.85rem; border: 1px solid transparent; }
+        .p-item.selected { border-color: var(--strike); opacity: 0.4; pointer-events: none; }
 
-        .dashboard { width: 92%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-        .dash-card { background: var(--card); padding: 8px; border-radius: 12px; text-align: center; border: 1px solid var(--border); }
-        .dash-card big { display: block; font-size: 1.1rem; font-weight: 800; }
+        #game-screen { display: none; width: 100%; height: 100vh; flex-direction: column; }
+        .line-score { width: 100%; background: #000; border-bottom: 2px solid var(--accent); padding: 5px 0; }
+        .score-table { margin: 0 auto; border-collapse: collapse; font-family: monospace; text-align: center; }
+        .score-table td, th { padding: 4px 10px; border: 1px solid #1e293b; }
 
-        .status-list-zone { width: 92%; padding: 10px; background: var(--card); border-radius: 15px; border: 1px solid var(--border); margin-bottom: 12px; position: relative; }
-        .status-item { font-size: 0.75rem; margin: 3px 0; }
-        .copy-circle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .main-layout { display: flex; flex: 1; width: 100%; position: relative; }
+        .order-panel { width: 220px; background: rgba(0,0,0,0.85); padding: 15px; border-right: 1px solid #334155; }
+        .order-item { padding: 4px; border-radius: 4px; margin-bottom: 2px; color: #555; font-size: 0.8rem; display: flex; justify-content: space-between; }
+        .order-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
-        .main-container { width: 95%; height: calc(100vh - 280px); overflow-y: auto; display: flex; flex-direction: column; align-items: center; padding-bottom: 120px; }
-        .view { display: none; width: 100%; max-width: 400px; }
-        .view.active { display: block; }
+        .canvas-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b, #050a15); }
+        canvas { border-radius: 10px; border: 1px solid #334155; transition: transform 0.1s; }
 
-        .podium-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 18px; }
-        .podium-box { grid-column: 3 / span 3; height: 42px; border: 1.5px dashed #888; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #888; font-weight: bold; letter-spacing: 5px; }
-        .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px 8px; }
-        .s { width: 52px; height: 42px; background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1rem; font-weight: 700; cursor: pointer; color: #888; position: relative; }
+        .sidebar { width: 280px; background: rgba(15, 23, 42, 0.95); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-left: 1px solid #334155; }
+        .pitch-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; text-align: center; }
+        .btn.active { background: var(--accent); color: #000; font-weight: bold; }
+        .sub-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; margin-top: 5px; }
+
+        #sub-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e293b; border: 2px solid var(--accent); border-radius: 15px; padding: 20px; z-index: 2000; width: 300px; box-shadow: 0 0 50px #000; }
+        .sub-item { padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 0.85rem; }
+
+        #swing-btn { width: 100%; padding: 20px; font-size: 1.5rem; font-weight: 900; color: #fff; background: linear-gradient(to bottom, #ef4444, #991b1b); border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 #7f1d1d; }
         
-        .edit-mode .s:not([style*="opacity: 0"]) { border: 1.5px dashed var(--warning) !important; color: var(--warning) !important; animation: shake 0.5s infinite; }
-        @keyframes shake { 0% {transform: rotate(0deg)} 25% {transform: rotate(1deg)} 75% {transform: rotate(-1deg)} 100% {transform: rotate(0deg)} }
+        .light { width: 12px; height: 12px; border-radius: 50%; background: #2d3748; display: inline-block; margin: 0 4px; }
+        .s-on { background: var(--strike); box-shadow: 0 0 10px var(--strike); }
+        .b-on { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
+        .o-on { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
 
-        .time-label { position: absolute; top: 2px; font-size: 0.45rem; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
-        .note-label { font-size: 0.55rem; font-weight: 800; margin-top: 10px; }
-
-        .present { color: var(--primary); border-color: var(--primary); }
-        .late { color: var(--warning); border-color: var(--warning); background: rgba(255,149,0,0.05); }
-        .absent { color: var(--absent); border-color: var(--absent); background: rgba(255,59,48,0.05); }
-        .leave { color: var(--leave); border-color: var(--leave); background: rgba(189,0,255,0.05); }
-        .ph-done { background: var(--phone) !important; color: #fff !important; border-color: var(--phone) !important; }
-
-        .tab-bar-wrap { position: fixed; bottom: 25px; width: 100%; display: flex; justify-content: center; pointer-events: none; }
-        .tab-bar { pointer-events: auto; width: 90%; max-width: 400px; height: 50px; background: var(--card); border: 1px solid var(--border); border-radius: 25px; display: grid; grid-template-columns: repeat(5, 1fr); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .tab-btn { border: none; background: none; color: #888; font-size: 0.8rem; font-weight: bold; cursor: pointer; }
-        .tab-btn.active { color: var(--primary); transform: scale(1.1); }
-
-        .app-locked .s, .app-locked .menu-btn { cursor: not-allowed; opacity: 0.7; pointer-events: none; }
-        #leave-menu { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center; }
-        .menu-content { background: var(--card); padding: 25px; border-radius: 25px; width: 260px; text-align: center; border: 1px solid var(--border); }
-        .menu-btn { display: block; width: 100%; padding: 14px; margin: 10px 0; border: none; border-radius: 12px; font-weight: bold; background: var(--border); color: var(--text); }
+        .feedback-overlay { position: absolute; top: 15%; display: flex; flex-direction: column; align-items: center; pointer-events: none; width: 100%; text-align: center; }
+        #speed-text { font-size: 1.5rem; color: var(--accent); font-weight: bold; }
+        #timing-text { font-size: 2rem; font-weight: 900; color: #fff; text-shadow: 0 0 10px #000; }
+        #result-text { font-size: 2.5rem; font-weight: 900; color: var(--strike); text-shadow: 0 0 20px #000; }
+        
+        #start-btn { margin-top: 20px; padding: 12px 50px; background: var(--tw-blue); color: white; border: none; border-radius: 30px; cursor: pointer; display: none; }
+        .cond-best { color: #f87171; } .cond-good { color: #facc15; } .cond-bad { color: #60a5fa; }
     </style>
 </head>
-<body class="app-locked">
+<body>
 
-    <header class="header">
-        <div>
-            <div style="font-size: 0.6rem; font-weight: 800; color: #888;">電三孝點名系統</div>
-            <div id="live-clock" class="clock-display">00:00:00</div>
-        </div>
-        <div class="top-btns">
-            <button id="edit-btn" class="icon-btn" onclick="toggleEdit()">✏️</button>
-            <button id="lock-btn" class="icon-btn locked-border" onclick="toggleLock()">🔒</button>
-            <button class="icon-btn" onclick="toggleTheme()">🌓</button>
-        </div>
-    </header>
+<div id="setup-screen">
+    <h1 style="color:var(--accent)">WBC 2024 王牌配置版</h1>
+    <h3 id="setup-status">建立你的中華隊陣容 (9打+1投)</h3>
+    <div class="setup-container">
+        <div class="pool-box"><h4>球員名單</h4><div id="tw-pool"></div></div>
+        <div class="pool-box"><h4 style="color:var(--strike);">先發名單</h4><div id="my-lineup-display"></div></div>
+    </div>
+    <button id="start-btn" onclick="beginGame()">開始比賽</button>
+</div>
 
-    <div class="dashboard">
-        <div class="dash-card"><small>出席率</small><big id="d1_v">0%</big></div>
-        <div class="dash-card"><small>到班人數</small><big id="d2_v">0</big></div>
-        <div class="dash-card"><small>手機繳交</small><big id="d3_v" style="color:var(--phone)">0</big></div>
+<div id="game-screen">
+    <div id="sub-modal"><h4 id="modal-title">換人</h4><div id="sub-list"></div><button class="sub-btn" style="width:100%; margin-top:10px;" onclick="closeModal()">取消</button></div>
+    <div class="line-score">
+        <table class="score-table">
+            <tr><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>R</th><th>H</th></tr>
+            <tr id="row-tpe"><td style="color:var(--accent)">TPE</td><td id="p1">0</td><td id="p2">-</td><td id="p3">-</td><td id="p4">-</td><td id="p5">-</td><td id="p6">-</td><td id="p7">-</td><td id="p8">-</td><td id="p9">-</td><td id="pr">0</td><td id="ph">0</td></tr>
+            <tr id="row-jpn"><td style="color:var(--jp-red)">JPN</td><td id="c1">0</td><td id="c2">-</td><td id="c3">-</td><td id="c4">-</td><td id="c5">-</td><td id="c6">-</td><td id="c7">-</td><td id="c8">-</td><td id="c9">-</td><td id="cr">0</td><td id="ch">0</td></tr>
+        </table>
     </div>
 
-    <div class="status-list-zone">
-        <div class="status-item"><b style="color:var(--absent)">缺/假:</b> <span id="txt-abs">無</span></div>
-        <div class="status-item"><b style="color:var(--warning)">遲到:</b> <span id="txt-late">無</span></div>
-        <div class="copy-circle" onclick="copyReport()">📋</div>
-    </div>
-
-    <div class="main-container" id="app-body">
-        <div id="v-att" class="view active">
-            <div class="podium-row">
-                <div class="s" id="att-p0" onclick="handleSeat('p0')"></div>
-                <div class="s" id="att-p1" onclick="handleSeat('p1')"></div>
-                <div class="podium-box">講桌</div>
-                <div class="s" id="att-p2" onclick="handleSeat('p2')"></div>
-                <div class="s" id="att-p3" onclick="handleSeat('p3')"></div>
-            </div>
-            <div id="g-att" class="grid"></div>
+    <div class="main-layout">
+        <div class="order-panel" id="order-ui"><div id="order-list"></div></div>
+        <div class="canvas-container">
+            <div id="msg-ov" class="overlay" style="position:absolute; font-size:4rem; display:none; z-index:100; color:white; font-weight:bold;">攻守交換</div>
+            <div class="feedback-overlay"><div id="speed-text"></div><div id="timing-text"></div><div id="result-text"></div></div>
+            <canvas id="fieldCanvas" width="550" height="450"></canvas>
         </div>
-
-        <div id="v-pho" class="view">
-            <button onclick="allPhone()" style="width:100%; padding:12px; margin-bottom:15px; border-radius:12px; border:none; background:var(--phone); color:#fff; font-weight:bold;">標記全班繳交</button>
-            <div class="podium-row">
-                <div class="s" id="pho-p0" onclick="handleSeat('p0')"></div>
-                <div class="s" id="pho-p1" onclick="handleSeat('p1')"></div>
-                <div class="podium-box">講桌</div>
-                <div class="s" id="pho-p2" onclick="handleSeat('p2')"></div>
-                <div class="s" id="pho-p3" onclick="handleSeat('p3')"></div>
+        <div class="sidebar">
+            <div style="background:#000; padding:12px; border-radius:8px; border:1px solid #444;">
+                B <div id="b1" class="light"></div><div id="b2" class="light"></div><div id="b3" class="light"></div><br>
+                S <div id="s1" class="light"></div><div id="s2" class="light"></div><br>
+                O <div id="o1" class="light"></div><div id="o2" class="light"></div>
+                <div id="base-ui" style="margin-top:8px; color:var(--accent); letter-spacing:10px; font-size:1.3rem; text-align:center;">◇ ◇ ◇</div>
             </div>
-            <div id="g-pho" class="grid"></div>
-        </div>
-
-        <div id="v-sta" class="view">
-            <div style="padding: 20px; background: var(--card); border-radius: 18px; border:1px solid var(--border);">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">今日在座 <b id="st-p">0</b></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">今日遲到 <b id="st-l">0</b></div>
-                <hr style="border:0; border-top:1px solid var(--border); margin:10px 0;">
-                <div id="leave-stats"></div>
+            <div id="pitch-ui">
+                <div class="pitch-menu" id="pitch-buttons"></div>
+                <button class="sub-btn" style="width:100%;" onclick="openSubModal('P')">🔄 更換投手</button>
             </div>
-        </div>
-
-        <div id="v-rec" class="view">
-            <div style="background:var(--card); border-radius:18px; border:1px solid var(--border); overflow:hidden;">
-                <table style="width:100%; font-size:0.85rem; border-collapse:collapse;">
-                    <thead><tr style="color:#888; border-bottom:1px solid var(--border);"><th style="padding:10px; text-align:left;">座號</th><th style="padding:10px;">遲到</th><th style="padding:10px;">缺/假</th></tr></thead>
-                    <tbody id="rec-body"></tbody>
-                </table>
+            <div id="bat-ui" style="display:none;">
+                <button id="swing-btn" onclick="swing()">SWING!</button>
+                <button class="sub-btn" style="width:100%;" onclick="openSubModal('B')">🔄 更換代打</button>
             </div>
-        </div>
-
-        <div id="v-set" class="view" style="text-align:center; padding-top:40px;">
-            <button onclick="dailyReset()" class="menu-btn" style="background:var(--absent); color:#fff;">重置今日點名數據</button>
-            <button onclick="clearLayout()" style="margin-top:20px; color:#888; font-size:0.75rem; text-decoration:underline;">還原預設座位佈局</button>
+            <div id="matchup" style="background:var(--panel); padding:10px; border-radius:5px; border-left:4px solid var(--tw-blue); font-size:0.8rem;"></div>
         </div>
     </div>
+</div>
 
-    <div id="leave-menu"><div class="menu-content"><h3 id="m-title">假別類型</h3><div id="m-btns"></div><button class="menu-btn" onclick="closeMenu()">取消</button></div></div>
+<script>
+    const canvas = document.getElementById('fieldCanvas');
+    const ctx = canvas.getContext('2d');
 
-    <div class="tab-bar-wrap">
-        <nav class="tab-bar">
-            <button class="tab-btn active" onclick="sw('att')">點名</button>
-            <button class="tab-btn" onclick="sw('pho')">手機</button>
-            <button class="tab-btn" onclick="sw('sta')">統計</button>
-            <button class="tab-btn" onclick="sw('rec')">次數</button>
-            <button class="tab-btn" onclick="sw('set')">設定</button>
-        </nav>
-    </div>
+    // 投手與球種真實配置
+    const TW_PLAYERS = [
+        { name: "古林睿煬 (2024)", type: "P", speed: 157, ctrl: 92, brk: 85, signature: ["火球", "滑球", "變速球"] }, 
+        { name: "徐若熙 (2024)", type: "P", speed: 154, ctrl: 88, brk: 98, signature: ["火球", "消失指叉", "滑球"] }, 
+        { name: "宋家豪", type: "P", speed: 151, ctrl: 90, brk: 95, signature: ["火球", "圈指變速球", "伸卡"] }, 
+        { name: "曾峻岳", type: "P", speed: 156, ctrl: 80, brk: 88, signature: ["火球", "指叉", "滑球"] },
+        { name: "黃子鵬", type: "P", speed: 145, ctrl: 95, brk: 90, signature: ["側投火球", "二縫線", "滑球"] },
+        { name: "張育成", type: "B", avg: .438, pwr: 95, spd: 75 },
+        { name: "吉力吉撈", type: "B", avg: .310, pwr: 98, spd: 40 },
+        { name: "陳傑憲", type: "B", avg: .357, pwr: 65, spd: 92 },
+        { name: "林立", type: "B", avg: .333, pwr: 85, spd: 85 },
+        { name: "江坤宇", type: "B", avg: .280, pwr: 55, spd: 80 },
+        { name: "鄭宗哲", type: "B", avg: .333, pwr: 60, spd: 95 },
+        { name: "吳念庭", type: "B", avg: .300, pwr: 75, spd: 65 },
+        { name: "王威晨", type: "B", avg: .280, pwr: 50, spd: 88 },
+        { name: "陳晨威", type: "B", avg: .290, pwr: 55, spd: 99 },
+        { name: "朱育賢", type: "B", avg: .282, pwr: 90, spd: 45 }
+    ];
 
-    <script>
-        const defL = [13, 41, 28, 27, 2, 0, 0, 6, 20, 10, 21, 12, 23, 25, 34, 3, 1, 33, 39, 4, 19, 15, 18, 24, 30, 40, 5, 16, 35, 29, 9, 36, 32, 14, 37, 17, 31, 8, 7, 22, 11, 26, 38, 0, 0, 0];
-        let isLocked = true, isEdit = false, curV = 'att', pendingId = null;
+    const JP_ORDER = [
+        { name: "Nootbaar", avg: .300, pwr: 80 }, { name: "近藤健介", avg: .340, pwr: 75 }, { name: "大谷翔平", avg: .435, pwr: 99 },
+        { name: "村上宗隆", avg: .280, pwr: 98 }, { name: "吉田正尚", avg: .409, pwr: 85 }, { name: "岡本和真", avg: .300, pwr: 90 },
+        { name: "山田哲人", avg: .250, pwr: 80 }, { name: "源田壯亮", avg: .220, pwr: 50 }, { name: "中村悠平", avg: .200, pwr: 45 }
+    ];
+    const JP_PITCHER = { name: "山本由伸", speed: 158, ctrl: 98, brk: 95, signature: ["火球", "指叉球", "彩虹曲球", "滑球"] };
 
-        function toggleLock() {
-            if(isLocked) {
-                let pw = prompt("請輸入權限密碼：", "");
-                if(pw === "305") {
-                    isLocked = false; document.body.classList.remove('app-locked');
-                    document.getElementById('lock-btn').innerText = "🔓";
-                    document.getElementById('lock-btn').classList.replace('locked-border', 'unlocked-border');
-                } else if(pw !== null) alert("密碼錯誤");
-            } else {
-                isLocked = true; document.body.classList.add('app-locked');
-                document.getElementById('lock-btn').innerText = "🔒";
-                document.getElementById('lock-btn').classList.replace('unlocked-border', 'locked-border');
-                if(isEdit) toggleEdit();
+    let myLineup = { B: [], P: null }, dugout = [], state = {
+        inning: 1, isTop: true, s: 0, b: 0, o: 0, pScore: 0, cScore: 0, pHits: 0, cHits: 0,
+        twIdx: 0, jpIdx: 0, isAnim: false, pitchType: '', pitchFrame: 0,
+        bases: [false, false, false], isBallInFlight: false, trail: [],
+        conditions: {} 
+    };
+
+    function initSetup() {
+        const poolEl = document.getElementById('tw-pool');
+        TW_PLAYERS.forEach((p, i) => {
+            const div = document.createElement('div'); div.className = 'p-item';
+            div.innerHTML = `<span>${p.name}</span> <span>${p.type=='P'?'投':'打'}</span>`;
+            div.onclick = () => selectPlayer(p, div); poolEl.appendChild(div);
+        });
+    }
+
+    function selectPlayer(p, el) {
+        if (el.classList.contains('selected')) return;
+        if (p.type === 'P') { if (myLineup.P) return; myLineup.P = p; }
+        else { if (myLineup.B.length >= 9) return; myLineup.B.push(p); }
+        el.classList.add('selected');
+        document.getElementById('my-lineup-display').innerHTML += `<div class='p-item'>${p.name}</div>`;
+        if (myLineup.B.length === 9 && myLineup.P) document.getElementById('start-btn').style.display = 'block';
+    }
+
+    function getCond() { const r = Math.random(); if(r > 0.8) return {v: 1.1, c: 'cond-best', icon: '●'}; if(r < 0.2) return {v: 0.9, c: 'cond-bad', icon: '●'}; return {v: 1.0, c: 'cond-good', icon: '●'}; }
+
+    function beginGame() {
+        const sel = [...myLineup.B.map(b=>b.name), myLineup.P.name];
+        dugout = TW_PLAYERS.filter(p => !sel.includes(p.name));
+        document.getElementById('setup-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'flex';
+        updatePitchMenu(); updateOrderUI(); updateUI(); render();
+        if (!state.isTop) setTimeout(cpuPitch, 1000);
+    }
+
+    function openSubModal(type) {
+        const modal = document.getElementById('sub-modal'), list = document.getElementById('sub-list');
+        list.innerHTML = '';
+        dugout.filter(p => p.type === type).forEach(p => {
+            const div = document.createElement('div'); div.className = 'sub-item';
+            div.innerHTML = `<span>${p.name}</span> <span>${type=='P'?'V:'+p.speed:'SUB'}</span>`;
+            div.onclick = () => {
+                if(type === 'P') { myLineup.P = p; updatePitchMenu(); } else { myLineup.B[state.twIdx] = p; updateOrderUI(); }
+                dugout = dugout.filter(x => x.name !== p.name); closeModal(); updateUI();
+            }; list.appendChild(div);
+        }); modal.style.display = 'block';
+    }
+
+    function closeModal() { document.getElementById('sub-modal').style.display = 'none'; }
+
+    function updatePitchMenu() {
+        const menu = document.getElementById('pitch-buttons'); menu.innerHTML = '';
+        const currP = state.isTop ? myLineup.P : JP_PITCHER;
+        currP.signature.forEach((s, i) => {
+            const btn = document.createElement('button'); btn.className = `btn ${i === 0 ? 'active' : ''}`; btn.innerText = s;
+            if (i === 0) state.pitchType = s;
+            btn.onclick = () => { state.pitchType = s; document.querySelectorAll('.pitch-menu .btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); };
+            menu.appendChild(btn);
+        });
+    }
+
+    function updateOrderUI() {
+        const list = document.getElementById('order-list'), order = state.isTop ? JP_ORDER : myLineup.B, idx = state.isTop ? state.jpIdx : state.twIdx;
+        list.innerHTML = ''; 
+        order.forEach((p, i) => {
+            if(!state.conditions[p.name]) state.conditions[p.name] = getCond();
+            const cond = state.conditions[p.name];
+            const div = document.createElement('div'); div.className = `order-item ${i === idx ? 'active' : ''}`;
+            div.innerHTML = `<span>${i+1}. ${p.name}</span> <span class="${cond.c}">${cond.icon}</span>`;
+            list.appendChild(div);
+        });
+    }
+
+    function render(f = 0) {
+        ctx.clearRect(0,0,550,450); ctx.strokeStyle = "rgba(0, 242, 255, 0.2)"; ctx.strokeRect(175, 100, 200, 200);
+        for(let i=1; i<3; i++) {
+            ctx.beginPath(); ctx.moveTo(175+i*66.6, 100); ctx.lineTo(175+i*66.6, 300);
+            ctx.moveTo(175, 100+i*66.6); ctx.lineTo(375, 100+i*66.6); ctx.stroke();
+        }
+        if (state.trail.length > 1) {
+            ctx.beginPath(); ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 1.5;
+            ctx.moveTo(state.trail[0].x, state.trail[0].y);
+            for(let i=1; i<state.trail.length; i++) ctx.lineTo(state.trail[i].x, state.trail[i].y); ctx.stroke();
+        }
+        let leg = (f > 0 && f < 12) ? -35 : 0;
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(275, 360, 12, 0, Math.PI*2); ctx.stroke();
+        ctx.moveTo(275, 372); ctx.lineTo(275, 410); ctx.moveTo(275, 410); ctx.lineTo(260, 445); ctx.moveTo(275, 410); ctx.lineTo(290, 445+leg); ctx.stroke();
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        if (state.isAnim || !state.isTop) return;
+        const rect = canvas.getBoundingClientRect(); startPitch(e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    function startPitch(tx, ty) {
+        state.isAnim = true; state.trail = []; let f = 0;
+        const anim = () => {
+            f++; render(f); if(f < 18) requestAnimationFrame(anim);
+            else {
+                let bf = 0; const p = state.isTop ? myLineup.P : JP_PITCHER;
+                let sB = p.speed;
+                if (state.pitchType.includes("變速") || state.pitchType.includes("指叉")) sB -= 12;
+                if (state.pitchType.includes("曲球")) sB -= 18;
+                const spd = Math.floor(sB + (Math.random()*4-2));
+                document.getElementById('speed-text').innerText = spd + " km/h";
+                document.getElementById('speed-text').style.display = 'block';
+
+                const fly = () => {
+                    bf++; state.pitchFrame = bf; state.isBallInFlight = true;
+                    let pVal = bf/22; render(18);
+                    let ballSize = 2 + (pVal * 18); 
+                    let cF = pVal > 0.4 ? Math.pow(pVal - 0.4, 2) * 5 : 0;
+                    cF *= (p.brk / 90);
+                    let dx = 0, dy = 0;
+
+                    // 物理軌跡校準 (右投手視角)
+                    if(state.pitchType.includes("滑球")) dx = cF * -65; 
+                    if(state.pitchType.includes("曲球")) { dx = cF * -55; dy = cF * 55; }
+                    if(state.pitchType.includes("指叉")) dy = cF * 85;
+                    if(state.pitchType.includes("圈指變速球")) { dx = cF * 50; dy = cF * 190; }
+                    if(state.pitchType.includes("消失指叉")) { dx = cF * -30; dy = cF * 190; }
+                    if(state.pitchType.includes("伸卡") || state.pitchType.includes("二縫線")) dx = cF * 45;
+                    
+                    let cx = 275 + (tx-275)*pVal + dx, cy = 370 + (ty-370)*pVal + dy;
+                    state.trail.push({x: cx, y: cy});
+                    ctx.beginPath(); ctx.arc(cx, cy, ballSize, 0, Math.PI*2); ctx.fillStyle = "#fff"; ctx.fill();
+                    if(bf < 22) requestAnimationFrame(fly); else resolve(cx, cy);
+                }; fly();
             }
+        }; anim();
+    }
+
+    function resolve(cx, cy) {
+        state.isAnim = false; state.isBallInFlight = false;
+        let inZone = cx > 175 && cx < 375 && cy > 100 && cy < 300;
+        let batter = state.isTop ? JP_ORDER[state.jpIdx] : myLineup.B[state.twIdx];
+        let cond = state.conditions[batter.name] || {v:1};
+        if (state.isTop) {
+            if (inZone && Math.random() < (batter.avg * cond.v)) {
+                const q = Math.random() < (batter.pwr/160) ? 2 : 1;
+                showFeedback("", q === 2 ? "JPN 長打！" : "JPN 安打！"); handleHit(q);
+            } else if (inZone) { state.s++; if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); } }
+            else { state.b++; if (state.b >= 4) handleWalk(); }
+        } else {
+            if (inZone) state.s++; else state.b++;
+            if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); }
+            if (state.b >= 4) handleWalk();
         }
+        checkInning(); updateUI();
+    }
 
-        function toggleTheme() { document.body.dataset.theme = document.body.dataset.theme === 'dark' ? 'light' : 'dark'; }
-        function toggleEdit() {
-            if(isLocked) return alert("請先解鎖權限");
-            isEdit = !isEdit; document.getElementById('app-body').classList.toggle('edit-mode', isEdit);
-            document.getElementById('edit-btn').style.background = isEdit ? "var(--warning)" : "var(--card)";
-            render();
+    function swing() {
+        if (!state.isBallInFlight) return;
+        state.isBallInFlight = false;
+        let timing = "TOO LATE", batter = myLineup.B[state.twIdx];
+        let cond = state.conditions[batter.name] || {v:1};
+        if (state.pitchFrame >= 19 && state.pitchFrame <= 21) timing = "PERFECT";
+        else if (state.pitchFrame >= 15 && state.pitchFrame <= 22) timing = "GOOD";
+        if (timing === "PERFECT") {
+            const isHR = Math.random() < (batter.pwr / 180 * cond.v);
+            handleHit(isHR ? 4 : 2); showFeedback("PERFECT", isHR ? "全壘打！" : "長打！");
+            if(isHR) shakeScreen();
+        } else if (timing === "GOOD" && Math.random() < (batter.avg * cond.v)) {
+            handleHit(1); showFeedback("GOOD", "安打！");
+        } else {
+            state.s++; showFeedback(timing, "揮棒落空");
+            if (state.s >= 3) { state.o++; state.s=0; state.b=0; showFeedback("", "三振！"); finishPA(); }
         }
+        checkInning(); updateUI();
+    }
 
-        function sw(v) {
-            curV = v; document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
-            document.getElementById('v-'+v).classList.add('active');
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.currentTarget.classList.add('active'); render();
+    function shakeScreen() { canvas.style.transform = "translate(5px, 5px)"; setTimeout(()=>canvas.style.transform="translate(0,0)", 100); }
+
+    function handleHit(bases) {
+        let r = 0; if(bases === 4) { r = state.bases.filter(b=>b).length + 1; state.bases = [false, false, false]; }
+        else { for (let i = 2; i >= 0; i--) { if (state.bases[i]) { if (i + bases >= 3) { r++; state.bases[i] = false; } else { state.bases[i + bases] = true; state.bases[i] = false; } } } state.bases[bases - 1] = true; }
+        if (state.isTop) state.cScore += r; else state.pScore += r;
+        state.s = 0; state.b = 0; finishPA();
+    }
+
+    function handleWalk() { 
+        let r = 0; if (state.bases[0] && state.bases[1] && state.bases[2]) r = 1; else if (state.bases[0] && state.bases[1]) state.bases[2] = true; else if (state.bases[0]) state.bases[1] = true;
+        state.bases[0] = true; if (state.isTop) state.cScore += r; else state.pScore += r;
+        state.s = 0; state.b = 0; finishPA(); 
+    }
+
+    function finishPA() { if (state.isTop) state.jpIdx = (state.jpIdx + 1) % 9; else state.twIdx = (state.twIdx + 1) % 9; updateOrderUI(); }
+
+    function checkInning() {
+        if (state.o >= 3) {
+            state.o = 0; state.s = 0; state.b = 0; state.bases = [false, false, false]; state.isTop = !state.isTop; if (state.isTop) state.inning++;
+            const ov = document.getElementById('msg-ov'); ov.style.display = 'block'; setTimeout(()=>ov.style.display='none', 1500);
+            updateOrderUI(); updatePitchMenu();
         }
+        document.getElementById('pitch-ui').style.display = state.isTop ? 'block' : 'none';
+        document.getElementById('bat-ui').style.display = state.isTop ? 'none' : 'block';
+        if (!state.isTop && !state.isAnim && !state.isBallInFlight) setTimeout(cpuPitch, 2000);
+    }
 
-        function handleSeat(pos) {
-            if(isLocked) return;
-            let l = JSON.parse(localStorage.getItem('e3_layout') || JSON.stringify(defL));
-            let idx = pos.startsWith('p') ? parseInt(pos[1]) : parseInt(pos) + 4;
-            if(isEdit) {
-                let newId = prompt("輸入座號 (0為空格):", l[idx]);
-                if(newId !== null) { l[idx] = parseInt(newId); localStorage.setItem('e3_layout', JSON.stringify(l)); render(); }
-            } else {
-                let id = l[idx]; if(id > 0) processCheck(id);
-            }
-        }
+    function cpuPitch() { if (state.isTop) return; state.pitchType = JP_PITCHER.signature[Math.floor(Math.random()*4)]; startPitch(200+Math.random()*150, 120+Math.random()*150); }
 
-        function processCheck(id) {
-            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), h = JSON.parse(localStorage.getItem('e3_his') || '{}'), t = JSON.parse(localStorage.getItem('e3_time') || '{}'), p = JSON.parse(localStorage.getItem('e3_pho') || '{}');
-            if(!h[id]) h[id] = {late:0, absent:0};
-            if(curV === 'att') {
-                let s = a[id] || 'present'; const now = new Date().toLocaleTimeString('zh-TW', {hour12:false, hour:'2-digit', minute:'2-digit'});
-                if(s === 'present') { a[id] = 'late'; t[id] = now; h[id].late++; }
-                else if(s === 'late') { pendingId = id; showLeaveMenu(); return; }
-                else if(s === 'leave') { a[id] = 'absent'; h[id].absent++; }
-                else { a[id] = 'present'; delete t[id]; }
-            } else { p[id] = (p[id] === 'y') ? 'n' : 'y'; localStorage.setItem('e3_pho', JSON.stringify(p)); }
-            save(a, p, null, t, h);
-        }
+    function showFeedback(timing, result) {
+        const t = document.getElementById('timing-text'), r = document.getElementById('result-text'), s = document.getElementById('speed-text');
+        t.innerText = timing; r.innerText = result; t.style.display = timing ? 'block' : 'none'; r.style.display = 'block';
+        setTimeout(() => { t.style.display = 'none'; r.style.display = 'none'; s.style.display = 'none'; }, 1500);
+    }
 
-        function showLeaveMenu() {
-            document.getElementById('m-title').innerText = "假別設定 - " + pendingId + "號";
-            let btns = ""; ['事','公','病','喪'].forEach(v => { btns += `<button class="menu-btn" onclick="selLeave('${v}')">${v}假</button>`; });
-            document.getElementById('m-btns').innerHTML = btns; document.getElementById('leave-menu').style.display = 'flex';
-        }
+    function updateUI() {
+        document.getElementById('pr').innerText = state.pScore; document.getElementById('cr').innerText = state.cScore;
+        const curId = state.isTop ? `c${state.inning}` : `p${state.inning}`; if(document.getElementById(curId)) document.getElementById(curId).innerText = state.isTop ? state.cScore : state.pScore;
+        document.getElementById('s1').className = state.s >= 1 ? 'light s-on' : 'light'; document.getElementById('s2').className = state.s >= 2 ? 'light s-on' : 'light';
+        document.getElementById('b1').className = state.b >= 1 ? 'light b-on' : 'light'; document.getElementById('b2').className = state.b >= 2 ? 'light b-on' : 'light'; document.getElementById('b3').className = state.b >= 3 ? 'light b-on' : 'light';
+        document.getElementById('o1').className = state.o >= 1 ? 'light o-on' : 'light'; document.getElementById('o2').className = state.o >= 2 ? 'light o-on' : 'light';
+        document.getElementById('base-ui').innerText = state.bases.map(b => b ? "◆" : "◇").join(" ");
+        const p = state.isTop ? myLineup.P : JP_PITCHER, b = state.isTop ? JP_ORDER[state.jpIdx] : myLineup.B[state.twIdx];
+        document.getElementById('matchup').innerText = `${p.name} vs ${b.name}`;
+    }
 
-        function selLeave(type) {
-            let a = JSON.parse(localStorage.getItem('e3_att') || '{}'), n = JSON.parse(localStorage.getItem('e3_note') || '{}');
-            a[pendingId] = 'leave'; n[pendingId] = type; closeMenu(); save(a, null, n, null, null);
-        }
-
-        function closeMenu() { document.getElementById('leave-menu').style.display = 'none'; }
-        function save(a, p, n, t, h) {
-            if(a) localStorage.setItem('e3_att', JSON.stringify(a)); if(p) localStorage.setItem('e3_pho', JSON.stringify(p));
-            if(n) localStorage.setItem('e3_note', JSON.stringify(n)); if(t) localStorage.setItem('e3_time', JSON.stringify(t));
-            if(h) localStorage.setItem('e3_his', JSON.stringify(h)); render();
-        }
-
-        function render() {
-            const l = JSON.parse(localStorage.getItem('e3_layout') || JSON.stringify(defL));
-            const a = JSON.parse(localStorage.getItem('e3_att') || '{}'), p = JSON.parse(localStorage.getItem('e3_pho') || '{}'),
-                  n = JSON.parse(localStorage.getItem('e3_note') || '{}'), t = JSON.parse(localStorage.getItem('e3_time') || '{}'),
-                  h = JSON.parse(localStorage.getItem('e3_his') || '{}');
-
-            // 同步點名與手機的護法位
-            for(let i=0; i<4; i++) {
-                updateS(document.getElementById('att-p'+i), l[i], a, p, n, t);
-                updateS(document.getElementById('pho-p'+i), l[i], a, p, n, t);
-            }
-
-            // 渲染主網格
-            const gAtt = document.getElementById('g-att'), gPho = document.getElementById('g-pho');
-            gAtt.innerHTML = ""; gPho.innerHTML = "";
-            for(let i=4; i<l.length; i++) {
-                let id = l[i];
-                let elAtt = document.createElement('div'), elPho = document.createElement('div');
-                elAtt.className = "s"; elPho.className = "s";
-                if(id === 0) { elAtt.style.opacity = "0"; elPho.style.opacity = "0"; }
-                else { 
-                    elAtt.onclick = () => handleSeat((i-4).toString()); updateS(elAtt, id, a, p, n, t);
-                    elPho.onclick = () => handleSeat((i-4).toString()); updateS(elPho, id, a, p, n, t);
-                }
-                gAtt.appendChild(elAtt); gPho.appendChild(elPho);
-            }
-
-            const rBody = document.getElementById('rec-body'); rBody.innerHTML = "";
-            for(let i=1; i<=41; i++) {
-                let d = h[i] || {late:0, absent:0};
-                rBody.innerHTML += `<tr><td style="padding:10px">${i}號</td><td align="center">${d.late}次</td><td align="center">${d.absent}次</td></tr>`;
-            }
-            calc(a, p, n);
-        }
-
-        function updateS(el, id, a, p, n, t) {
-            if(!el || id === 0) return;
-            let s = a[id] || 'present'; el.className = "s " + s;
-            if(curV === 'pho' && p[id] === 'y') el.classList.add('ph-done');
-            el.innerHTML = (t[id] ? `<div class="time-label">${t[id]}</div>` : "") + id + (s==='leave' ? `<div class="note-label">${n[id]}</div>` : "");
-        }
-
-        function calc(a, p, n) {
-            let pres=0, late=0, abs=0, lea=0, pho=0, v={事:0,公:0,病:0,喪:0}, absL=[], lateL=[];
-            for(let i=1; i<=41; i++) {
-                let s = a[i] || 'present';
-                if(s==='present') pres++; else if(s==='late') { late++; lateL.push(i); } else if(s==='absent') { abs++; absL.push(i); } else if(s==='leave') { lea++; absL.push(`${i}(${n[i]||'假'})`); if(v[n[i]]!==undefined) v[n[i]]++; }
-                if(p[i]==='y') pho++;
-            }
-            document.getElementById('d1_v').innerText = Math.round((pres/41)*100) + "%";
-            document.getElementById('d2_v').innerText = pres + late; document.getElementById('d3_v').innerText = pho;
-            document.getElementById('txt-abs').innerText = absL.join(', ') || '無'; document.getElementById('txt-late').innerText = lateL.join(', ') || '無';
-            document.getElementById('st-p').innerText = pres; document.getElementById('st-l').innerText = late;
-            document.getElementById('leave-stats').innerHTML = `事假: ${v.事} | 公假: ${v.公} | 病假: ${v.病} | 喪假: ${v.喪}`;
-        }
-
-        function copyReport() { const text = `電三孝點名回報：\n缺席/請假：${document.getElementById('txt-abs').innerText}\n遲到：${document.getElementById('txt-late').innerText}\n實到人數：${document.getElementById('d2_v').innerText}`; navigator.clipboard.writeText(text).then(() => alert("回報內容已複製！")); }
-        function allPhone() { if(isLocked) return; let p = {}; for(let i=1; i<=41; i++) p[i] = 'y'; localStorage.setItem('e3_pho', JSON.stringify(p)); render(); }
-        function dailyReset() { if(isLocked) return; if(confirm("重置今日數據？")) { localStorage.removeItem('e3_att'); localStorage.removeItem('e3_note'); localStorage.removeItem('e3_time'); location.reload(); } }
-        function clearLayout() { if(isLocked) return; if(confirm("還原座位佈局？")) { localStorage.removeItem('e3_layout'); location.reload(); } }
-        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('zh-TW', {hour12:false}); }, 1000);
-        window.onload = render;
-    </script>
+    initSetup();
+</script>
 </body>
 </html>
