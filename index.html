@@ -2,20 +2,18 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>WBC 2024：魔球控球修正版</title>
+    <title>WBC 2024：完整陣容究極版</title>
     <style>
         :root { --accent: #00f2ff; --bg: #020617; --panel: #1e293b; --strike: #facc15; --tw-blue: #0038a8; --jp-red: #bc002d; }
         body { background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; overflow: hidden; height: 100vh; }
         
-        /* 選人畫面 */
         #setup-screen { position: absolute; inset: 0; z-index: 1000; background: radial-gradient(circle, #001f3f, #000); padding: 20px; display: flex; flex-direction: column; align-items: center; overflow-y: auto; }
         .setup-container { display: flex; gap: 20px; width: 95%; max-width: 1200px; height: 65vh; }
         .pool-box { flex: 1; background: rgba(255,255,255,0.05); border: 1.5px solid var(--tw-blue); border-radius: 12px; overflow-y: auto; padding: 15px; }
-        .p-item { background: #0f172a; padding: 10px; margin: 5px 0; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.85rem; border: 1px solid transparent; }
+        .p-item { background: #0f172a; padding: 8px; margin: 5px 0; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; font-size: 0.85rem; border: 1px solid transparent; }
         .p-item:hover { border-color: var(--accent); }
         .p-item.selected { border-color: var(--strike); opacity: 0.4; pointer-events: none; }
 
-        /* 遊戲介面 */
         #game-screen { display: none; width: 100%; height: 100vh; flex-direction: column; }
         .line-score { width: 100%; background: #000; border-bottom: 2px solid var(--accent); padding: 5px 0; }
         .score-table { margin: 0 auto; border-collapse: collapse; font-family: monospace; text-align: center; }
@@ -27,7 +25,7 @@
         .order-item.active { background: var(--accent); color: #000; font-weight: bold; }
 
         .canvas-container { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: radial-gradient(circle, #1e293b, #050a15); }
-        canvas { border-radius: 10px; border: 1px solid #334155; }
+        canvas { border-radius: 10px; border: 1px solid #334155; transition: transform 0.1s; }
 
         .sidebar { width: 280px; background: rgba(15, 23, 42, 0.95); padding: 20px; display: flex; flex-direction: column; gap: 15px; border-left: 1px solid #334155; }
         .pitch-menu { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -39,7 +37,6 @@
         .sub-item { padding: 10px; border-bottom: 1px solid #334155; cursor: pointer; font-size: 0.85rem; }
 
         #swing-btn { width: 100%; padding: 20px; font-size: 1.5rem; font-weight: 900; color: #fff; background: linear-gradient(to bottom, #ef4444, #991b1b); border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 5px 0 #7f1d1d; }
-        
         .light { width: 12px; height: 12px; border-radius: 50%; background: #2d3748; display: inline-block; margin: 0 4px; }
         .s-on { background: var(--strike); box-shadow: 0 0 10px var(--strike); }
         .b-on { background: #4ade80; box-shadow: 0 0 10px #4ade80; }
@@ -49,24 +46,23 @@
         #speed-text { font-size: 1.5rem; color: var(--accent); font-weight: bold; }
         #timing-text { font-size: 2rem; font-weight: 900; color: #fff; text-shadow: 0 0 10px #000; }
         #result-text { font-size: 2.5rem; font-weight: 900; color: var(--strike); text-shadow: 0 0 20px #000; }
-        
         #start-btn { margin-top: 20px; padding: 12px 50px; background: var(--tw-blue); color: white; border: none; border-radius: 30px; cursor: pointer; display: none; }
     </style>
 </head>
 <body>
 
 <div id="setup-screen">
-    <h1 style="color:var(--accent)">WBC 2024 王牌究極修正</h1>
-    <h3 id="setup-status">建立你的先發陣容 (魔球已修正控球邏輯)</h3>
+    <h1 style="color:var(--accent)">WBC 2024：完整陣容版</h1>
+    <h3 id="setup-status">挑選 9 打者 + 1 投手 (名單已補齊)</h3>
     <div class="setup-container">
-        <div class="pool-box"><h4>中華隊球員</h4><div id="tw-pool"></div></div>
-        <div class="pool-box"><h4 style="color:var(--strike);">先發</h4><div id="my-lineup-display"></div></div>
+        <div class="pool-box"><h4>中華隊球員名單</h4><div id="tw-pool"></div></div>
+        <div class="pool-box"><h4 style="color:var(--strike);">先發陣容</h4><div id="my-lineup-display"></div></div>
     </div>
-    <button id="start-btn" onclick="beginGame()">開始比賽</button>
+    <button id="start-btn" onclick="beginGame()">開始對決</button>
 </div>
 
 <div id="game-screen">
-    <div id="sub-modal"><h4 id="modal-title">板凳調度</h4><div id="sub-list"></div><button class="sub-btn" style="width:100%; margin-top:10px;" onclick="closeModal()">取消</button></div>
+    <div id="sub-modal"><h4 id="modal-title">換人</h4><div id="sub-list"></div><button class="sub-btn" style="width:100%; margin-top:10px;" onclick="closeModal()">取消</button></div>
     <div class="line-score">
         <table class="score-table">
             <tr><th>TEAM</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>R</th><th>H</th></tr>
@@ -89,14 +85,8 @@
                 O <div id="o1" class="light"></div><div id="o2" class="light"></div>
                 <div id="base-ui" style="margin-top:8px; color:var(--accent); letter-spacing:10px; font-size:1.3rem; text-align:center;">◇ ◇ ◇</div>
             </div>
-            <div id="pitch-ui">
-                <div class="pitch-menu" id="pitch-buttons"></div>
-                <button class="sub-btn" style="width:100%;" onclick="openSubModal('P')">🔄 更換投手</button>
-            </div>
-            <div id="bat-ui" style="display:none;">
-                <button id="swing-btn" onclick="swing()">SWING!</button>
-                <button class="sub-btn" style="width:100%;" onclick="openSubModal('B')">🔄 更換代打</button>
-            </div>
+            <div id="pitch-ui"><div class="pitch-menu" id="pitch-buttons"></div><button class="sub-btn" style="width:100%;" onclick="openSubModal('P')">🔄 更換投手</button></div>
+            <div id="bat-ui" style="display:none;"><button id="swing-btn" onclick="swing()">SWING!</button><button class="sub-btn" style="width:100%;" onclick="openSubModal('B')">🔄 更換代打</button></div>
             <div id="matchup" style="background:var(--panel); padding:10px; border-radius:5px; border-left:4px solid var(--tw-blue); font-size:0.8rem;"></div>
         </div>
     </div>
@@ -106,22 +96,29 @@
     const canvas = document.getElementById('fieldCanvas');
     const ctx = canvas.getContext('2d');
 
+    // 完整的 15 人名單
     const TW_PLAYERS = [
-        { name: "徐若熙 (2024)", type: "P", speed: 154, ctrl: 90, brk: 98, signature: ["消失指叉", "火球", "滑球"] }, 
+        { name: "徐若熙 (2024)", type: "P", speed: 154, ctrl: 90, brk: 98, signature: ["火球", "消失指叉", "滑球"] }, 
+        { name: "古林睿煬 (2024)", type: "P", speed: 157, ctrl: 95, brk: 88, signature: ["火球", "滑球", "變速球"] }, 
         { name: "宋家豪", type: "P", speed: 151, ctrl: 92, brk: 95, signature: ["圈指變速球", "火球", "伸卡"] }, 
-        { name: "古林睿煬 (2024)", type: "P", speed: 157, ctrl: 95, brk: 88, signature: ["極速火球", "滑球", "變速球"] }, 
         { name: "張育成", type: "B", avg: .438, pwr: 95, spd: 75 },
         { name: "吉力吉撈", type: "B", avg: .310, pwr: 98, spd: 40 },
         { name: "陳傑憲", type: "B", avg: .357, pwr: 65, spd: 92 },
         { name: "林立", type: "B", avg: .333, pwr: 85, spd: 85 },
         { name: "江坤宇", type: "B", avg: .280, pwr: 55, spd: 80 },
+        { name: "鄭宗哲", type: "B", avg: .333, pwr: 60, spd: 95 },
+        { name: "吳念庭", type: "B", avg: .300, pwr: 75, spd: 65 },
+        { name: "王威晨", type: "B", avg: .280, pwr: 50, spd: 88 },
+        { name: "陳晨威", type: "B", avg: .290, pwr: 55, spd: 99 },
+        { name: "朱育賢", type: "B", avg: .282, pwr: 90, spd: 45 },
         { name: "曾峻岳", type: "P", speed: 156, ctrl: 82, brk: 88, signature: ["火球", "滑球", "指叉"] },
         { name: "黃子鵬", type: "P", speed: 145, ctrl: 95, brk: 92, signature: ["側投火球", "二縫線", "滑球"] }
     ];
 
     const JP_ORDER = [
         { name: "Nootbaar", avg: .300, pwr: 80 }, { name: "近藤健介", avg: .340, pwr: 75 }, { name: "大谷翔平", avg: .435, pwr: 99 },
-        { name: "村上宗隆", avg: .280, pwr: 98 }, { name: "吉田正尚", avg: .409, pwr: 85 }, { name: "岡本和真", avg: .300, pwr: 90 }
+        { name: "村上宗隆", avg: .280, pwr: 98 }, { name: "吉田正尚", avg: .409, pwr: 85 }, { name: "岡本和真", avg: .300, pwr: 90 },
+        { name: "山田哲人", avg: .250, pwr: 80 }, { name: "源田壯亮", avg: .220, pwr: 50 }, { name: "中村悠平", avg: .200, pwr: 45 }
     ];
     const JP_PITCHER = { name: "山本由伸", speed: 158, ctrl: 98, brk: 95, signature: ["指叉球", "火球", "彩虹曲球"] };
 
@@ -150,8 +147,8 @@
     }
 
     function beginGame() {
-        const sel = [...myLineup.B.map(b=>b.name), myLineup.P.name];
-        dugout = TW_PLAYERS.filter(p => !sel.includes(p.name));
+        const selNames = [...myLineup.B.map(b=>b.name), myLineup.P.name];
+        dugout = TW_PLAYERS.filter(p => !selNames.includes(p.name));
         document.getElementById('setup-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'flex';
         updatePitchMenu(); updateOrderUI(); updateUI(); render();
@@ -189,8 +186,7 @@
         list.innerHTML = ''; 
         order.forEach((p, i) => {
             const div = document.createElement('div'); div.className = `order-item ${i === idx ? 'active' : ''}`;
-            div.innerHTML = `<span>${i+1}. ${p.name}</span>`;
-            list.appendChild(div);
+            div.innerHTML = `<span>${i+1}. ${p.name}</span>`; list.appendChild(div);
         });
     }
 
@@ -208,7 +204,8 @@
         let leg = (f > 0 && f < 12) ? -35 : 0;
         ctx.strokeStyle = "#fff"; ctx.lineWidth = 4;
         ctx.beginPath(); ctx.arc(275, 360, 12, 0, Math.PI*2); ctx.stroke();
-        ctx.moveTo(275, 372); ctx.lineTo(275, 410); ctx.moveTo(275, 410); ctx.lineTo(260, 445); ctx.moveTo(275, 410); ctx.lineTo(290, 445+leg); ctx.stroke();
+        ctx.moveTo(275, 372); ctx.lineTo(275, 410); ctx.moveTo(275, 410); ctx.lineTo(260, 445);
+        ctx.moveTo(275, 410); ctx.lineTo(290, 445+leg); ctx.stroke();
     }
 
     canvas.addEventListener('mousedown', (e) => {
@@ -232,35 +229,22 @@
                     bf++; state.pitchFrame = bf; state.isBallInFlight = true;
                     let pVal = bf/22; render(18);
                     let ballSize = 2 + (pVal * 18); 
-                    
-                    // 修正：補償邏輯
-                    // 如果是魔球，起始位置會往上偏，最終剛好掉在你點擊的目標 ty
-                    let compensation = 0;
-                    if(state.pitchType === "消失指叉" || state.pitchType === "圈指變速球") {
-                        compensation = -190 * Math.pow(pVal, 2); // 預設向上偏，隨著飛行掉下來
-                    }
-
                     let cF = pVal > 0.4 ? Math.pow(pVal - 0.4, 2) * 5 : 0;
                     let dx = 0, dy = 0;
                     
-                    // 物理位移 (右投手對打者視角)
                     if(state.pitchType.includes("滑球")) dx = cF * -65; 
                     if(state.pitchType.includes("曲球")) { dx = cF * -55; dy = cF * 55; }
-                    if(state.pitchType.includes("指叉")) dy = cF * 85;
                     
-                    // 核心魔球位移強化
-                    if(state.pitchType.includes("圈指變速球")) { dx = cF * 45; dy = cF * 190; }
-                    if(state.pitchType.includes("消失指叉")) { dx = cF * -25; dy = cF * 190; }
+                    // 魔球修正邏輯：計算補償，使最終進壘點剛好在 ty
+                    if(state.pitchType === "消失指叉" || state.pitchType === "圈指變速球") {
+                        dy = cF * 190; 
+                        if(state.pitchType === "圈指變速球") dx = cF * 45;
+                        else dx = cF * -25;
+                    }
                     
-                    // 最終位置 = 起點 + (目標-起點)*比例 + 物理偏移 - 補償量
-                    // 這樣你的目標點 ty 就會是球掉下來後的最終位置
-                    let cx = 275 + (tx-275)*pVal + dx;
-                    let cy = 370 + (ty-370)*pVal + dy + (compensation * (1-pVal)); 
-                    
-                    // 簡化補償邏輯：讓球的最終位置剛好落在 ty
-                    let finalCy = 370 + (ty-370)*pVal + (dy * (pVal)); 
-                    // 但為了讓球「真的有掉下來的過程」，我們讓球的軌跡在 pVal 小時看起來更高
+                    // 視覺Y軸：模擬「飛高後掉落」
                     let visualY = (370 + (ty - dy - 370) * pVal) + dy * Math.pow(pVal, 2);
+                    let cx = 275 + (tx-275)*pVal + dx;
 
                     state.trail.push({x: cx, y: visualY});
                     ctx.beginPath(); ctx.arc(cx, visualY, ballSize, 0, Math.PI*2); ctx.fillStyle = "#fff"; ctx.fill();
