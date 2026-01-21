@@ -72,6 +72,12 @@
             background: rgba(0, 212, 255, 0.1); padding: 15px; border-radius: 4px; border-left: 5px solid var(--neon-blue); margin-bottom: 20px;
         }
 
+        .store-input {
+            background: transparent; border: none; border-bottom: 2px solid var(--gold);
+            color: var(--gold); font-weight: bold; font-size: 1.2rem; width: 60%; outline: none;
+            padding: 5px;
+        }
+
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th, td { border: 1px solid rgba(255,255,255,0.05); padding: 12px; text-align: center; }
         th { color: var(--neon-purple); letter-spacing: 2px; }
@@ -85,14 +91,15 @@
 <header><h1>電機科專屬點餐系統👩🏼‍🍳</h1></header>
 
 <div class="tool-bar">
-    <button class="btn-tech" onclick="openWheel()">🎡 隨機轉盤抽籤</button>
+    <button class="btn-tech" onclick="openWheel('drink')">🥤 抽飲料店</button>
+    <button class="btn-tech" onclick="openWheel('food')">🍜 抽在地美食</button>
     <button class="btn-tech" style="color:var(--gold); border-color:var(--gold);" onclick="filterHot()">🔥 熱門店家</button>
-    <button class="btn-tech" onclick="renderStores()">🔄 刷新全部列表</button>
+    <button class="btn-tech" onclick="renderStores()">🔄 刷新列表</button>
 </div>
 
 <div id="wheel-overlay" onclick="closeWheel()"></div>
 <div id="wheel-box">
-    <h2 style="color:var(--neon-blue)">🎡 命運之輪</h2>
+    <h2 id="wheel-title" style="color:var(--neon-blue)">🎡 命運之輪</h2>
     <div class="pointer"></div>
     <div id="wheel"></div>
     <button class="btn-tech" id="spin-btn" onclick="spinWheel()" style="width:100%; background:var(--neon-blue); color:#000;">啟動旋轉</button>
@@ -108,16 +115,16 @@
         <div class="order-system">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="color:var(--neon-purple); margin:0;">📊 班級數據統計器</h2>
-                <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="clearAllData()">清空所有數據</button>
+                <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="clearAllData()">重整統計表</button>
             </div>
             <div class="current-store-info">
-                正在點餐店家：<span id="target-store-name" style="color:var(--gold); font-weight:bold; font-size:1.2rem;">尚未選擇 (請點擊下方店家的「菜單」按鈕)</span>
+                正在點餐店家：<input type="text" id="target-store-input" class="store-input" placeholder="請手動輸入或點擊上方菜單">
             </div>
             <table id="orderTable">
-                <thead><tr><th width="25%">座號 / 姓名</th><th width="45%">詳細品項 (糖冰備註)</th><th width="15%">金額 ($)</th><th width="15%">刪除</th></tr></thead>
+                <thead><tr><th width="25%">座號 / 姓名</th><th width="45%">詳細品項</th><th width="15%">金額 ($)</th><th width="15%">刪除</th></tr></thead>
                 <tbody><tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-cell" oninput="updateTotal()"></td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest('tr').remove();updateTotal()">❌</button></td></tr></tbody>
             </table>
-            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增一筆記錄</button>
+            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增座號</button>
             <div class="total-box">電機科總金額：$<span id="finalPrice">0</span></div>
         </div>
     </section>
@@ -125,7 +132,7 @@
 
 <script>
 const stores = [
-    // 15 間飲料店
+    // 飲料店 15 間
     { name: "清心 基隆海大店", tel: "0224626266", link: "http://chingshin.tw/", cat: "drink", hot: false, time: { all: ["11:00", "22:45"] } },
     { name: "可不可 基隆深溪店", tel: "0224659695", link: "https://www.kebuke.com/", cat: "drink", hot: true, time: { all: ["10:00", "22:00"] } },
     { name: "50嵐 基隆深溪店", tel: "0224683368", link: "https://order.nidin.shop/menu/21216", cat: "drink", hot: true, time: { all: ["10:00", "22:00"] } },
@@ -151,20 +158,22 @@ const stores = [
     { name: "廖媽媽麵飯館-新豐店", tel: "0224680789", link: "https://drive.google.com/file/d/1j_SjavYZbnJjJHCJNSzVQaAzf_1e5Km0/view?usp=sharing", cat: "food", hot: true, time: { 1: ["11:00", "21:00"], 2: ["11:00", "21:00"], 3: ["11:00", "21:00"], 4: ["11:00", "21:00"], 5: ["11:00", "21:00"], 6: ["11:00", "20:30"], 0: null } }
 ];
 
+let wheelItems = [];
+
 function checkStoreStatus(s) {
     const now = new Date(); const day = now.getDay(); const curr = now.getHours() * 60 + now.getMinutes();
     let range = s.time.all || s.time[day];
-    if (!range) return { status: "已下班", class: "is-closed", msg: "今日休息" };
-    if (range.length === 4) { // 處理分段時段
+    if (!range) return { status: "OFFLINE", class: "is-closed", msg: "今日公休" };
+    if (range.length === 4) {
         let s1 = Number(range[0].split(":")[0])*60 + Number(range[0].split(":")[1]), e1 = Number(range[1].split(":")[0])*60 + Number(range[1].split(":")[1]);
         let s2 = Number(range[2].split(":")[0])*60 + Number(range[2].split(":")[1]), e2 = Number(range[3].split(":")[0])*60 + Number(range[3].split(":")[1]);
-        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) return { status: "工作中", class: "is-open", msg: "正在供餐" };
-        return { status: "休息中", class: "is-closed", msg: "分段休假" };
+        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) return { status: "ONLINE", class: "is-open", msg: "正常營業" };
+        return { status: "午休中", class: "is-closed", msg: "分段休息" };
     }
     const [sH, sM] = range[0].split(":").map(Number); const [eH, eM] = range[1].split(":").map(Number);
     let sT = sH * 60 + sM, eT = eH * 60 + eM;
     if (eT < sT) { if (curr >= sT || curr < eT) return { status: "工作中", class: "is-open", msg: "深夜時段" }; }
-    else if (curr >= sT && curr < eT) return { status: "工作中", class: "is-open", msg: "正常營業" };
+    else if (curr >= sT && curr < eT) return { status: "工作中", class: "is-open", msg: "營業中" };
     return { status: "已下班", class: "is-closed", msg: "目前休息" };
 }
 
@@ -182,38 +191,41 @@ function renderStores(fHot = false) {
                 <div style="font-size:0.85rem; color:#aaa;">電話: ${s.tel}<br>狀態: ${info.msg}</div>
                 <div style="display:flex; gap:10px; margin-top:15px;">
                     <a href="tel:${s.tel}" class="btn-tech" style="text-decoration:none; text-align:center; flex:1;">撥打</a>
-                    <a href="${s.link}" target="_blank" class="btn-tech" style="background:var(--neon-purple); color:#fff; border-color:var(--neon-purple); text-decoration:none; text-align:center; flex:2;" onclick="autoSetStore('${s.name}')">菜單</a>
+                    <a href="${s.link}" target="_blank" class="btn-tech" style="background:var(--neon-purple); color:#fff; border-color:var(--neon-purple); text-decoration:none; text-align:center; flex:2;" onclick="setStoreName('${s.name}')">菜單</a>
                 </div>
             </div>`;
         if (s.cat === 'drink') dG.innerHTML += card; else fG.innerHTML += card;
     });
 }
 
-// 自動帶入功能
-function autoSetStore(name) { document.getElementById('target-store-name').innerText = name; }
+function setStoreName(name) { document.getElementById('target-store-input').value = name; }
 
-// 轉盤功能
-let totalRotation = 0;
-function openWheel() {
-    document.getElementById('wheel-overlay').style.display = 'block'; document.getElementById('wheel-box').style.display = 'block';
+// 分類轉盤功能
+let totalRot = 0;
+function openWheel(category) {
+    wheelItems = stores.filter(s => s.cat === category);
+    document.getElementById('wheel-title').innerText = category === 'drink' ? '🥤 命運飲料之輪' : '🍜 命運美食之輪';
+    document.getElementById('wheel-overlay').style.display = 'block'; 
+    document.getElementById('wheel-box').style.display = 'block';
     const w = document.getElementById('wheel'); w.innerHTML = '';
-    stores.forEach((s, i) => {
+    wheelItems.forEach((s, i) => {
         const seg = document.createElement('div');
-        seg.style.cssText = `position:absolute;width:100%;height:100%;background:${i%2?'#00d4ff':'#16212e'};clip-path:polygon(50% 50%, 50% 0, 100% 0);transform:rotate(${360/stores.length*i}deg);`;
+        seg.style.cssText = `position:absolute;width:100%;height:100%;background:${i%2?'#00d4ff':'#16212e'};clip-path:polygon(50% 50%, 50% 0, 100% 0);transform:rotate(${360/wheelItems.length*i}deg);`;
         w.appendChild(seg);
     });
 }
+
 function spinWheel() {
-    const rotation = Math.floor(Math.random() * 360) + 1800;
-    totalRotation += rotation;
-    document.getElementById('wheel').style.transform = `rotate(${totalRotation}deg)`;
-    document.getElementById('wheel-result').innerText = "系統運算中...";
+    const rot = Math.floor(Math.random() * 360) + 1800;
+    totalRot += rot;
+    document.getElementById('wheel').style.transform = `rotate(${totalRot}deg)`;
+    document.getElementById('wheel-result').innerText = "數據分析中...";
     setTimeout(() => {
-        const finalAngle = totalRotation % 360;
-        const idx = Math.floor((360 - finalAngle) / (360 / stores.length)) % stores.length;
-        const result = stores[idx]; 
-        document.getElementById('wheel-result').innerText = `🎉 抽中：${result.name}`;
-        autoSetStore(result.name);
+        const final = totalRot % 360;
+        const idx = Math.floor((360 - final) / (360 / wheelItems.length)) % wheelItems.length;
+        const res = wheelItems[idx]; 
+        document.getElementById('wheel-result').innerText = `🎉 結果：${res.name}`;
+        setStoreName(res.name);
     }, 4000);
 }
 function closeWheel() { document.getElementById('wheel-overlay').style.display='none'; document.getElementById('wheel-box').style.display='none'; }
@@ -229,9 +241,9 @@ function updateTotal() {
     document.getElementById("finalPrice").innerText = t;
 }
 function clearAllData() {
-    if(confirm("確定清除整份統計表？")) {
+    if(confirm("確定重設統計表？")) {
         document.querySelector("#orderTable tbody").innerHTML = '<tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-cell" oninput="updateTotal()"></td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest(\'tr\').remove();updateTotal()">❌</button></td></tr>';
-        document.getElementById("finalPrice").innerText = "0"; document.getElementById("target-store-name").innerText = "尚未選擇";
+        document.getElementById("finalPrice").innerText = "0"; document.getElementById("target-store-input").value = "";
     }
 }
 
