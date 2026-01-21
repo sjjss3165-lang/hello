@@ -9,8 +9,10 @@
             --primary: #2c3e50;
             --bg: #f8f9fa;
             --card: #ffffff;
-            --btn-call: #2c3e50;
-            --btn-menu: #e9ecef;
+            --accent: #e67e22;
+            --open: #27ae60;
+            --closed: #c0392b;
+            --hot: #f1c40f;
         }
 
         body {
@@ -23,7 +25,7 @@
 
         header {
             background: #fff;
-            padding: 2.5rem 1rem;
+            padding: 2rem 1rem;
             text-align: center;
             border-bottom: 1px solid #ddd;
             position: sticky;
@@ -32,16 +34,29 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        h1 { margin: 0; font-weight: bold; letter-spacing: 1px; font-size: 1.8rem; color: var(--primary); }
+        .tool-bar {
+            background: var(--primary);
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
 
-        nav { margin-top: 15px; }
-        nav a {
-            text-decoration: none;
-            color: var(--primary);
-            margin: 0 15px;
+        .btn-tool {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
             font-weight: bold;
             font-size: 1rem;
+            transition: 0.3s;
         }
+
+        .btn-tool:hover { background: #d35400; }
+        .btn-hot-filter { background: var(--hot); color: #333; }
 
         .container {
             max-width: 1000px;
@@ -49,18 +64,11 @@
             padding: 0 15px;
         }
 
-        section { margin-bottom: 50px; scroll-margin-top: 130px; }
-
-        h2 {
-            border-left: 5px solid var(--primary);
-            padding-left: 15px;
-            margin-bottom: 25px;
-            color: var(--primary);
-        }
+        section { margin-bottom: 50px; scroll-margin-top: 150px; }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 20px;
         }
 
@@ -71,108 +79,232 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            position: relative;
             transition: transform 0.2s;
         }
         
         .card:hover { transform: translateY(-5px); }
 
-        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
+        .status-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: white;
+        }
 
-        .info { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
+        .hot-badge {
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--hot);
+            color: #333;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-        .actions { display: flex; gap: 10px; margin-top: auto; }
+        .open { background: var(--open); }
+        .closed { background: var(--closed); }
 
+        .info { font-size: 0.85rem; color: #666; margin: 10px 0; line-height: 1.6; }
+        .countdown { font-weight: bold; color: var(--accent); font-size: 0.8rem; }
+
+        .actions { display: flex; gap: 8px; margin-top: auto; }
         .btn {
             flex: 1;
             text-align: center;
-            padding: 12px 0;
+            padding: 10px 0;
             text-decoration: none;
             font-size: 0.85rem;
-            border-radius: 8px;
-            transition: 0.2s;
+            border-radius: 6px;
             font-weight: bold;
         }
+        .btn-call { background: var(--primary); color: white; }
+        .btn-menu { background: #eee; color: var(--primary); }
 
-        .btn-call { background: var(--btn-call); color: white; }
-        .btn-call:hover { background: #1a252f; }
-        .btn-menu { background: var(--btn-menu); color: var(--primary); border: 1px solid #dcdde1; }
-        .btn-menu:hover { background: #dee2e6; }
+        .order-system {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background: #f4f4f4; }
+        input { width: 90%; padding: 5px; border: 1px solid #ccc; }
+        .total-area { text-align: right; font-size: 1.2rem; font-weight: bold; color: var(--accent); }
 
-        footer { text-align: center; padding: 40px; color: #999; font-size: 0.8rem; }
+        footer { text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
 
 <header>
     <h1>電機科專屬點餐系統👩🏼‍🍳</h1>
-    <nav>
-        <a href="#drinks">🥤 飲料店</a>
-        <a href="#food">🍜 在地美食</a>
+    <nav style="margin-top:10px">
+        <a href="#drinks" style="text-decoration:none; color:#2c3e50; font-weight:bold; margin:0 10px;">🥤 飲料店</a>
+        <a href="#food" style="text-decoration:none; color:#2c3e50; font-weight:bold; margin:0 10px;">🍜 在地美食</a>
+        <a href="#order-tool" style="text-decoration:none; color:#e67e22; font-weight:bold; margin:0 10px;">📝 點餐統計</a>
     </nav>
 </header>
+
+<div class="tool-bar">
+    <button class="btn-tool" onclick="randomStore()">🎲 今天吃哪間？</button>
+    <button class="btn-tool btn-hot-filter" onclick="filterHot()">🔥 只看電機熱門</button>
+    <button class="btn-tool" style="background:#7f8c8d" onclick="resetFilter()">🔄 顯示全部</button>
+</div>
 
 <div class="container">
 
     <section id="drinks">
-        <h2>飲料店 (15間)</h2>
-        <div class="grid">
-            <div class="card"><h3>清心 基隆海大店</h3><div class="info">0224626266</div><div class="actions"><a href="tel:0224626266" class="btn btn-call">撥打電話</a><a href="http://chingshin.tw/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>可不可 基隆深溪店</h3><div class="info">0224659695</div><div class="actions"><a href="tel:0224659695" class="btn btn-call">撥打電話</a><a href="https://www.kebuke.com/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>50嵐 基隆深溪店</h3><div class="info">0224683368</div><div class="actions"><a href="tel:0224683368" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/21216" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>龜記 基隆店</h3><div class="info">0224258889</div><div class="actions"><a href="tel:0224258889" class="btn btn-call">撥打電話</a><a href="https://guiji.doteat.tw/menu?storeId=LEzDQINl-0000wKv98o&showBulletin=1" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>迷客夏 基隆廟口店</h3><div class="info">0224261766</div><div class="actions"><a href="tel:0224261766" class="btn btn-call">撥打電話</a><a href="https://milksha.nidin.shop/menu/491" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>五桐號 基隆仁三店</h3><div class="info">0224283616</div><div class="actions"><a href="tel:0224283616" class="btn btn-call">撥打電話</a><a href="https://www.wootea.com/menu/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>有飲 基隆廟口店</h3><div class="info">0224258827</div><div class="actions"><a href="tel:0224258827" class="btn btn-call">撥打電話</a><a href="https://www.youindrink.com/pages/menu" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>林香檸 台灣創始店</h3><div class="info">0224270618</div><div class="actions"><a href="tel:0224270618" class="btn btn-call">撥打電話</a><a href="https://www.lamheunglingoverseas.com/cz" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>Mr.Wish 基隆廟口店</h3><div class="info">0224273456</div><div class="actions"><a href="tel:0224273456" class="btn btn-call">撥打電話</a><a href="https://www.mr-wish.com/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>CoCo 基隆海洋店</h3><div class="info">0224620586</div><div class="actions"><a href="tel:0224620586" class="btn btn-call">撥打電話</a><a href="https://coco-tea.nidin.shop/menu/21237" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>得正 #基隆海大</h3><div class="info">0224621016</div><div class="actions"><a href="tel:0224621016" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/18739" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>Comebuy 基隆新豐店</h3><div class="info">0224695668</div><div class="actions"><a href="tel:0224695668" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1Rq51uQuxEv4VDxwoB-hDczLhqECx9Gu2/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>鶴茶樓 基隆忠一店</h3><div class="info">0224265572</div><div class="actions"><a href="tel:0224265572" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/19710" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>拾汣茶屋 基隆廟口店</h3><div class="info">02-24247778</div><div class="actions"><a href="tel:0224247778" class="btn btn-call">撥打電話</a><a href="https://www.19teahouse.com/works/detail/Store29" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-            <div class="card"><h3>水雲堂 基隆義二店</h3><div class="info">0224261227</div><div class="actions"><a href="tel:0224261227" class="btn btn-call">撥打電話</a><a href="https://www.drinkstore.com.tw/web/product/product.jsp" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
-        </div>
+        <h2>飲料店</h2>
+        <div id="drinks-grid" class="grid"></div>
     </section>
 
     <section id="food">
-        <h2>在地美食 (7間)</h2>
-        <div class="grid">
-            <div class="card">
-                <h3>蒟蒻屋</h3><div class="info">0224229000</div>
-                <div class="actions"><a href="tel:0224229000" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1T08WgpxufhYVOJ8sbfc7gvpthvoDaacY/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
-            </div>
-            <div class="card">
-                <h3>大碗牛肉麵</h3><div class="info">0224633396</div>
-                <div class="actions"><a href="tel:0224633396" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/12wii4UGfDTHYECO5ObXyS6qutY9qRcaX/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
-            </div>
-            <div class="card">
-                <h3>麥克麵線</h3><div class="info">0224236667</div>
-                <div class="actions"><a href="tel:0224236667" class="btn btn-call">撥打電話</a><a href="https://maps.app.goo.gl/DNe9c5xbqTsyfBGE7" target="_blank" class="btn btn-menu">開啟地圖/菜單</a></div>
-            </div>
-            <div class="card">
-                <h3>豆乾包</h3><div class="info">0224201711</div>
-                <div class="actions"><a href="tel:0224201711" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/18VeBd_w6HFvBD321t7Iu-QaNfko5CljQ/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
-            </div>
-            <div class="card">
-                <h3>美香齋滷味</h3><div class="info">0224263357</div>
-                <div class="actions"><a href="tel:0224263357" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1HRMavIpHZhSVDkrg-zm_cCksy0fPbjRK/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
-            </div>
-            <div class="card">
-                <h3>邱記炒麵（東信店）</h3><div class="info">0224680335</div>
-                <div class="actions"><a href="tel:0224680335" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1zuEI_w-zwS9rIGRcekHsb_QXll1twyg3/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
-            </div>
-            <div class="card">
-                <h3>廖媽媽麵飯館-新豐店</h3><div class="info">0224680789</div>
-                <div class="actions"><a href="tel:0224680789" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1j_SjavYZbnJjJHCJNSzVQaAzf_1e5Km0/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
-            </div>
+        <h2>在地美食</h2>
+        <div id="food-grid" class="grid"></div>
+    </section>
+
+    <section id="order-tool">
+        <div class="order-system">
+            <h2>📝 班級點餐統計器</h2>
+            <table id="orderTable">
+                <thead>
+                    <tr>
+                        <th>姓名</th>
+                        <th>品項</th>
+                        <th>金額</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" placeholder="姓名"></td>
+                        <td><input type="text" placeholder="餐點"></td>
+                        <td><input type="number" class="price-input" oninput="calculateTotal()" placeholder="0"></td>
+                        <td><button onclick="removeRow(this)">❌</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button onclick="addRow()" style="padding:10px 20px; cursor:pointer;">➕ 新增一行</button>
+            <div class="total-area">總計金額：$<span id="totalPrice">0</span></div>
         </div>
     </section>
 
 </div>
 
 <footer>
-    <p>© 2026 電機科專屬點餐系統👩🏼‍🍳 | 基隆美食導覽</p>
+    <p>© 2026 電機科 | 基隆美食導覽</p>
 </footer>
+
+<script>
+// 店家資料庫：加入 isHot 屬性標註熱門店家
+const stores = [
+    { name: "清心 基隆海大店", tel: "0224626266", menu: "http://chingshin.tw/", category: "drink", isHot: false, hours: { all: ["11:00", "22:45"] } },
+    { name: "可不可 基隆深溪店", tel: "0224659695", menu: "https://www.kebuke.com/", category: "drink", isHot: true, hours: { all: ["10:00", "22:00"] } },
+    { name: "50嵐 基隆深溪店", tel: "0224683368", menu: "https://order.nidin.shop/menu/21216", category: "drink", isHot: true, hours: { all: ["10:00", "22:00"] } },
+    { name: "龜記 基隆店", tel: "0224258889", menu: "https://guiji.doteat.tw/menu?storeId=LEzDQINl-0000wKv98o&showBulletin=1", category: "drink", isHot: false, hours: { all: ["11:00", "22:00"] } },
+    { name: "迷客夏 基隆廟口店", tel: "0224261766", menu: "https://milksha.nidin.shop/menu/491", category: "drink", isHot: false, hours: { all: ["10:00", "21:00"] } },
+    { name: "五桐號 基隆仁三店", tel: "0224283616", menu: "https://www.wootea.com/menu/", category: "drink", isHot: true, hours: { 1: null, 2: ["11:00", "20:00"], 3: ["11:00", "20:00"], 4: ["11:00", "20:00"], 5: ["11:00", "21:00"], 6: ["11:00", "21:00"], 0: ["11:00", "20:00"] } },
+    { name: "有飲 基隆廟口店", tel: "0224258827", menu: "https://www.youindrink.com/pages/menu", category: "drink", isHot: false, hours: { 1: ["11:00", "19:00"], 2: ["11:00", "19:00"], 3: ["11:00", "19:00"], 4: ["11:00", "19:00"], 5: ["12:00", "20:00"], 6: ["12:00", "20:00"], 0: ["12:00", "20:00"] } },
+    { name: "林香檸 台灣創始店", tel: "0224270618", menu: "https://www.lamheunglingoverseas.com/cz", category: "drink", isHot: false, hours: { all: ["11:00", "21:00"] } },
+    { name: "Mr.Wish 基隆廟口店", tel: "0224273456", menu: "https://www.mr-wish.com/", category: "drink", isHot: false, hours: { 1: null, 2: ["11:00", "18:00"], 3: ["11:00", "18:00"], 4: ["11:00", "21:00"], 5: ["11:00", "22:00"], 6: ["11:00", "22:00"], 0: ["11:00", "21:00"] } },
+    { name: "Coco 基隆海洋店", tel: "0224620586", menu: "https://coco-tea.nidin.shop/menu/21237", category: "drink", isHot: false, hours: { all: ["10:00", "21:45"] } },
+    { name: "得正 #基隆海大", tel: "0224621016", menu: "https://order.nidin.shop/menu/18739", category: "drink", isHot: true, hours: { 1: ["10:30", "21:30"], 2: ["10:30", "21:30"], 3: ["10:30", "21:30"], 4: ["10:30", "21:30"], 5: ["10:30", "21:30"], 6: ["11:00", "21:30"], 0: ["11:00", "21:30"] } },
+    { name: "Comebuy 基隆新豐店", tel: "0224695668", menu: "https://drive.google.com/file/d/1Rq51uQuxEv4VDxwoB-hDczLhqECx9Gu2/view?usp=sharing", category: "drink", isHot: false, hours: { all: ["11:00", "22:00"] } },
+    { name: "鶴茶樓 基隆忠一店", tel: "0224265572", menu: "https://order.nidin.shop/menu/19710", category: "drink", isHot: false, hours: { all: ["10:30", "20:00"] } },
+    { name: "拾汣茶屋 基隆廟口店", tel: "0224247778", menu: "https://www.19teahouse.com/works/detail/Store29", category: "drink", isHot: true, hours: { 1: ["10:30", "21:00"], 2: ["10:30", "21:00"], 3: ["10:30", "21:00"], 4: ["10:30", "21:00"], 5: ["10:30", "21:30"], 6: ["11:00", "21:30"], 0: ["11:00", "21:00"] } },
+    { name: "水雲堂 基隆義二店", tel: "0224261227", menu: "https://www.drinkstore.com.tw/web/product/product.jsp", category: "drink", isHot: false, hours: { all: ["10:00", "22:00"] } },
+    { name: "蒟蒻屋", tel: "0224229000", menu: "https://drive.google.com/file/d/1T08WgpxufhYVOJ8sbfc7gvpthvoDaacY/view?usp=sharing", category: "food", isHot: true, hours: { 1: ["09:00", "02:00"], 2: ["09:00", "02:00"], 3: ["09:00", "02:00"], 4: ["09:00", "02:00"], 5: ["09:00", "02:30"], 6: ["09:00", "02:30"], 0: ["09:00", "02:00"] } },
+    { name: "大碗牛肉麵", tel: "0224633396", menu: "https://drive.google.com/file/d/12wii4UGfDTHYECO5ObXyS6qutY9qRcaX/view?usp=sharing", category: "food", isHot: true, hours: { all: ["11:00", "20:00"] } },
+    { name: "麥克麵線", tel: "0224236667", menu: "https://maps.app.goo.gl/DNe9c5xbqTsyfBGE7", category: "food", isHot: false, hours: { 3: ["06:00", "17:30"], 4: ["06:00", "17:30"], 5: ["06:00", "17:30"], 6: ["06:00", "16:30"], 0: null, 1: null, 2: null } },
+    { name: "豆乾包", tel: "0224201711", menu: "https://drive.google.com/file/d/18VeBd_w6HFvBD321t7Iu-QaNfko5CljQ/view?usp=sharing", category: "food", isHot: true, hours: { all: ["10:00", "22:00"] } },
+    { name: "美香齋滷味", tel: "0224263357", menu: "https://drive.google.com/file/d/1HRMavIpHZhSVDkrg-zm_cCksy0fPbjRK/view?usp=sharing", category: "food", isHot: false, hours: { 1: ["10:45", "23:00"], 2: ["10:45", "23:00"], 3: ["10:45", "23:00"], 4: ["10:45", "23:00"], 5: ["10:45", "23:00"], 6: ["10:45", "23:00"], 0: null } },
+    { name: "邱記炒麵（東信店）", tel: "0224680335", menu: "https://drive.google.com/file/d/1zuEI_w-zwS9rIGRcekHsb_QXll1twyg3/view?usp=sharing", category: "food", isHot: true, hours: { 0: ["11:00", "20:00"], 1: ["11:00", "20:00"], 2: ["11:00", "20:00"], 3: ["11:00", "20:00"], 4: ["11:00", "20:00"], 5: ["11:00", "20:00"], 6: null } },
+    { name: "廖媽媽麵飯館-新豐店", tel: "0224680789", menu: "https://drive.google.com/file/d/1j_SjavYZbnJjJHCJNSzVQaAzf_1e5Km0/view?usp=sharing", category: "food", isHot: true, hours: { 1: ["11:00", "21:00"], 2: ["11:00", "21:00"], 3: ["11:00", "21:00"], 4: ["11:00", "21:00"], 5: ["11:00", "21:00"], 6: ["11:00", "20:30"], 0: null } }
+];
+
+function checkStatus(store) {
+    const now = new Date();
+    const day = now.getDay(); 
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    let timeRange = store.hours.all || store.hours[day];
+    if (!timeRange) return { status: "已打烊", class: "closed", msg: "今天公休" };
+    const [startH, startM] = timeRange[0].split(":").map(Number);
+    const [endH, endM] = timeRange[1].split(":").map(Number);
+    let startTotal = startH * 60 + startM;
+    let endTotal = endH * 60 + endM;
+    if (endTotal < startTotal) {
+        if (currentTime >= startTotal || currentTime < endTotal) return { status: "營業中", class: "open", msg: `休息時間: ${timeRange[1]}` };
+    } else {
+        if (currentTime >= startTotal && currentTime < endTotal) {
+            const diff = endTotal - currentTime;
+            return { status: "營業中", class: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
+        }
+    }
+    return { status: "已打烊", class: "closed", msg: `營業時間: ${timeRange[0]}~${timeRange[1]}` };
+}
+
+function renderStores(filterHotOnly = false) {
+    const drinkGrid = document.getElementById('drinks-grid');
+    const foodGrid = document.getElementById('food-grid');
+    drinkGrid.innerHTML = '';
+    foodGrid.innerHTML = '';
+    
+    stores.forEach(store => {
+        if (filterHotOnly && !store.isHot) return;
+        const info = checkStatus(store);
+        const hotBadge = store.isHot ? `<span class="hot-badge">🔥 電機熱門</span>` : '';
+        const card = `
+            <div class="card" id="store-${store.name}">
+                ${hotBadge}
+                <span class="status-badge ${info.class}">${info.status}</span>
+                <h3>${store.name}</h3>
+                <div class="info">📞 ${store.tel}<br>⏰ ${info.msg}</div>
+                <div class="actions">
+                    <a href="tel:${store.tel}" class="btn btn-call">撥打電話</a>
+                    <a href="${store.menu}" target="_blank" class="btn btn-menu">查看菜單</a>
+                </div>
+            </div>
+        `;
+        if (store.category === 'drink') drinkGrid.innerHTML += card;
+        else foodGrid.innerHTML += card;
+    });
+}
+
+function filterHot() { renderStores(true); }
+function resetFilter() { renderStores(false); }
+
+function randomStore() {
+    const randomIdx = Math.floor(Math.random() * stores.length);
+    const store = stores[randomIdx];
+    alert(`🎲 電機神諭：今天就吃「${store.name}」吧！`);
+    document.getElementById(`store-${store.name}`).scrollIntoView({ behavior: 'smooth' });
+}
+
+function addRow() {
+    const table = document.getElementById("orderTable").getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `<td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button onclick="removeRow(this)">❌</button></td>`;
+}
+function removeRow(btn) { btn.parentNode.parentNode.remove(); calculateTotal(); }
+function calculateTotal() {
+    let total = 0;
+    const inputs = document.getElementsByClassName("price-input");
+    for (let input of inputs) total += Number(input.value) || 0;
+    document.getElementById("totalPrice").innerText = total;
+}
+
+window.onload = () => renderStores();
+</script>
 
 </body>
 </html>
