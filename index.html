@@ -1,284 +1,339 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>WBC 2026：殿堂究極對決 (完整名單版)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基隆美食地圖 - 簡約版</title>
     <style>
-        :root { --hall-blue: #00e5ff; --hall-gold: #ffc107; --dark-bg: #050a10; }
-        body { background: var(--dark-bg); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
-        
-        /* 選人介面 */
-        #setup-screen { position: absolute; inset: 0; z-index: 2000; background: radial-gradient(circle at center, #001529 0%, #000 100%); display: flex; flex-direction: column; align-items: center; padding: 30px; overflow-y: auto; }
-        .setup-container { display: flex; gap: 20px; width: 95%; max-width: 1200px; height: 70vh; }
-        .pool-box { flex: 1; background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 8px; padding: 20px; overflow-y: auto; border-top: 4px solid var(--hall-blue); }
-        .p-item { padding: 12px; margin: 5px 0; background: #0a1f32; border: 1px solid #163a5a; display: flex; justify-content: space-between; cursor: pointer; transition: 0.2s; font-size: 0.85rem; }
-        .p-item:hover { border-color: var(--hall-blue); background: #102e4a; }
-        .p-item.selected { border-color: var(--hall-gold); opacity: 0.3; pointer-events: none; }
+        :root {
+            --primary-color: #333;
+            --bg-color: #f9f9f9;
+            --card-bg: #ffffff;
+            --accent-color: #555;
+            --link-color: #0066cc;
+        }
 
-        /* 殿堂級 UI */
-        #game-screen { display: none; width: 100%; height: 100vh; position: relative; }
-        .header-ui { position: absolute; top: 0; width: 100%; display: flex; justify-content: center; padding: 15px; z-index: 1000; pointer-events: none; }
-        .scoreboard-3d { background: rgba(0,0,0,0.85); border-bottom: 3px solid var(--hall-blue); padding: 10px 40px; border-radius: 0 0 15px 15px; display: flex; gap: 40px; align-items: center; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-        .score-val { font-size: 2.2rem; font-weight: 900; color: var(--hall-blue); text-shadow: 0 0 10px var(--hall-blue); }
+        body {
+            font-family: "PingFang TC", "Heiti TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
 
-        .game-layout { display: flex; width: 100%; height: 100%; }
-        .left-roster { width: 220px; background: linear-gradient(90deg, rgba(0,0,0,0.95) 0%, transparent 100%); padding: 30px 15px; z-index: 10; overflow-y: auto; }
-        .roster-slot { padding: 10px 15px; margin: 4px 0; font-size: 0.8rem; border-left: 4px solid transparent; color: #556677; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .roster-slot.active { border-left-color: var(--hall-blue); color: #fff; background: rgba(0, 229, 255, 0.15); font-weight: bold; }
+        header {
+            background-color: #fff;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-        .stage { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #0f172a 0%, #020617 100%); }
-        
-        .controls-3d { width: 320px; background: rgba(5, 10, 15, 0.98); border-left: 1px solid #1e293b; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
-        .pitch-card { background: #0d1b2a; border: 1.5px solid #1b2e44; padding: 15px; border-radius: 6px; cursor: pointer; text-align: center; font-weight: bold; font-size: 0.9rem; }
-        .pitch-card.active { border-color: var(--hall-blue); background: #16304d; color: var(--hall-blue); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
-        
-        #swing-btn-hall { width: 180px; height: 180px; font-size: 2.2rem; font-weight: 900; color: #fff; background: radial-gradient(circle, #ff4b2b, #ff416c); border: 6px solid rgba(255,255,255,0.3); border-radius: 50%; cursor: pointer; align-self: center; box-shadow: 0 0 40px rgba(255, 75, 43, 0.5); transition: 0.1s; }
-        #swing-btn-hall:active { transform: scale(0.92); border-color: #fff; }
+        h1 { margin: 0; font-weight: 300; letter-spacing: 2px; }
 
-        .fx-layer { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; z-index: 1500; }
-        #speedo { font-size: 3rem; font-weight: 900; font-style: italic; text-shadow: 0 0 20px #000; color: #fff; }
-        #impact-text { font-size: 6rem; font-weight: 900; text-shadow: 0 0 40px #000; color: var(--hall-gold); }
-        
-        #start-action-btn { margin-top: 20px; padding: 15px 100px; background: var(--hall-blue); color: #000; border: none; font-weight: 900; cursor: pointer; border-radius: 4px; font-size: 1.2rem; }
+        nav {
+            margin-top: 10px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--accent-color);
+            margin: 0 15px;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        section { margin-bottom: 40px; }
+
+        h2 {
+            font-weight: 400;
+            border-left: 3px solid #333;
+            padding-left: 10px;
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-3px); }
+
+        .card h3 { margin-top: 0; font-size: 1.1rem; color: #222; }
+
+        .info { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            color: #555;
+            transition: all 0.3s;
+        }
+
+        .btn:hover { background: #333; color: #fff; border-color: #333; }
+
+        .btn-menu { background: #f0f0f0; border-color: #f0f0f0; }
+
+        footer { text-align: center; padding: 40px 0; color: #999; font-size: 0.8rem; }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-<div id="setup-screen">
-    <h1 style="font-size:3rem; letter-spacing:8px; color:var(--hall-blue); margin-bottom:10px;">BASEBALL HALL 2026</h1>
-    <h3 style="color:var(--hall-gold); margin-bottom:30px;">2026 WBC 模擬對決：中華隊 vs 日本隊</h3>
-    <div class="setup-container">
-        <div class="pool-box"><h4>中華隊預測名單</h4><div id="pool-list"></div></div>
-        <div class="pool-box"><h4 style="color:var(--hall-gold);">先發打序 (9打+1投)</h4><div id="selected-list"></div></div>
-    </div>
-    <button id="start-action-btn" onclick="startGame()">踏入巔峰殿堂</button>
-</div>
+<header>
+    <h1>基隆美食清單</h1>
+    <nav>
+        <a href="#drinks">飲料店</a>
+        <a href="#food">在地美食</a>
+    </nav>
+</header>
 
-<div id="game-screen">
-    <div class="header-ui">
-        <div class="scoreboard-3d">
-            <div style="text-align:right;"><span>TPE</span><br><span class="score-val" id="score-tpe">0</span></div>
-            <div style="font-size:1.5rem; opacity:0.3;">VS</div>
-            <div style="text-align:left;"><span style="color:#ff4b2b">JPN</span><br><span class="score-val" id="score-jpn" style="color:#ff4b2b">0</span></div>
-            <div id="inning-tag" style="margin-left:30px; letter-spacing:3px; border-left:1px solid #444; padding-left:30px;">TOP 1ST</div>
-        </div>
-    </div>
+<div class="container">
 
-    <div class="game-layout">
-        <div class="left-roster" id="roster-ui"></div>
-        <div class="stage">
-            <div class="fx-layer">
-                <div id="speedo" style="display:none;"></div>
-                <div id="impact-text" style="display:none;"></div>
-            </div>
-            <canvas id="stageCanvas" width="900" height="600"></canvas>
-        </div>
-        <div class="sidebar">
-            <div id="pitch-control">
-                <p style="font-size:0.75rem; color:var(--hall-blue); margin-bottom:15px;">PITCH SELECTION</p>
-                <div id="skill-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"></div>
-                <div style="margin-top:20px; background:rgba(0,0,0,0.5); padding:10px; border-radius:8px;">
-                    S <span id="s-dots" style="color:var(--hall-gold);">○ ○</span><br>
-                    O <span id="o-dots" style="color:#ff4b2b;">○ ○</span>
+    <section id="drinks">
+        <h2>飲料店</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>清心 基隆海大店</h3>
+                <div class="info">電話：02-24626266</div>
+                <div class="actions">
+                    <a href="tel:0224626266" class="btn">撥打電話</a>
+                    <a href="http://chingshin.tw/" target="_blank" class="btn btn-menu">線上菜單</a>
                 </div>
             </div>
-            <div id="hit-control" style="display:none; text-align:center;">
-                <button id="swing-btn-hall" onclick="swingAction()">HIT!</button>
+
+            <div class="card">
+                <h3>可不可 基隆深溪店</h3>
+                <div class="info">電話：02-24659695</div>
+                <div class="actions">
+                    <a href="tel:0224659695" class="btn">撥打電話</a>
+                    <a href="https://www.kebuke.com/" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
             </div>
-            <div id="matchup-box" style="margin-top:auto; padding:20px; background:#0d1b2a; border-radius:8px; border:1px solid #1b2e44; font-size:0.9rem;"></div>
+
+            <div class="card">
+                <h3>50嵐 基隆深溪店</h3>
+                <div class="info">電話：02-24683368</div>
+                <div class="actions">
+                    <a href="tel:0224683368" class="btn">撥打電話</a>
+                    <a href="https://order.nidin.shop/menu/21216" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>龜記 基隆店</h3>
+                <div class="info">電話：02-24258889</div>
+                <div class="actions">
+                    <a href="tel:0224258889" class="btn">撥打電話</a>
+                    <a href="https://guiji.doteat.tw/menu?storeId=LEzDQINl-0000wKv98o&showBulletin=1" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>迷客夏 基隆廟口店</h3>
+                <div class="info">電話：02-24261766</div>
+                <div class="actions">
+                    <a href="tel:0224261766" class="btn">撥打電話</a>
+                    <a href="http://milkshoptea.com/" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>五桐號 基隆仁三店</h3>
+                <div class="info">電話：02-24283616</div>
+                <div class="actions">
+                    <a href="tel:0224283616" class="btn">撥打電話</a>
+                    <a href="https://www.wootea.com/menu/" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>有飲 基隆廟口店</h3>
+                <div class="info">電話：02-24258827</div>
+                <div class="actions">
+                    <a href="tel:0224258827" class="btn">撥打電話</a>
+                    <a href="https://www.youindrink.com/pages/menu" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>林香檸 台灣創始店</h3>
+                <div class="info">電話：02-24270618</div>
+                <div class="actions">
+                    <a href="tel:0224270618" class="btn">撥打電話</a>
+                    <a href="https://www.lamheunglingoverseas.com/cz" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Mr.Wish 基隆廟口店</h3>
+                <div class="info">電話：02-24273456</div>
+                <div class="actions">
+                    <a href="tel:0224273456" class="btn">撥打電話</a>
+                    <a href="https://www.mr-wish.com/" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>CoCo 基隆海洋店</h3>
+                <div class="info">電話：02-24620586</div>
+                <div class="actions">
+                    <a href="tel:0224620586" class="btn">撥打電話</a>
+                    <a href="https://coco-tea.nidin.shop/menu/21237" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>得正 #基隆海大</h3>
+                <div class="info">電話：02-24621016</div>
+                <div class="actions">
+                    <a href="tel:0224621016" class="btn">撥打電話</a>
+                    <a href="https://order.nidin.shop/menu/18739" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Comebuy 基隆新豐店</h3>
+                <div class="info">電話：02-24695668</div>
+                <div class="actions">
+                    <a href="tel:0224695668" class="btn">撥打電話</a>
+                    <a href="https://www.comebuy2002.com.tw/" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>鶴茶樓 基隆忠一店</h3>
+                <div class="info">電話：02-24265572</div>
+                <div class="actions">
+                    <a href="tel:0224265572" class="btn">撥打電話</a>
+                    <a href="https://order.nidin.shop/menu/19710" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>拾汣茶屋 基隆廟口店</h3>
+                <div class="info">電話：02-24247778</div>
+                <div class="actions">
+                    <a href="tel:0224247778" class="btn">撥打電話</a>
+                    <a href="https://www.19teahouse.com/works/detail/Store29" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>水雲堂 基隆義二店</h3>
+                <div class="info">電話：02-24261227</div>
+                <div class="actions">
+                    <a href="tel:0224261227" class="btn">撥打電話</a>
+                    <a href="https://www.drinkstore.com.tw/web/product/product.jsp" target="_blank" class="btn btn-menu">線上菜單</a>
+                </div>
+            </div>
         </div>
-    </div>
+    </section>
+
+    <section id="food">
+        <h2>在地美食</h2>
+        <div class="grid">
+            <div class="card">
+                <h3>蒟蒻屋</h3>
+                <div class="info">電話：02-24229000</div>
+                <div class="actions">
+                    <a href="tel:0224229000" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>大碗牛肉麵</h3>
+                <div class="info">電話：02-24633396</div>
+                <div class="actions">
+                    <a href="tel:0224633396" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>麥克麵線</h3>
+                <div class="info">電話：02-24236667</div>
+                <div class="actions">
+                    <a href="tel:0224236667" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>豆乾包</h3>
+                <div class="info">電話：02-24201711</div>
+                <div class="actions">
+                    <a href="tel:0224201711" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>美香齋滷味</h3>
+                <div class="info">電話：02-24263357</div>
+                <div class="actions">
+                    <a href="tel:0224263357" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>邱記炒麵（東信店）</h3>
+                <div class="info">電話：02-24680335</div>
+                <div class="actions">
+                    <a href="tel:0224680335" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>廖媽媽麵飯館-新豐店</h3>
+                <div class="info">電話：02-24680789</div>
+                <div class="actions">
+                    <a href="tel:0224680789" class="btn">撥打電話</a>
+                    <span class="btn btn-menu" style="opacity: 0.5;">暫無菜單</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
 </div>
 
-<script>
-    const canvas = document.getElementById('stageCanvas');
-    const ctx = canvas.getContext('2d');
+<footer>
+    <p>&copy; 2026 基隆美食導覽</p>
+</footer>
 
-    const TW_POOL = [
-        { name: "徐若熙", type: "P", speed: 156, signature: ["消失指叉", "火球", "滑球", "曲球"] },
-        { name: "古林睿煬", type: "P", speed: 158, signature: ["火球", "滑球", "指叉", "變速球"] },
-        { name: "張育成", type: "B", avg: .450, pwr: 98 }, { name: "鄭宗哲", type: "B", avg: .360, pwr: 70 },
-        { name: "李灝宇", type: "B", avg: .340, pwr: 92 }, { name: "陳傑憲", type: "B", avg: .350, pwr: 65 },
-        { name: "吉力吉撈", type: "B", avg: .320, pwr: 99 }, { name: "江坤宇", type: "B", avg: .300, pwr: 55 },
-        { name: "林立", type: "B", avg: .345, pwr: 80 }, { name: "陳晨威", type: "B", avg: .310, pwr: 60 },
-        { name: "林家正", type: "B", avg: .280, pwr: 50 }, { name: "潘文輝", type: "P", speed: 160, signature: ["火球", "指叉", "滑球", "變速"] }
-    ];
-
-    // 日本隊 9 人完整殿堂級打線
-    const JP_LINEUP = [
-        { name: "L. Nootbaar", avg: .310, pwr: 75 },
-        { name: "近藤 健介", avg: .350, pwr: 70 },
-        { name: "大谷 翔平", avg: .450, pwr: 99 },
-        { name: "村上 宗隆", avg: .300, pwr: 98 },
-        { name: "吉田 正尚", avg: .420, pwr: 80 },
-        { name: "岡本 和真", avg: .320, pwr: 95 },
-        { name: "山田 哲人", avg: .270, pwr: 85 },
-        { name: "源田 壯亮", avg: .250, pwr: 50 },
-        { name: "中村 悠平", avg: .240, pwr: 45 }
-    ];
-    const JP_P = { name: "山本 由伸", speed: 158, signature: ["指叉球", "火球", "彩虹曲球", "滑球"] };
-
-    let myTeam = { B: [], P: null }, state = {
-        inning: 1, isTop: true, s: 0, o: 0, tScore: 0, jScore: 0,
-        twI: 0, jpI: 0, isAnim: false, pType: '', pFrame: 0,
-        bases: [false, false, false], inFlight: false, swingF: -1
-    };
-
-    function init() {
-        const poolList = document.getElementById('pool-list');
-        TW_POOL.forEach(p => {
-            const d = document.createElement('div'); d.className = 'p-item';
-            d.innerHTML = `<span>${p.name}</span> <span>${p.type}</span>`;
-            d.onclick = () => {
-                if(d.classList.contains('selected')) return;
-                if(p.type=='P' && !myTeam.P) { myTeam.P = p; d.classList.add('selected'); }
-                else if(p.type=='B' && myTeam.B.length < 9) { myTeam.B.push(p); d.classList.add('selected'); }
-                document.getElementById('selected-list').innerHTML += `<div class='p-item'>${p.name}</div>`;
-                if(myTeam.P && myTeam.B.length == 9) document.getElementById('start-action-btn').style.display='block';
-            }; poolList.appendChild(d);
-        });
-    }
-
-    function startGame() {
-        document.getElementById('setup-screen').style.display='none';
-        document.getElementById('game-screen').style.display='block';
-        updateUI(); drawHall();
-        if(!state.isTop) setTimeout(cpuPitch, 1800);
-    }
-
-    function drawHall() {
-        ctx.save();
-        ctx.fillStyle = "#020617"; ctx.fillRect(0,0,900,600);
-        // 3D 投影地面
-        const ground = ctx.createLinearGradient(0, 250, 0, 600);
-        ground.addColorStop(0, "#064e3b"); ground.addColorStop(1, "#0f172a");
-        ctx.fillStyle = ground;
-        ctx.beginPath(); ctx.moveTo(0, 600); ctx.lineTo(900, 600); ctx.lineTo(750, 250); ctx.lineTo(150, 250); ctx.fill();
-        // PCI 九宮格
-        ctx.strokeStyle = "rgba(0, 229, 255, 0.2)"; ctx.lineWidth = 1;
-        ctx.strokeRect(325, 150, 250, 300);
-        // 揮棒
-        if (state.swingF >= 0) {
-            let p = state.swingF / 12;
-            let angle = -Math.PI / 2 + p * Math.PI * 1.5;
-            ctx.save(); ctx.translate(450, 520); ctx.rotate(angle);
-            let bat = ctx.createLinearGradient(0,0,180,0);
-            bat.addColorStop(0, "transparent"); bat.addColorStop(1, var(--hall-gold));
-            ctx.fillStyle = bat; ctx.fillRect(0, -10, 200, 20); ctx.restore();
-            state.swingF++; if(state.swingF > 12) state.swingF = -1;
-        }
-        ctx.restore();
-    }
-
-    canvas.addEventListener('mousedown', (e) => {
-        if(state.isAnim || !state.isTop) return;
-        const r = canvas.getBoundingClientRect(); startPitch(e.clientX-r.left, e.clientY-r.top);
-    });
-
-    function startPitch(tx, ty) {
-        state.isAnim = true; let bf = 0;
-        const p = state.isTop ? myTeam.P : JP_P;
-        const speedo = document.getElementById('speedo');
-        speedo.innerText = (Math.floor(p.speed + Math.random()*5)) + " KM/H";
-        speedo.style.display = 'block';
-
-        const fly = () => {
-            bf++; state.pFrame = bf; state.inFlight = true;
-            let v = bf/25;
-            let bSize = 4 + (Math.pow(v, 3) * 45); 
-            let dy = (state.pType.includes("消失") || state.pType.includes("圈指")) ? Math.pow(v,2)*220 : (state.pType.includes("指叉") ? Math.pow(v,2)*85 : 0);
-            let dx = state.pType.includes("滑") ? Math.pow(v,2)*-80 : (state.pType.includes("圈指") ? Math.pow(v,2)*50 : 0);
-            
-            let visualY = (450 + (ty - dy - 450) * v) + dy * Math.pow(v, 2);
-            let cx = 450 + (tx-450)*v + dx;
-            
-            drawHall();
-            const ballGrd = ctx.createRadialGradient(cx-bSize/4, visualY-bSize/4, bSize/10, cx, visualY, bSize);
-            ballGrd.addColorStop(0, "#fff"); ballGrd.addColorStop(1, "#888");
-            ctx.fillStyle = ballGrd; ctx.beginPath(); ctx.arc(cx, visualY, bSize, 0, Math.PI*2); ctx.fill();
-            
-            if(bf < 25 && state.inFlight) requestAnimationFrame(fly);
-            else if(state.inFlight) resolve(cx, visualY);
-        }; fly();
-    }
-
-    function resolve(cx, cy) {
-        state.isAnim = false; state.inFlight = false;
-        let inZ = cx > 325 && cx < 575 && cy > 150 && cy < 500;
-        if(state.isTop) {
-            let b = JP_LINEUP[state.jpI % 9];
-            if(inZ && Math.random() < b.avg) { showFx("JPN HIT!"); hit(1); }
-            else { state.s++; if(state.s>=3){ state.o++; state.s=0; showFx("STRIKEOUT!"); next(); } }
-        } else {
-            if(inZ) state.s++; if(state.s>=3){ state.o++; state.s=0; showFx("STRIKEOUT!"); next(); }
-        }
-        updateUI(); check();
-    }
-
-    function swingAction() {
-        if(!state.inFlight) return;
-        state.swingF = 0;
-        let t = (state.pFrame >= 22 && state.pFrame <= 24) ? "PERFECT" : (state.pFrame >= 18 ? "GOOD" : "MISS");
-        if(t != "MISS") {
-            let b = t=="PERFECT" ? 2 : 1; hit(b); showFx(t);
-        } else {
-            state.s++; showFx("MISS"); if(state.s>=3){ state.o++; state.s=0; showFx("STRIKEOUT"); next(); }
-        }
-        state.inFlight = false; updateUI(); check();
-    }
-
-    function hit(b) {
-        for(let i=2; i>=0; i--) { if(state.bases[i]) { if(i+b >= 3) { if(state.isTop) state.jScore++; else state.tScore++; state.bases[i]=false; } else { state.bases[i+b]=true; state.bases[i]=false; } } }
-        state.bases[b-1]=true; state.s=0; next();
-    }
-
-    function next() { if(state.isTop) state.jpI++; else state.twI++; updateUI(); }
-
-    function check() {
-        if(state.o >= 3) {
-            state.o=0; state.s=0; state.bases=[false,false,false]; state.isTop = !state.isTop;
-            if(state.isTop) state.inning++;
-            alert("CHANGE INNING"); updateUI();
-        }
-        document.getElementById('pitch-control').style.display = state.isTop?'block':'none';
-        document.getElementById('hit-control').style.display = state.isTop?'none':'block';
-        if(!state.isTop && !state.isAnim && !state.inFlight) setTimeout(cpuPitch, 1800);
-    }
-
-    function cpuPitch() { if(state.isTop) return; state.pType = JP_P.signature[Math.floor(Math.random()*4)]; startPitch(450+Math.random()*100, 200+Math.random()*250); }
-
-    function showFx(r) {
-        const it = document.getElementById('impact-text'); it.innerText = r; it.style.display='block';
-        setTimeout(()=>{ it.style.display='none'; document.getElementById('speedo').style.display='none'; }, 1500);
-    }
-
-    function updateUI() {
-        document.getElementById('score-tpe').innerText = state.tScore;
-        document.getElementById('score-jpn').innerText = state.jScore;
-        document.getElementById('inning-tag').innerText = (state.isTop?'TOP':'BOT') + " " + state.inning;
-        document.getElementById('s-dots').innerText = "●".repeat(state.s) + "○".repeat(2-state.s);
-        document.getElementById('o-dots').innerText = "●".repeat(state.o) + "○".repeat(2-state.o);
-        const p = state.isTop ? myTeam.P : JP_P;
-        const b = state.isTop ? JP_LINEUP[state.jpI%9] : myTeam.B[state.twI%9];
-        document.getElementById('matchup-box').innerHTML = `<div style="color:var(--hall-blue)">P: ${p.name}</div><div>B: ${b.name}</div>`;
-        
-        const grid = document.getElementById('skill-grid'); grid.innerHTML='';
-        p.signature.forEach(s => {
-            const d = document.createElement('div'); d.className='pitch-card'; d.innerText=s;
-            if(s==state.pType) d.classList.add('active');
-            d.onclick = () => { state.pType = s; updateUI(); };
-            grid.appendChild(d);
-        });
-
-        const rUi = document.getElementById('roster-ui'); rUi.innerHTML='';
-        const list = state.isTop ? JP_LINEUP : myTeam.B;
-        list.forEach((x, i) => {
-            const d = document.createElement('div'); d.className = 'roster-slot' + (i == (state.isTop?state.jpI:state.twI)%9 ? ' active':'');
-            d.innerText = (i+1) + ". " + x.name; rUi.appendChild(d);
-        });
-    }
-
-    init();
-</script>
 </body>
 </html>
