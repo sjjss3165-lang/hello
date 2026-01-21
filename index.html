@@ -85,7 +85,7 @@
     <section id="order-tool">
         <div class="order-system">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="color:var(--neon-purple); margin:0;">📊 數據統計表 (含找錢計算)</h2>
+                <h2 style="color:var(--neon-purple); margin:0;">📊 數據統計表 (自動找錢)</h2>
                 <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="resetData()">重整統計表</button>
             </div>
             <div style="padding:15px 0;">
@@ -100,12 +100,12 @@
                         <th width="12%">應付 ($)</th>
                         <th width="12%">收多少 ($)</th>
                         <th width="12%">應找錢 ($)</th>
-                        <th width="12%">刪除</th>
+                        <th width="12%">操作</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增一筆記錄</button>
+            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增一列記錄</button>
             <div class="total-box">電機科總金額：$<span id="finalPrice">0</span></div>
         </div>
     </section>
@@ -121,7 +121,7 @@ const stores = [
     { name: "迷客夏 基隆廟口店", tel: "0224261766", link: "https://milksha.nidin.shop/menu/491", cat: "drink", hot: false, time: { all: ["10:00", "21:00"] } },
     { name: "五桐號 基隆仁三店", tel: "0224283616", link: "https://www.wootea.com/menu/", cat: "drink", hot: true, time: { 1: null, all: ["11:00", "20:00"] } },
     { name: "有飲 基隆廟口店", tel: "0224258827", link: "https://www.youindrink.com/pages/menu", cat: "drink", hot: false, time: { 1: ["11:00", "19:00"], 5: ["12:00", "20:00"], all: ["11:00", "19:00"] } },
-    { name: "林香檸 台灣創始店", tel: "0224270618", link: "https://www.lamheunglingoverseas.com/cz", cat: "drink", hot: false, time: { all: ["11:00", "21:00"] } },
+    { name: "林香檸 台灣創創店", tel: "0224270618", link: "https://www.lamheunglingoverseas.com/cz", cat: "drink", hot: false, time: { all: ["11:00", "21:00"] } },
     { name: "Mr.Wish 基隆廟口店", tel: "0224273456", link: "https://www.mr-wish.com/", cat: "drink", hot: false, time: { 1: null, all: ["11:00", "18:00"] } },
     { name: "Coco 基隆海洋店", tel: "0224620586", link: "https://coco-tea.nidin.shop/menu/21237", cat: "drink", hot: false, time: { all: ["10:00", "21:45"] } },
     { name: "得正 #基隆海大", tel: "0224621016", link: "https://order.nidin.shop/menu/18739", cat: "drink", hot: true, time: { all: ["10:30", "21:30"] } },
@@ -139,24 +139,24 @@ const stores = [
 ];
 
 function checkStatus(s) {
-    const now = new Date(); const day = now.getDay(); const currTotal = now.getHours() * 60 + now.getMinutes();
+    const now = new Date(); const day = now.getDay(); const curr = now.getHours() * 60 + now.getMinutes();
     let range = s.time[day] !== undefined ? s.time[day] : s.time.all;
     if (!range) return { s: "已打烊", c: "closed", msg: "今日公休" };
     if (range.length === 4) {
         let s1 = 11*60, e1 = 14*60, s2 = 17*60, e2 = 20*60;
-        if ((currTotal >= s1 && currTotal < e1) || (currTotal >= s2 && currTotal < e2)) {
-            let activeEnd = currTotal < e1 ? e1 : e2; let diff = activeEnd - currTotal;
+        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) {
+            let activeEnd = curr < e1 ? e1 : e2; let diff = activeEnd - curr;
             return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
         }
         return { s: "休息中", c: "closed", msg: "分段休息" };
     }
     const [sH, sM] = range[0].split(":").map(Number); const [eH, eM] = range[1].split(":").map(Number);
     let sT = sH * 60 + sM, eT = eH * 60 + eM;
-    if (eT < sT) { if (currTotal >= sT || currTotal < eT) {
-        let diff = (currTotal >= sT) ? (1440 - currTotal + eT) : (eT - currTotal);
+    if (eT < sT) { if (curr >= sT || curr < eT) {
+        let diff = (curr >= sT) ? (1440 - curr + eT) : (eT - curr);
         return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
-    } } else if (currTotal >= sT && currTotal < eT) {
-        let diff = eT - currTotal; return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
+    } } else if (curr >= sT && curr < eT) {
+        let diff = eT - curr; return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
     }
     return { s: "已打烊", c: "closed", msg: "目前打烊" };
 }
@@ -167,27 +167,26 @@ function renderStores(fHot = false) {
     stores.forEach(s => {
         if (fHot && !s.hot) return;
         const info = checkStatus(s);
-        const card = `<div class="card"><span class="status-badge ${info.c}">${info.s}</span><h3 style="color:var(--neon-blue);margin:10px 0;">${s.name}</h3><div style="font-size:0.8rem;color:#aaa;">📞 ${s.tel}<br>⏰ ${info.msg}</div><div style="display:flex;gap:10px;margin-top:15px;"><a href="tel:${s.tel}" class="btn-tech" style="flex:1;text-decoration:none;text-align:center;">撥打</a><a href="${s.link}" target="_blank" class="btn-tech" style="background:var(--neon-purple);color:#fff;border-color:var(--neon-purple);text-decoration:none;text-align:center;flex:2;" onclick="setOrderStore('${s.name}')">菜單</a></div></div>`;
+        const card = `<div class="card"><span class="status-badge ${info.c}">${info.s}</span><h3 style="color:var(--neon-blue);margin:10px 0;">${s.name}</h3><div style="font-size:0.8rem;color:#aaa;">📞 ${s.tel}<br>⏰ ${info.msg}</div><div style="display:flex;gap:10px;margin-top:15px;"><a href="tel:${s.tel}" class="btn-tech" style="flex:1;text-decoration:none;text-align:center;">撥打</a><a href="${s.link}" target="_blank" class="btn-tech" style="background:var(--neon-purple);color:#fff;border-color:var(--neon-purple);text-decoration:none;text-align:center;flex:2;" onclick="setStore('${s.name}')">菜單</a></div></div>`;
         if (s.cat === 'drink') dG.innerHTML += card; else fG.innerHTML += card;
     });
 }
 
-function setOrderStore(n) { document.getElementById('target-store-input').value = n; }
+function setStore(n) { document.getElementById('target-store-input').value = n; }
 
 function addNewRow() {
-    const tbody = document.querySelector("#orderTable tbody");
-    const row = tbody.insertRow();
-    let opt = '<option value="">選擇師長...</option>';
+    const row = document.querySelector("#orderTable tbody").insertRow();
+    let opt = '<option value="">選擇...</option>';
     teachers.forEach(t => opt += `<option value="${t}">${t}</option>`);
     opt += '<option value="custom">➕ 手動輸入</option>';
     row.innerHTML = `
         <td><input type="checkbox" onchange="this.closest('tr').classList.toggle('paid', this.checked)"></td>
         <td><select onchange="handleName(this)">${opt}</select></td>
-        <td><input type="text" placeholder="大杯半糖..."></td>
-        <td><input type="number" class="price-val" oninput="calculateResults()"></td>
-        <td><input type="number" class="received-val" oninput="calculateResults()" placeholder="收錢"></td>
+        <td><input type="text" placeholder="品項..."></td>
+        <td><input type="number" class="price-val" oninput="calculate()"></td>
+        <td><input type="number" class="received-val" oninput="calculate()" placeholder="收"></td>
         <td class="change-cell">0</td>
-        <td><button style="color:red;background:none;border:none;cursor:pointer;" onclick="this.closest('tr').remove();calculateResults()">❌</button></td>
+        <td><button style="color:red;background:none;border:none;cursor:pointer;" onclick="this.closest('tr').remove();calculate()">❌</button></td>
     `;
 }
 
@@ -199,20 +198,20 @@ function handleName(s) {
     }
 }
 
-function calculateResults() {
+function calculate() {
     let total = 0;
     document.querySelectorAll("#orderTable tbody tr").forEach(row => {
-        let price = Number(row.querySelector(".price-val").value) || 0;
-        let received = Number(row.querySelector(".received-val").value) || 0;
-        let changeCell = row.querySelector(".change-cell");
-        total += price;
-        let change = received - price;
-        changeCell.innerText = change > 0 ? change : 0;
+        let p = Number(row.querySelector(".price-val").value) || 0;
+        let r = Number(row.querySelector(".received-val").value) || 0;
+        let c = row.querySelector(".change-cell");
+        total += p;
+        let res = r - p;
+        c.innerText = res > 0 ? res : 0;
     });
     document.getElementById("finalPrice").innerText = total;
 }
 
-function resetData() { if(confirm("確定重整統計表？")) { document.querySelector("#orderTable tbody").innerHTML = ''; setOrderStore(""); addNewRow(); calculateResults(); } }
+function resetData() { if(confirm("確定重整統計表？")) { document.querySelector("#orderTable tbody").innerHTML = ''; setStore(""); addNewRow(); calculate(); } }
 
 let wItems = [], rotTotal = 0;
 function openWheel(c) {
@@ -231,9 +230,9 @@ function spinWheel() {
     document.getElementById('wheel').style.transform = `rotate(${rotTotal}deg)`;
     setTimeout(() => {
         const idx = Math.floor((360 - (rotTotal % 360)) / (360/wItems.length)) % wItems.length;
-        const result = wItems[idx];
-        document.getElementById('wheel-result').innerText = `🎉 抽中：${result.name}`;
-        setOrderStore(result.name);
+        const res = wItems[idx];
+        document.getElementById('wheel-result').innerText = `🎉 抽中：${res.name}`;
+        setStore(res.name);
     }, 4000);
 }
 function closeWheel() { document.getElementById('wheel-overlay').style.display='none'; document.getElementById('wheel-box').style.display='none'; }
