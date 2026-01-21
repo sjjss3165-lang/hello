@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電機科點餐找錢終極系統👩🏼‍🍳</title>
+    <title>電機科智慧點餐統計系統👩🏼‍🍳</title>
     <style>
         :root {
             --neon-blue: #00d4ff;
@@ -59,7 +59,7 @@
 </head>
 <body>
 
-<header><h1>電機科智慧找錢統計系統 ⚡</h1></header>
+<header><h1>電機科智慧點餐統計系統👩🏼‍🍳</h1></header>
 
 <div class="tool-bar">
     <button class="btn-tech" onclick="openWheel('drink')">🥤 抽飲料</button>
@@ -79,14 +79,14 @@
 </div>
 
 <div class="container">
-    <section id="drinks"><h2>🥤 飲料清單</h2><div id="drinks-grid" class="grid"></div></section>
-    <section id="food"><h2>🍜 美食清單</h2><div id="food-grid" class="grid"></div></section>
+    <section id="drinks"><h2>🥤 飲料供應鏈</h2><div id="drinks-grid" class="grid"></div></section>
+    <section id="food"><h2>🍜 能量補給站</h2><div id="food-grid" class="grid"></div></section>
 
     <section id="order-tool">
         <div class="order-system">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2 style="color:var(--neon-purple); margin:0;">💰 班級數據統計器 (找錢助手)</h2>
-                <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="resetData()">重整清空</button>
+                <h2 style="color:var(--neon-purple); margin:0;">📊 數據統計表 (含找錢計算)</h2>
+                <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="resetData()">重整統計表</button>
             </div>
             <div style="padding:15px 0;">
                 正在點餐：<input type="text" id="target-store-input" class="store-field" placeholder="點擊菜單或在此手動輸入...">
@@ -100,12 +100,12 @@
                         <th width="12%">應付 ($)</th>
                         <th width="12%">收多少 ($)</th>
                         <th width="12%">應找錢 ($)</th>
-                        <th width="12%">操作</th>
+                        <th width="12%">刪除</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
-            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px;">➕ 新增一行記錄</button>
+            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增一筆記錄</button>
             <div class="total-box">電機科總金額：$<span id="finalPrice">0</span></div>
         </div>
     </section>
@@ -139,26 +139,26 @@ const stores = [
 ];
 
 function checkStatus(s) {
-    const now = new Date(); const day = now.getDay(); const curr = now.getHours() * 60 + now.getMinutes();
+    const now = new Date(); const day = now.getDay(); const currTotal = now.getHours() * 60 + now.getMinutes();
     let range = s.time[day] !== undefined ? s.time[day] : s.time.all;
     if (!range) return { s: "已打烊", c: "closed", msg: "今日公休" };
     if (range.length === 4) {
         let s1 = 11*60, e1 = 14*60, s2 = 17*60, e2 = 20*60;
-        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) {
-            let activeEnd = curr < e1 ? e1 : e2; let diff = activeEnd - curr;
+        if ((currTotal >= s1 && currTotal < e1) || (currTotal >= s2 && currTotal < e2)) {
+            let activeEnd = currTotal < e1 ? e1 : e2; let diff = activeEnd - currTotal;
             return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
         }
         return { s: "休息中", c: "closed", msg: "分段休息" };
     }
     const [sH, sM] = range[0].split(":").map(Number); const [eH, eM] = range[1].split(":").map(Number);
     let sT = sH * 60 + sM, eT = eH * 60 + eM;
-    if (eT < sT) { if (curr >= sT || curr < eT) {
-        let diff = (curr >= sT) ? (1440 - curr + eT) : (eT - curr);
+    if (eT < sT) { if (currTotal >= sT || currTotal < eT) {
+        let diff = (currTotal >= sT) ? (1440 - currTotal + eT) : (eT - currTotal);
         return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
-    } } else if (curr >= sT && curr < eT) {
-        let diff = eT - curr; return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
+    } } else if (currTotal >= sT && currTotal < eT) {
+        let diff = eT - currTotal; return { s: "營業中", c: "open", msg: `剩 ${Math.floor(diff/60)}時${diff%60}分` };
     }
-    return { s: "已打烊", c: "closed", msg: "休息中" };
+    return { s: "已打烊", c: "closed", msg: "目前打烊" };
 }
 
 function renderStores(fHot = false) {
@@ -177,7 +177,7 @@ function setOrderStore(n) { document.getElementById('target-store-input').value 
 function addNewRow() {
     const tbody = document.querySelector("#orderTable tbody");
     const row = tbody.insertRow();
-    let opt = '<option value="">選擇...</option>';
+    let opt = '<option value="">選擇師長...</option>';
     teachers.forEach(t => opt += `<option value="${t}">${t}</option>`);
     opt += '<option value="custom">➕ 手動輸入</option>';
     row.innerHTML = `
@@ -185,7 +185,7 @@ function addNewRow() {
         <td><select onchange="handleName(this)">${opt}</select></td>
         <td><input type="text" placeholder="大杯半糖..."></td>
         <td><input type="number" class="price-val" oninput="calculateResults()"></td>
-        <td><input type="number" class="received-val" oninput="calculateResults()"></td>
+        <td><input type="number" class="received-val" oninput="calculateResults()" placeholder="收錢"></td>
         <td class="change-cell">0</td>
         <td><button style="color:red;background:none;border:none;cursor:pointer;" onclick="this.closest('tr').remove();calculateResults()">❌</button></td>
     `;
@@ -212,7 +212,7 @@ function calculateResults() {
     document.getElementById("finalPrice").innerText = total;
 }
 
-function resetData() { if(confirm("確定重整？")) { document.querySelector("#orderTable tbody").innerHTML = ''; setOrderStore(""); addNewRow(); calculateResults(); } }
+function resetData() { if(confirm("確定重整統計表？")) { document.querySelector("#orderTable tbody").innerHTML = ''; setOrderStore(""); addNewRow(); calculateResults(); } }
 
 let wItems = [], rotTotal = 0;
 function openWheel(c) {
@@ -231,8 +231,9 @@ function spinWheel() {
     document.getElementById('wheel').style.transform = `rotate(${rotTotal}deg)`;
     setTimeout(() => {
         const idx = Math.floor((360 - (rotTotal % 360)) / (360/wItems.length)) % wItems.length;
-        document.getElementById('wheel-result').innerText = `🎉 結果：${wItems[idx].name}`;
-        setOrderStore(wItems[idx].name);
+        const result = wItems[idx];
+        document.getElementById('wheel-result').innerText = `🎉 抽中：${result.name}`;
+        setOrderStore(result.name);
     }, 4000);
 }
 function closeWheel() { document.getElementById('wheel-overlay').style.display='none'; document.getElementById('wheel-box').style.display='none'; }
