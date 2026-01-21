@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>電機科專用點餐系統</title>
+    <title>電機科專屬點餐系統👩🏼‍🍳</title>
     <style>
         :root {
             --primary: #2c3e50;
@@ -23,13 +23,16 @@
 
         header {
             background: #fff;
-            padding: 2rem 1rem;
+            padding: 2.5rem 1rem;
             text-align: center;
             border-bottom: 1px solid #ddd;
             position: sticky;
             top: 0;
             z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
+
+        h1 { margin: 0; font-weight: bold; letter-spacing: 1px; font-size: 1.8rem; color: var(--primary); }
 
         nav { margin-top: 15px; }
         nav a {
@@ -37,6 +40,7 @@
             color: var(--primary);
             margin: 0 15px;
             font-weight: bold;
+            font-size: 1rem;
         }
 
         .container {
@@ -45,12 +49,13 @@
             padding: 0 15px;
         }
 
-        section { margin-bottom: 50px; scroll-margin-top: 110px; }
+        section { margin-bottom: 50px; scroll-margin-top: 130px; }
 
         h2 {
             border-left: 5px solid var(--primary);
             padding-left: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
+            color: var(--primary);
         }
 
         .grid {
@@ -66,30 +71,34 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            transition: transform 0.2s;
         }
+        
+        .card:hover { transform: translateY(-5px); }
 
         .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
 
-        .info { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
+        .info { font-size: 0.9rem; color: #666; margin-bottom: 20px; }
 
         .actions { display: flex; gap: 10px; margin-top: auto; }
 
         .btn {
             flex: 1;
             text-align: center;
-            padding: 10px 0;
+            padding: 12px 0;
             text-decoration: none;
             font-size: 0.85rem;
-            border-radius: 6px;
+            border-radius: 8px;
             transition: 0.2s;
+            font-weight: bold;
         }
 
         .btn-call { background: var(--btn-call); color: white; }
         .btn-call:hover { background: #1a252f; }
-        .btn-menu { background: var(--btn-menu); color: var(--primary); }
+        .btn-menu { background: var(--btn-menu); color: var(--primary); border: 1px solid #dcdde1; }
         .btn-menu:hover { background: #dee2e6; }
 
-        footer { text-align: center; padding: 40px; color: #999; }
+        footer { text-align: center; padding: 40px; color: #999; font-size: 0.8rem; }
     </style>
 </head>
 <body>
@@ -133,7 +142,7 @@
                 <div class="actions"><a href="tel:0224229000" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1T08WgpxufhYVOJ8sbfc7gvpthvoDaacY/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
             </div>
             <div class="card">
-                <h3>大碗牛肉麵</h3><div class="info">02246633396</div>
+                <h3>大碗牛肉麵</h3><div class="info">0224633396</div>
                 <div class="actions"><a href="tel:0224633396" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/12wii4UGfDTHYECO5ObXyS6qutY9qRcaX/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
             </div>
             <div class="card">
@@ -162,7 +171,7 @@
 </div>
 
 <footer>
-    <p>© 2026 基隆美食導覽系統</p>
+    <p>© 2026 電機科專屬點餐系統👩🏼‍🍳 | 基隆美食導覽</p>
 </footer>
 
 </body>
