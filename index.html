@@ -29,7 +29,7 @@
 
         header {
             background: rgba(10, 14, 20, 0.98); padding: 1.5rem; text-align: center;
-            border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            border-bottom: 2px solid var(--neon-blue); box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
             position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(10px);
         }
 
@@ -75,7 +75,7 @@
         }
         .store-field {
             background: transparent; border: none; border-bottom: 2px solid var(--gold);
-            color: var(--gold); font-size: 1.2rem; font-weight: bold; width: 60%; outline: none; padding: 5px;
+            color: var(--gold); font-size: 1.2rem; font-weight: bold; width: 65%; outline: none; padding: 5px;
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
@@ -102,9 +102,9 @@
     <h2 id="wheel-title" style="color:var(--neon-blue)">🎡 命運之輪</h2>
     <div class="pointer"></div>
     <div id="wheel"></div>
-    <button class="btn-tech" id="spin-btn" onclick="spinWheel()" style="width:100%; background:var(--neon-blue); color:#000;">點我旋轉</button>
+    <button class="btn-tech" id="spin-btn" onclick="spinWheel()" style="width:100%; background:var(--neon-blue); color:#000;">啟動旋轉</button>
     <p id="wheel-result" style="margin-top:15px; font-weight:bold; color:var(--open); min-height: 24px;"></p>
-    <button class="btn-tech" style="margin-top:10px; width:100%; border-color:#555; color:#888;" onclick="closeWheel()">關閉轉盤</button>
+    <button class="btn-tech" style="margin-top:10px; width:100%; border-color:#555; color:#888;" onclick="closeWheel()">關閉視窗</button>
 </div>
 
 <div class="container">
@@ -115,26 +115,25 @@
         <div class="order-system">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h2 style="color:var(--neon-purple); margin:0;">📊 班級數據統計器</h2>
-                <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="resetData()">清空重整</button>
+                <button class="btn-tech" style="color:var(--closed); border-color:var(--closed);" onclick="resetData()">重整統計表</button>
             </div>
             <div class="store-input-area">
-                正在點餐店家：<input type="text" id="ordering-store-name" class="store-field" placeholder="點擊菜單或手動輸入...">
+                正在點餐店家：<input type="text" id="target-store-input" class="store-field" placeholder="點擊菜單或在此手動輸入...">
             </div>
             <table id="orderTable">
                 <thead><tr><th width="25%">姓名/座號</th><th width="45%">品項</th><th width="15%">金額 ($)</th><th width="15%">刪除</th></tr></thead>
-                <tbody><tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-val" oninput="calculateTotal()"></td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest('tr').remove();calculateTotal()">❌</button></td></tr></tbody>
+                <tbody><tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-val" oninput="updateTotal()"></td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest('tr').remove();updateTotal()">❌</button></td></tr></tbody>
             </table>
-            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增座號</button>
-            <div class="total-box">電機科總金額：$<span id="totalPrice">0</span></div>
+            <button onclick="addNewRow()" class="btn-tech" style="margin-top:20px; background:rgba(0, 212, 255, 0.1);">➕ 新增一列</button>
+            <div class="total-box">總計金額：$<span id="finalPrice">0</span></div>
         </div>
     </section>
 </div>
 
 <script>
 const stores = [
-    // 飲料店 15 間
     { name: "清心 基隆海大店", tel: "0224626266", link: "http://chingshin.tw/", cat: "drink", hot: false, time: { all: ["11:00", "22:45"] } },
-    { name: "可不可 基隆深溪店", tel: "0224659695", link: "https://www.kebuke.com/", cat: "drink", hot: true, time: { all: ["10:00", "22:00"] } },
+    { name: "可不可 基隆深溪店", tel: "0224659695", link: "https://kebuke.com/menu/", cat: "drink", hot: true, time: { all: ["10:00", "22:00"] } },
     { name: "50嵐 基隆深溪店", tel: "0224683368", link: "https://order.nidin.shop/menu/21216", cat: "drink", hot: true, time: { all: ["10:00", "22:00"] } },
     { name: "龜記 基隆店", tel: "0224258889", link: "https://guiji.doteat.tw/menu?storeId=LEzDQINl-0000wKv98o&showBulletin=1", cat: "drink", hot: false, time: { all: ["11:00", "22:00"] } },
     { name: "迷客夏 基隆廟口店", tel: "0224261766", link: "https://milksha.nidin.shop/menu/491", cat: "drink", hot: false, time: { all: ["10:00", "21:00"] } },
@@ -143,38 +142,38 @@ const stores = [
     { name: "林香檸 台灣創始店", tel: "0224270618", link: "https://www.lamheunglingoverseas.com/cz", cat: "drink", hot: false, time: { all: ["11:00", "21:00"] } },
     { name: "Mr.Wish 基隆廟口店", tel: "0224273456", link: "https://www.mr-wish.com/", cat: "drink", hot: false, time: { 1: null, 2: ["11:00", "18:00"], 3: ["11:00", "18:00"], 4: ["11:00", "21:00"], 5: ["11:00", "22:00"], 6: ["11:00", "22:00"], 0: ["11:00", "21:00"] } },
     { name: "Coco 基隆海洋店", tel: "0224620586", link: "https://coco-tea.nidin.shop/menu/21237", cat: "drink", hot: false, time: { all: ["10:00", "21:45"] } },
-    { name: "得正 #基隆海大", tel: "0224621016", link: "https://order.nidin.shop/menu/18739", cat: "drink", hot: true, time: { all: ["10:30", "21:30"] } },
+    { name: "得正 #基隆海大", tel: "0224621016", link: "https://order.nidin.shop/menu/18739", cat: "drink", hot: true, time: { 1: ["10:30", "21:30"], 2: ["10:30", "21:30"], 3: ["10:30", "21:30"], 4: ["10:30", "21:30"], 5: ["10:30", "21:30"], 6: ["11:00", "21:30"], 0: ["11:00", "21:30"] } },
     { name: "Comebuy 基隆新豐店", tel: "0224695668", link: "https://drive.google.com/file/d/1Rq51uQuxEv4VDxwoB-hDczLhqECx9Gu2/view?usp=sharing", cat: "drink", hot: false, time: { all: ["11:00", "22:00"] } },
     { name: "鶴茶樓 基隆忠一店", tel: "0224265572", link: "https://order.nidin.shop/menu/19710", cat: "drink", hot: false, time: { all: ["10:30", "20:00"] } },
     { name: "拾汣茶屋 基隆廟口店", tel: "02-24247778", link: "https://www.19teahouse.com/works/detail/Store29", cat: "drink", hot: true, time: { 1: ["10:30", "21:00"], 2: ["10:30", "21:00"], 3: ["10:30", "21:00"], 4: ["10:30", "21:00"], 5: ["10:30", "21:30"], 6: ["11:00", "21:30"], 0: ["11:00", "21:00"] } },
     { name: "水雲堂 基隆義二店", tel: "0224261227", link: "https://www.drinkstore.com.tw/web/product/product.jsp", cat: "drink", hot: false, time: { all: ["10:00", "22:00"] } },
-    // 7 間美食店家
     { name: "蒟蒻屋", tel: "0224229000", link: "https://drive.google.com/file/d/1T08WgpxufhYVOJ8sbfc7gvpthvoDaacY/view?usp=sharing", cat: "food", hot: true, time: { 1: ["09:00", "02:00"], 2: ["09:00", "02:00"], 3: ["09:00", "02:00"], 4: ["09:00", "02:00"], 5: ["09:00", "02:30"], 6: ["09:00", "02:30"], 0: ["09:00", "02:00"] } },
     { name: "大碗牛肉麵", tel: "0224633396", link: "https://drive.google.com/file/d/12wii4UGfDTHYECO5ObXyS6qutY9qRcaX/view?usp=sharing", cat: "food", hot: true, time: { all: ["11:00", "20:00"] } },
     { name: "麥克麵線", tel: "0224236667", link: "https://maps.app.goo.gl/DNe9c5xbqTsyfBGE7", cat: "food", hot: false, time: { 3: ["06:00", "17:30"], 4: ["06:00", "17:30"], 5: ["06:00", "17:30"], 6: ["06:00", "16:30"], 0: null, 1: null, 2: null } },
     { name: "豆乾包", tel: "0224201711", link: "https://drive.google.com/file/d/18VeBd_w6HFvBD321t7Iu-QaNfko5CljQ/view?usp=sharing", cat: "food", hot: true, time: { all: ["10:00", "22:00"] } },
-    { name: "美香齋滷味", tel: "0224263357", link: "https://drive.google.com/file/d/1HRMavIpHZhSVDkrg-zm_cCksy0fPbjRK/view?usp=sharing", cat: "food", hot: false, time: { 1: ["10:45", "23:00"], 2: ["10:45", "23:00"], 3: ["10:45", "23:00"], 4: ["10:45", "23:00"], 5: ["10:45", "23:00"], 6: ["10:45", "23:00"], 0: null } },
+    { name: "美香齋滷味", tel: "0224263357", link: "https://drive.google.com/file/d/1pjCLx6xivI5e_Ud1zmMglOFFZtsjDFij/view?usp=sharing", cat: "food", hot: false, time: { 1: ["10:45", "23:00"], 2: ["10:45", "23:00"], 3: ["10:45", "23:00"], 4: ["10:45", "23:00"], 5: ["10:45", "23:00"], 6: ["10:45", "23:00"], 0: null } },
     { name: "邱記炒麵（東信店）", tel: "0224680335", link: "https://drive.google.com/file/d/1zuEI_w-zwS9rIGRcekHsb_QXll1twyg3/view?usp=sharing", cat: "food", hot: true, time: { 1: ["11:00", "14:00", "17:00", "20:00"], 2: ["11:00", "14:00", "17:00", "20:00"], 3: ["11:00", "14:00", "17:00", "20:00"], 4: ["11:00", "14:00", "17:00", "20:00"], 5: ["11:00", "14:00", "17:00", "20:00"], 0: ["11:00", "14:00", "17:00", "20:00"], 6: null } },
     { name: "廖媽媽麵飯館-新豐店", tel: "0224680789", link: "https://drive.google.com/file/d/1j_SjavYZbnJjJHCJNSzVQaAzf_1e5Km0/view?usp=sharing", cat: "food", hot: true, time: { 1: ["11:00", "21:00"], 2: ["11:00", "21:00"], 3: ["11:00", "21:00"], 4: ["11:00", "21:00"], 5: ["11:00", "21:00"], 6: ["11:00", "20:30"], 0: null } }
 ];
 
-let currentWheelItems = [];
+let wheelItems = [];
+let rotTotal = 0;
 
-function checkStoreStatus(s) {
+function checkStatus(s) {
     const now = new Date(); const day = now.getDay(); const curr = now.getHours() * 60 + now.getMinutes();
     let range = s.time.all || s.time[day];
-    if (!range) return { status: "已打烊", class: "is-closed", msg: "今日休息" };
+    if (!range) return { status: "休息中", class: "is-closed", msg: "今日公休" };
     if (range.length === 4) {
         let s1 = Number(range[0].split(":")[0])*60 + Number(range[0].split(":")[1]), e1 = Number(range[1].split(":")[0])*60 + Number(range[1].split(":")[1]);
         let s2 = Number(range[2].split(":")[0])*60 + Number(range[2].split(":")[1]), e2 = Number(range[3].split(":")[0])*60 + Number(range[3].split(":")[1]);
-        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) return { status: "工作中", class: "is-open", msg: "正常營業" };
-        return { status: "休息中", class: "is-closed", msg: "分段休假" };
+        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) return { status: "工作中", class: "is-open", msg: "正在營業" };
+        return { status: "休息中", class: "is-closed", msg: "分段休息" };
     }
     const [sH, sM] = range[0].split(":").map(Number); const [eH, eM] = range[1].split(":").map(Number);
     let sT = sH * 60 + sM, eT = eH * 60 + eM;
-    if (eT < sT) { if (curr >= sT || curr < eT) return { status: "工作中", class: "is-open", msg: "深夜模組" }; }
-    else if (curr >= sT && curr < eT) return { status: "工作中", class: "is-open", msg: "正常營業" };
-    return { status: "已打烊", class: "is-closed", msg: "目前休息" };
+    if (eT < sT) { if (curr >= sT || curr < eT) return { status: "工作中", class: "is-open", msg: "深夜模式" }; }
+    else if (curr >= sT && curr < eT) return { status: "工作中", class: "is-open", msg: "正在營業" };
+    return { status: "已下班", class: "is-closed", msg: "目前休息" };
 }
 
 function renderStores(fHot = false) {
@@ -182,70 +181,54 @@ function renderStores(fHot = false) {
     dG.innerHTML = ''; fG.innerHTML = '';
     stores.forEach(s => {
         if (fHot && !s.hot) return;
-        const info = checkStoreStatus(s);
-        const card = `
-            <div class="card">
-                ${s.hot ? '<span style="color:var(--gold); font-size:0.8rem; display:block;">⚡ 電機熱門</span>' : ''}
-                <span class="status-tag ${info.class}">${info.status}</span>
-                <h3 style="color:var(--neon-blue); margin:10px 0;">${s.name}</h3>
-                <div style="font-size:0.85rem; color:#aaa;">📞 ${s.tel}<br>⏰ ${info.msg}</div>
-                <div style="display:flex; gap:10px; margin-top:15px;">
-                    <a href="tel:${s.tel}" class="btn-tech" style="text-decoration:none; text-align:center; flex:1;">撥打</a>
-                    <a href="${s.link}" target="_blank" class="btn-tech" style="background:var(--neon-purple); color:#fff; border-color:var(--neon-purple); text-decoration:none; text-align:center; flex:2;" onclick="setOrderStore('${s.name}')">菜單</a>
-                </div>
-            </div>`;
+        const info = checkStatus(s);
+        const card = `<div class="card">${s.hot?'<span style="color:var(--gold);font-size:0.8rem;">⚡ 電機熱門</span>':''}<span class="status-tag ${info.class}">${info.status}</span><h3 style="color:var(--neon-blue);margin:10px 0;">${s.name}</h3><div style="font-size:0.85rem;color:#aaa;">📞 ${s.tel}<br>⏰ ${info.msg}</div><div style="display:flex;gap:10px;margin-top:15px;"><a href="tel:${s.tel}" class="btn-tech" style="text-decoration:none;text-align:center;flex:1;">撥打</a><a href="${s.link}" target="_blank" class="btn-tech" style="background:var(--neon-purple);color:#fff;border-color:var(--neon-purple);text-decoration:none;text-align:center;flex:2;" onclick="setStore('${s.name}')">菜單</a></div></div>`;
         if (s.cat === 'drink') dG.innerHTML += card; else fG.innerHTML += card;
     });
 }
 
-function setOrderStore(name) { document.getElementById('ordering-store-name').value = name; }
+function setStore(n) { document.getElementById('target-store-input').value = n; }
 
-// 分類轉盤邏輯
-let totalRot = 0;
-function openWheel(category) {
-    currentWheelItems = stores.filter(s => s.cat === category);
-    document.getElementById('wheel-title').innerText = (category === 'drink' ? '🥤 飲料之輪' : '🍜 美食之輪');
-    document.getElementById('wheel-overlay').style.display = 'block'; 
-    document.getElementById('wheel-box').style.display = 'block';
+function openWheel(cat) {
+    wheelItems = stores.filter(s => s.cat === cat);
+    document.getElementById('wheel-title').innerText = (cat==='drink'?'🥤 飲料隨機':'🍜 美食隨機');
+    document.getElementById('wheel-overlay').style.display = 'block'; document.getElementById('wheel-box').style.display = 'block';
     const w = document.getElementById('wheel'); w.innerHTML = '';
-    currentWheelItems.forEach((s, i) => {
+    wheelItems.forEach((s, i) => {
         const seg = document.createElement('div');
-        seg.style.cssText = `position:absolute;width:100%;height:100%;background:${i%2?'#00d4ff':'#16212e'};clip-path:polygon(50% 50%, 50% 0, 100% 0);transform:rotate(${360/currentWheelItems.length*i}deg);`;
+        seg.style.cssText = `position:absolute;width:100%;height:100%;background:${i%2?'#00d4ff':'#16212e'};clip-path:polygon(50% 50%, 50% 0, 100% 0);transform:rotate(${360/wheelItems.length*i}deg);`;
         w.appendChild(seg);
     });
 }
+
 function spinWheel() {
-    const rot = Math.floor(Math.random() * 360) + 1800;
-    totalRot += rot;
-    document.getElementById('wheel').style.transform = `rotate(${totalRot}deg)`;
-    document.getElementById('wheel-result').innerText = "系統計算中...";
+    const rot = Math.floor(Math.random() * 360) + 1800; rotTotal += rot;
+    document.getElementById('wheel').style.transform = `rotate(${rotTotal}deg)`;
+    document.getElementById('wheel-result').innerText = "啟動運算中...";
     setTimeout(() => {
-        const final = totalRot % 360;
-        const idx = Math.floor((360 - final) / (360 / currentWheelItems.length)) % currentWheelItems.length;
-        const result = currentWheelItems[idx]; 
-        document.getElementById('wheel-result').innerText = `🎉 結果：${result.name}`;
-        setOrderStore(result.name);
+        const final = rotTotal % 360;
+        const idx = Math.floor((360 - final) / (360 / wheelItems.length)) % wheelItems.length;
+        const res = wheelItems[idx]; 
+        document.getElementById('wheel-result').innerText = `🎉 抽中：${res.name}`;
+        setStore(res.name);
     }, 4000);
 }
 function closeWheel() { document.getElementById('wheel-overlay').style.display='none'; document.getElementById('wheel-box').style.display='none'; }
 
-// 統計器邏輯
 function addNewRow() {
-    const body = document.querySelector("#orderTable tbody");
-    const row = body.insertRow();
-    row.innerHTML = `<td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-val" oninput="calculateTotal()"></td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest('tr').remove();calculateTotal()">❌</button></td>`;
+    const row = document.querySelector("#orderTable tbody").insertRow();
+    row.innerHTML = `<td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-val" oninput="updateTotal()"></td><td><button style="color:red;background:none;border:none;cursor:pointer;" onclick="this.closest('tr').remove();updateTotal()">❌</button></td>`;
 }
-function calculateTotal() {
+function updateTotal() {
     let t = 0; document.querySelectorAll(".price-val").forEach(i => t += (Number(i.value) || 0));
-    document.getElementById("totalPrice").innerText = t;
+    document.getElementById("finalPrice").innerText = t;
 }
 function resetData() {
-    if(confirm("重整將清空所有姓名與金額，確定嗎？")) {
-        document.querySelector("#orderTable tbody").innerHTML = '<tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-val" oninput="calculateTotal()"></td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="this.closest(\'tr\').remove();calculateTotal()">❌</button></td></tr>';
-        document.getElementById("totalPrice").innerText = "0"; document.getElementById("ordering-store-name").value = "";
+    if(confirm("重整將清空所有數據，確定嗎？")) {
+        document.querySelector("#orderTable tbody").innerHTML = '<tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-val" oninput="updateTotal()"></td><td><button style="color:red;background:none;border:none;cursor:pointer;" onclick="this.closest(\'tr\').remove();updateTotal()">❌</button></td></tr>';
+        document.getElementById("finalPrice").innerText = "0"; document.getElementById("target-store-input").value = "";
     }
 }
-
 function filterHot() { renderStores(true); }
 window.onload = () => renderStores();
 </script>
