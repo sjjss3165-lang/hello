@@ -6,76 +6,113 @@
     <title>電機科專屬點餐系統👩🏼‍🍳</title>
     <style>
         :root {
+            --tech-blue: #00d4ff;
+            --circuit-bg: #0a0e14;
+            --card-bg: #16212e;
             --primary: #2c3e50;
-            --bg: #f8f9fa;
-            --card: #ffffff;
             --accent: #e67e22;
-            --open: #27ae60;
-            --closed: #c0392b;
+            --open: #00ff88;
+            --closed: #ff4d4d;
             --hot: #f1c40f;
         }
 
         body {
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg); margin: 0; padding: 0; color: #333;
+            background-color: var(--circuit-bg);
+            /* 加入電路板背景圖案 */
+            background-image: 
+                radial-gradient(circle at 2px 2px, rgba(0, 212, 255, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            margin: 0; padding: 0; color: #e0e0e0;
         }
 
         header {
-            background: #fff; padding: 1.5rem; text-align: center;
-            border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000;
+            background: rgba(22, 33, 46, 0.9);
+            padding: 1.5rem; text-align: center;
+            border-bottom: 2px solid var(--tech-blue);
+            box-shadow: 0 0 15px var(--tech-blue);
+            position: sticky; top: 0; z-index: 1000;
+            backdrop-filter: blur(5px);
         }
 
+        h1 { color: var(--tech-blue); text-shadow: 0 0 10px var(--tech-blue); margin: 0; }
+
         .tool-bar {
-            background: var(--primary); padding: 12px;
-            display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;
+            background: rgba(10, 14, 20, 0.8); padding: 15px;
+            display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;
         }
 
         .btn-tool {
-            background: var(--accent); color: white; border: none;
-            padding: 8px 16px; border-radius: 20px; cursor: pointer;
+            background: transparent; color: var(--tech-blue); 
+            border: 1px solid var(--tech-blue);
+            padding: 10px 20px; border-radius: 5px; cursor: pointer;
             font-weight: bold; font-size: 0.9rem; transition: 0.3s;
+            text-transform: uppercase; letter-spacing: 1px;
         }
 
-        /* 轉盤 UI */
+        .btn-tool:hover {
+            background: var(--tech-blue); color: #000;
+            box-shadow: 0 0 15px var(--tech-blue);
+        }
+
+        /* 齒輪轉盤 UI */
         #wheel-container {
             display: none; position: fixed; top: 50%; left: 50%;
             transform: translate(-50%, -50%); z-index: 2000;
-            background: white; padding: 25px; border-radius: 20px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); text-align: center;
+            background: var(--card-bg); padding: 30px; border-radius: 20px;
+            border: 2px solid var(--tech-blue); box-shadow: 0 0 30px var(--tech-blue);
+            text-align: center;
         }
+        
         #wheel {
             width: 280px; height: 280px; border-radius: 50%;
-            border: 5px solid #333; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
-            margin: 15px auto; position: relative; overflow: hidden;
+            border: 8px solid #333; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            margin: 20px auto; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 20px #000;
         }
-        .wheel-pointer {
-            width: 0; height: 0; border-left: 15px solid transparent;
-            border-right: 15px solid transparent; border-top: 30px solid red;
-            position: absolute; top: -10px; left: 50%; transform: translateX(-50%); z-index: 2001;
+
+        /* 齒輪樣式裝飾 */
+        #spin-btn {
+            background: var(--tech-blue); color: #000; border: none;
+            width: 80px; height: 80px; border-radius: 50%; cursor: pointer;
+            font-weight: bold; font-size: 1rem;
+            box-shadow: 0 0 10px var(--tech-blue);
+            position: relative;
         }
 
         .container { max-width: 1000px; margin: 20px auto; padding: 0 15px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         
         .card {
-            background: var(--card); padding: 20px; border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex;
-            flex-direction: column; position: relative;
+            background: var(--card-bg); padding: 25px; border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            transition: 0.3s; position: relative;
         }
-        .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; }
-        .open { background: var(--open); }
-        .closed { background: var(--closed); }
-
-        .order-system { background: white; padding: 25px; border-radius: 12px; margin-top: 30px; border: 2px solid var(--accent); }
-        .target-store-display { background: #fff3e0; padding: 10px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; border-left: 5px solid var(--accent); }
-
-        table { width: 100%; border-collapse: collapse; background: #fff; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        th { background: #f8f9fa; }
-        input { width: 90%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; }
         
-        .total-area { text-align: right; font-size: 1.4rem; font-weight: bold; color: var(--accent); margin-top: 15px; }
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1999; }
+        .card:hover {
+            border-color: var(--tech-blue);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 3px; font-size: 0.7rem; font-weight: bold; }
+        .open { color: var(--open); border: 1px solid var(--open); }
+        .closed { color: var(--closed); border: 1px solid var(--closed); }
+
+        .hot-badge { color: var(--hot); font-size: 0.8rem; margin-bottom: 10px; display: block; }
+
+        .order-system { 
+            background: var(--card-bg); padding: 25px; border-radius: 12px; 
+            margin-top: 40px; border: 1px solid var(--tech-blue); 
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; color: #fff; }
+        th, td { border: 1px solid rgba(255,255,255,0.1); padding: 12px; text-align: center; }
+        th { background: rgba(0, 212, 255, 0.1); color: var(--tech-blue); }
+        input { background: #0a0e14; border: 1px solid #333; color: #fff; padding: 8px; width: 85%; }
+
+        .total-area { text-align: right; font-size: 1.5rem; font-weight: bold; color: var(--tech-blue); margin-top: 20px; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999; }
     </style>
 </head>
 <body>
@@ -85,45 +122,43 @@
 </header>
 
 <div class="tool-bar">
-    <button class="btn-tool" onclick="showWheel()">🎡 隨機轉盤抽籤</button>
-    <button class="btn-tool" style="background:#f1c40f; color:#333;" onclick="filterHot()">🔥 熱門店家</button>
-    <button class="btn-tool" style="background:#7f8c8d" onclick="renderStores()">🔄 顯示全部</button>
+    <button class="btn-tool" onclick="showWheel()">⚙️ 命運齒輪抽籤</button>
+    <button class="btn-tool" onclick="filterHot()">🔥 熱門店家</button>
+    <button class="btn-tool" onclick="renderStores()">🔄 刷新全部</button>
 </div>
 
 <div class="overlay" id="overlay" onclick="closeWheel()"></div>
 <div id="wheel-container">
-    <h2>🎡 命運轉盤</h2>
-    <div class="wheel-pointer"></div>
+    <h2 style="color:var(--tech-blue)">⚙️ 命運齒輪旋轉中</h2>
     <div id="wheel"></div>
-    <button class="btn-tool" id="spin-btn" onclick="spinWheel()" style="width:100%;">點我旋轉！</button>
-    <p id="wheel-result" style="margin-top:10px; font-weight:bold; height: 20px;"></p>
-    <button class="btn-tool" style="background:#95a5a6; margin-top:10px; width:100%;" onclick="closeWheel()">關閉視窗</button>
+    <button id="spin-btn" onclick="spinWheel()">SPIN</button>
+    <p id="wheel-result" style="margin-top:15px; font-weight:bold; color:var(--open); min-height: 20px;"></p>
+    <button class="btn-tool" style="margin-top:10px;" onclick="closeWheel()">關閉</button>
 </div>
 
 <div class="container">
-    <section id="drinks"><h2>🥤 飲料店</h2><div id="drinks-grid" class="grid"></div></section>
-    <section id="food"><h2>🍜 在地美食</h2><div id="food-grid" class="grid"></div></section>
+    <section id="drinks"><h2>🥤 飲料供應鏈</h2><div id="drinks-grid" class="grid"></div></section>
+    <section id="food"><h2>🍜 能量補給站</h2><div id="food-grid" class="grid"></div></section>
 
     <section id="order-tool">
         <div class="order-system">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h2>📝 班級點餐統計器</h2>
-                <button class="btn-tool" style="background:#c0392b;" onclick="resetOrderTable()">🧹 重整/清空統計表</button>
+                <h2 style="color:var(--tech-blue)">📝 班級數據統計器</h2>
+                <button class="btn-tool" style="border-color:var(--closed); color:var(--closed);" onclick="resetOrderTable()">RESET</button>
             </div>
-            <div class="target-store-display">正在統計：<span id="current-ordering-store">尚未設定店家</span></div>
+            <div style="color:var(--accent); margin: 10px 0;">正在統計：<span id="current-ordering-store">WAITING FOR INPUT...</span></div>
             <table id="orderTable">
-                <thead><tr><th width="20%">姓名</th><th width="45%">品項</th><th width="20%">金額</th><th width="15%">刪除</th></tr></thead>
-                <tbody><tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button onclick="this.closest('tr').remove();calculateTotal()">❌</button></td></tr></tbody>
+                <thead><tr><th>座號/姓名</th><th>品項</th><th>金額</th><th>操作</th></tr></thead>
+                <tbody><tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button style="background:none; border:none; color:red; cursor:pointer;" onclick="this.closest('tr').remove();calculateTotal()">❌</button></td></tr></tbody>
             </table>
-            <button onclick="addRow()" class="btn-tool" style="background:#27ae60; margin-top:10px;">➕ 新增一行</button>
-            <div class="total-area">總金額：$<span id="totalPrice">0</span></div>
+            <button onclick="addRow()" class="btn-tool" style="margin-top:15px;">ADD ROW</button>
+            <div class="total-area">TOTAL: $<span id="totalPrice">0</span></div>
         </div>
     </section>
 </div>
 
 <script>
 const stores = [
-    // 飲料店 (依要求修正時間)
     { name: "清心 基隆海大店", tel: "0224626266", menu: "http://chingshin.tw/", category: "drink", isHot: false, hours: { all: ["11:00", "22:45"] } },
     { name: "可不可 基隆深溪店", tel: "0224659695", menu: "https://www.kebuke.com/", category: "drink", isHot: true, hours: { all: ["10:00", "22:00"] } },
     { name: "50嵐 基隆深溪店", tel: "0224683368", menu: "https://order.nidin.shop/menu/21216", category: "drink", isHot: true, hours: { all: ["10:00", "22:00"] } },
@@ -139,7 +174,7 @@ const stores = [
     { name: "鶴茶樓 基隆忠一店", tel: "0224265572", menu: "https://order.nidin.shop/menu/19710", category: "drink", isHot: false, hours: { all: ["10:30", "20:00"] } },
     { name: "拾汣茶屋 基隆廟口店", tel: "02-24247778", menu: "https://www.19teahouse.com/works/detail/Store29", category: "drink", isHot: true, hours: { 1: ["10:30", "21:00"], 2: ["10:30", "21:00"], 3: ["10:30", "21:00"], 4: ["10:30", "21:00"], 5: ["10:30", "21:30"], 6: ["11:00", "21:30"], 0: ["11:00", "21:00"] } },
     { name: "水雲堂 基隆義二店", tel: "0224261227", menu: "https://www.drinkstore.com.tw/web/product/product.jsp", category: "drink", isHot: false, hours: { all: ["10:00", "22:00"] } },
-    // 在地美食 (依要求修正時間)
+    // 7 間美食店家
     { name: "蒟蒻屋", tel: "0224229000", menu: "https://drive.google.com/file/d/1T08WgpxufhYVOJ8sbfc7gvpthvoDaacY/view?usp=sharing", category: "food", isHot: true, hours: { 1: ["09:00", "02:00"], 2: ["09:00", "02:00"], 3: ["09:00", "02:00"], 4: ["09:00", "02:00"], 5: ["09:00", "02:30"], 6: ["09:00", "02:30"], 0: ["09:00", "02:00"] } },
     { name: "大碗牛肉麵", tel: "0224633396", menu: "https://drive.google.com/file/d/12wii4UGfDTHYECO5ObXyS6qutY9qRcaX/view?usp=sharing", category: "food", isHot: true, hours: { all: ["11:00", "20:00"] } },
     { name: "麥克麵線", tel: "0224236667", menu: "https://maps.app.goo.gl/DNe9c5xbqTsyfBGE7", category: "food", isHot: false, hours: { 3: ["06:00", "17:30"], 4: ["06:00", "17:30"], 5: ["06:00", "17:30"], 6: ["06:00", "16:30"], 0: null, 1: null, 2: null } },
@@ -152,19 +187,18 @@ const stores = [
 function checkStatus(s) {
     const now = new Date(); const day = now.getDay(); const curr = now.getHours() * 60 + now.getMinutes();
     let range = s.hours.all || s.hours[day];
-    if (!range) return { status: "已打烊", class: "closed", msg: "今天公休" };
-    if (range.length === 4) { // 分段處理
+    if (!range) return { status: "OFFLINE", class: "closed", msg: "今日公休" };
+    if (range.length === 4) {
         let s1 = Number(range[0].split(":")[0])*60 + Number(range[0].split(":")[1]), e1 = Number(range[1].split(":")[0])*60 + Number(range[1].split(":")[1]);
         let s2 = Number(range[2].split(":")[0])*60 + Number(range[2].split(":")[1]), e2 = Number(range[3].split(":")[0])*60 + Number(range[3].split(":")[1]);
-        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) return { status: "營業中", class: "open", msg: "供餐中" };
-        return { status: "休息中", class: "closed", msg: "分段休息" };
+        if ((curr >= s1 && curr < e1) || (curr >= s2 && curr < e2)) return { status: "ONLINE", class: "open", msg: "運作中" };
+        return { status: "IDLE", class: "closed", msg: "分段休息" };
     }
     const [sH, sM] = range[0].split(":").map(Number); const [eH, eM] = range[1].split(":").map(Number);
     let sT = sH * 60 + sM, eT = eH * 60 + eM;
-    if (eT < sT) { // 深夜
-        if (curr >= sT || curr < eT) return { status: "營業中", class: "open", msg: "宵夜中" };
-    } else if (curr >= sT && curr < eT) return { status: "營業中", class: "open", msg: "營業中" };
-    return { status: "已打烊", class: "closed", msg: "已下班" };
+    if (eT < sT) { if (curr >= sT || curr < eT) return { status: "ONLINE", class: "open", msg: "深夜模組" }; }
+    else if (curr >= sT && curr < eT) return { status: "ONLINE", class: "open", msg: "工作中" };
+    return { status: "OFFLINE", class: "closed", msg: "休息中" };
 }
 
 function renderStores(fHot = false) {
@@ -173,7 +207,17 @@ function renderStores(fHot = false) {
     stores.forEach(s => {
         if (fHot && !s.isHot) return;
         const info = checkStatus(s);
-        const card = `<div class="card" id="${s.name}">${s.isHot ? '<span class="hot-badge">🔥 熱門</span>' : ''}<span class="status-badge ${info.class}">${info.status}</span><h3>${s.name}</h3><div class="info">📞 ${s.tel}<br>⏰ ${info.msg}</div><div class="actions"><a href="tel:${s.tel}" class="btn-tool" style="text-decoration:none; text-align:center;">撥打</a><a href="${s.menu}" target="_blank" class="btn-tool" style="background:#eee; color:#333; text-decoration:none; text-align:center;" onclick="setStore('${s.name}')">設定統計</a></div></div>`;
+        const card = `
+            <div class="card" id="${s.name}">
+                ${s.isHot ? '<span class="hot-badge">⚡ CORE_SYSTEM (熱門)</span>' : ''}
+                <span class="status-badge ${info.class}">${info.status}</span>
+                <h3 style="color:var(--tech-blue)">${s.name}</h3>
+                <div class="info">PORT: ${s.tel}<br>SYS_TIME: ${info.msg}</div>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <a href="tel:${s.tel}" class="btn-tool" style="text-decoration:none; text-align:center; flex:1;">CALL</a>
+                    <a href="${s.menu}" target="_blank" class="btn-tool" style="background:var(--tech-blue); color:#000; text-decoration:none; text-align:center; flex:2;" onclick="setStore('${s.name}')">MENU</a>
+                </div>
+            </div>`;
         if (s.category === 'drink') dG.innerHTML += card; else fG.innerHTML += card;
     });
 }
@@ -187,7 +231,7 @@ function showWheel() {
     const w = document.getElementById('wheel'); w.innerHTML = '';
     stores.forEach((s, i) => {
         const seg = document.createElement('div');
-        seg.style.cssText = `position:absolute;width:100%;height:100%;background:${i%2?'#f39c12':'#e67e22'};clip-path:polygon(50% 50%, 50% 0, 100% 0);transform:rotate(${360/stores.length*i}deg)`;
+        seg.style.cssText = `position:absolute;width:100%;height:100%;background:${i%2?'#00d4ff':'#16212e'};clip-path:polygon(50% 50%, 50% 0, 100% 0);transform:rotate(${360/stores.length*i}deg); border:1px solid rgba(255,255,255,0.1);`;
         w.appendChild(seg);
     });
 }
@@ -195,29 +239,28 @@ function spinWheel() {
     const rand = Math.floor(Math.random() * 360) + 1440;
     currentRot += rand;
     document.getElementById('wheel').style.transform = `rotate(${currentRot}deg)`;
-    document.getElementById('wheel-result').innerText = "旋轉中...";
+    document.getElementById('wheel-result').innerText = "CALCULATING...";
     setTimeout(() => {
         const final = currentRot % 360;
         const idx = Math.floor((360 - final) / (360 / stores.length)) % stores.length;
         const res = stores[idx]; 
-        document.getElementById('wheel-result').innerText = `🎉 結果：${res.name}`;
+        document.getElementById('wheel-result').innerText = `SELECTED: ${res.name}`;
         setStore(res.name);
     }, 4000);
 }
 function closeWheel() { document.getElementById('overlay').style.display='none'; document.getElementById('wheel-container').style.display='none'; }
 
-// 統計表邏輯
 function resetOrderTable() {
-    if(confirm("確定要清空整份統計表嗎？")) {
+    if(confirm("確定要重設數據統計表嗎？")) {
         const tbody = document.querySelector("#orderTable tbody");
-        tbody.innerHTML = '<tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button onclick="this.closest(\'tr\').remove();calculateTotal()">❌</button></td></tr>';
+        tbody.innerHTML = '<tr><td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button style="background:none; border:none; color:red; cursor:pointer;" onclick="this.closest(\'tr\').remove();calculateTotal()">❌</button></td></tr>';
         document.getElementById("totalPrice").innerText = "0";
-        document.getElementById("current-ordering-store").innerText = "尚未設定店家";
+        document.getElementById("current-ordering-store").innerText = "WAITING FOR INPUT...";
     }
 }
 function addRow() {
     const row = document.querySelector("#orderTable tbody").insertRow();
-    row.innerHTML = `<td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button onclick="this.closest('tr').remove();calculateTotal()">❌</button></td>`;
+    row.innerHTML = `<td><input type="text"></td><td><input type="text"></td><td><input type="number" class="price-input" oninput="calculateTotal()"></td><td><button style="background:none; border:none; color:red; cursor:pointer;" onclick="this.closest('tr').remove();calculateTotal()">❌</button></td>`;
 }
 function calculateTotal() {
     let t = 0; document.querySelectorAll(".price-input").forEach(i => t += (Number(i.value) || 0));
