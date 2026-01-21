@@ -3,87 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>基隆美食飲料地圖</title>
+    <title>基隆美食飲料導覽</title>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --accent-color: #34495e;
+            --primary: #2c3e50;
+            --bg: #f8f9fa;
+            --card: #ffffff;
             --btn-call: #2c3e50;
             --btn-menu: #e9ecef;
         }
 
         body {
             font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
-            color: #333;
-            line-height: 1.6;
+            background-color: var(--bg);
             margin: 0;
             padding: 0;
+            color: #333;
         }
 
         header {
-            background-color: #fff;
+            background: #fff;
             padding: 2rem 1rem;
             text-align: center;
-            border-bottom: 1px solid #dee2e6;
+            border-bottom: 1px solid #ddd;
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-
-        h1 { margin: 0; font-weight: 400; letter-spacing: 1px; font-size: 1.5rem; }
 
         nav { margin-top: 15px; }
         nav a {
             text-decoration: none;
-            color: var(--primary-color);
-            margin: 0 10px;
-            font-size: 0.9rem;
-            padding: 5px 10px;
-            border-radius: 20px;
+            color: var(--primary);
+            margin: 0 15px;
+            font-weight: bold;
         }
-        nav a:hover { background: #eee; }
 
         .container {
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 20px auto;
             padding: 0 15px;
         }
 
-        section { margin-bottom: 50px; scroll-margin-top: 100px; }
+        section { margin-bottom: 50px; scroll-margin-top: 110px; }
 
         h2 {
-            font-weight: 500;
-            border-left: 5px solid var(--primary-color);
+            border-left: 5px solid var(--primary);
             padding-left: 15px;
-            margin-bottom: 25px;
-            color: var(--primary-color);
+            margin-bottom: 20px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
         .card {
-            background: var(--card-bg);
+            background: var(--card);
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
 
-        .card h3 { margin: 0 0 8px 0; font-size: 1.15rem; color: #000; }
+        .card h3 { margin: 0 0 10px 0; font-size: 1.1rem; }
 
-        .info { font-size: 0.9rem; color: #6c757d; margin-bottom: 15px; }
+        .info { font-size: 0.9rem; color: #666; margin-bottom: 15px; }
 
-        .actions { display: flex; gap: 10px; }
+        .actions { display: flex; gap: 10px; margin-top: auto; }
 
         .btn {
             flex: 1;
@@ -91,31 +80,25 @@
             padding: 10px 0;
             text-decoration: none;
             font-size: 0.85rem;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 6px;
             transition: 0.2s;
         }
 
         .btn-call { background: var(--btn-call); color: white; }
         .btn-call:hover { background: #1a252f; }
-
-        .btn-menu { background: var(--btn-menu); color: var(--primary-color); }
+        .btn-menu { background: var(--btn-menu); color: var(--primary); }
         .btn-menu:hover { background: #dee2e6; }
 
-        footer { text-align: center; padding: 40px 0; color: #adb5bd; font-size: 0.8rem; }
-
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
-        }
+        footer { text-align: center; padding: 40px; color: #999; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>基隆美食飲料導覽</h1>
+    <h1>基隆美食飲料清單</h1>
     <nav>
-        <a href="#drinks">飲料店</a>
-        <a href="#food">在地美食</a>
+        <a href="#drinks">🥤 飲料店</a>
+        <a href="#food">🍜 在地美食</a>
     </nav>
 </header>
 
@@ -124,41 +107,62 @@
     <section id="drinks">
         <h2>飲料店</h2>
         <div class="grid">
-            <div class="card"><h3>清心 基隆海大店</h3><div class="info">0224626266</div><div class="actions"><a href="tel:0224626266" class="btn btn-call">撥打電話</a><a href="http://chingshin.tw/" target="_blank" class="btn btn-menu">菜單/官網</a></div></div>
-            <div class="card"><h3>可不可 基隆深溪店</h3><div class="info">0224659695</div><div class="actions"><a href="tel:0224659695" class="btn btn-call">撥打電話</a><a href="https://www.kebuke.com/" target="_blank" class="btn btn-menu">菜單/官網</a></div></div>
-            <div class="card"><h3>50嵐 基隆深溪店</h3><div class="info">0224683368</div><div class="actions"><a href="tel:0224683368" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/21216" target="_blank" class="btn btn-menu">線上訂餐</a></div></div>
-            <div class="card"><h3>龜記 基隆店</h3><div class="info">0224258889</div><div class="actions"><a href="tel:0224258889" class="btn btn-call">撥打電話</a><a href="https://guiji.doteat.tw/menu?storeId=LEzDQINl-0000wKv98o&showBulletin=1" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
-            <div class="card"><h3>迷客夏 基隆廟口店</h3><div class="info">0224261766</div><div class="actions"><a href="tel:0224261766" class="btn btn-call">撥打電話</a><a href="http://milkshoptea.com/" target="_blank" class="btn btn-menu">菜單/官網</a></div></div>
-            <div class="card"><h3>五桐號 基隆仁三店</h3><div class="info">0224283616</div><div class="actions"><a href="tel:0224283616" class="btn btn-call">撥打電話</a><a href="https://www.wootea.com/menu/" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
-            <div class="card"><h3>有飲 基隆廟口店</h3><div class="info">0224258827</div><div class="actions"><a href="tel:0224258827" class="btn btn-call">撥打電話</a><a href="https://www.youindrink.com/pages/menu" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
-            <div class="card"><h3>林香檸 台灣創始店</h3><div class="info">0224270618</div><div class="actions"><a href="tel:0224270618" class="btn btn-call">撥打電話</a><a href="https://www.lamheunglingoverseas.com/cz" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
-            <div class="card"><h3>Mr.Wish 基隆廟口店</h3><div class="info">0224273456</div><div class="actions"><a href="tel:0224273456" class="btn btn-call">撥打電話</a><a href="https://www.mr-wish.com/" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
-            <div class="card"><h3>CoCo 基隆海洋店</h3><div class="info">0224620586</div><div class="actions"><a href="tel:0224620586" class="btn btn-call">撥打電話</a><a href="https://coco-tea.nidin.shop/menu/21237" target="_blank" class="btn btn-menu">線上訂餐</a></div></div>
-            <div class="card"><h3>得正 #基隆海大</h3><div class="info">0224621016</div><div class="actions"><a href="tel:0224621016" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/18739" target="_blank" class="btn btn-menu">線上訂餐</a></div></div>
-            <div class="card"><h3>Comebuy 基隆新豐店</h3><div class="info">0224695668</div><div class="actions"><a href="tel:0224695668" class="btn btn-call">撥打電話</a><a href="https://www.comebuy2002.com.tw/" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
-            <div class="card"><h3>鶴茶樓 基隆忠一店</h3><div class="info">0224265572</div><div class="actions"><a href="tel:0224265572" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/19710" target="_blank" class="btn btn-menu">線上訂餐</a></div></div>
-            <div class="card"><h3>拾汣茶屋 基隆廟口店</h3><div class="info">02-24247778</div><div class="actions"><a href="tel:0224247778" class="btn btn-call">撥打電話</a><a href="https://www.19teahouse.com/works/detail/Store29" target="_blank" class="btn btn-menu">官網資訊</a></div></div>
-            <div class="card"><h3>水雲堂 基隆義二店</h3><div class="info">0224261227</div><div class="actions"><a href="tel:0224261227" class="btn btn-call">撥打電話</a><a href="https://www.drinkstore.com.tw/web/product/product.jsp" target="_blank" class="btn btn-menu">線上菜單</a></div></div>
+            <div class="card"><h3>清心 基隆海大店</h3><div class="info">0224626266</div><div class="actions"><a href="tel:0224626266" class="btn btn-call">撥打電話</a><a href="http://chingshin.tw/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>可不可 基隆深溪店</h3><div class="info">0224659695</div><div class="actions"><a href="tel:0224659695" class="btn btn-call">撥打電話</a><a href="https://www.kebuke.com/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>50嵐 基隆深溪店</h3><div class="info">0224683368</div><div class="actions"><a href="tel:0224683368" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/21216" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>龜記 基隆店</h3><div class="info">0224258889</div><div class="actions"><a href="tel:0224258889" class="btn btn-call">撥打電話</a><a href="https://guiji.doteat.tw/menu?storeId=LEzDQINl-0000wKv98o&showBulletin=1" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>迷客夏 基隆廟口店</h3><div class="info">0224261766</div><div class="actions"><a href="tel:0224261766" class="btn btn-call">撥打電話</a><a href="http://milkshoptea.com/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>五桐號 基隆仁三店</h3><div class="info">0224283616</div><div class="actions"><a href="tel:0224283616" class="btn btn-call">撥打電話</a><a href="https://www.wootea.com/menu/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>有飲 基隆廟口店</h3><div class="info">0224258827</div><div class="actions"><a href="tel:0224258827" class="btn btn-call">撥打電話</a><a href="https://www.youindrink.com/pages/menu" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>林香檸 台灣創創始店</h3><div class="info">0224270618</div><div class="actions"><a href="tel:0224270618" class="btn btn-call">撥打電話</a><a href="https://www.lamheunglingoverseas.com/cz" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>Mr.Wish 基隆廟口店</h3><div class="info">0224273456</div><div class="actions"><a href="tel:0224273456" class="btn btn-call">撥打電話</a><a href="https://www.mr-wish.com/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>CoCo 基隆海洋店</h3><div class="info">0224620586</div><div class="actions"><a href="tel:0224620586" class="btn btn-call">撥打電話</a><a href="https://coco-tea.nidin.shop/menu/21237" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>得正 #基隆海大</h3><div class="info">0224621016</div><div class="actions"><a href="tel:0224621016" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/18739" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>Comebuy 基隆新豐店</h3><div class="info">0224695668</div><div class="actions"><a href="tel:0224695668" class="btn btn-call">撥打電話</a><a href="https://www.comebuy2002.com.tw/" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>鶴茶樓 基隆忠一店</h3><div class="info">0224265572</div><div class="actions"><a href="tel:0224265572" class="btn btn-call">撥打電話</a><a href="https://order.nidin.shop/menu/19710" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>拾汣茶屋 基隆廟口店</h3><div class="info">02-24247778</div><div class="actions"><a href="tel:0224247778" class="btn btn-call">撥打電話</a><a href="https://www.19teahouse.com/works/detail/Store29" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
+            <div class="card"><h3>水雲堂 基隆義二店</h3><div class="info">0224261227</div><div class="actions"><a href="tel:0224261227" class="btn btn-call">撥打電話</a><a href="https://www.drinkstore.com.tw/web/product/product.jsp" target="_blank" class="btn btn-menu">開啟菜單</a></div></div>
         </div>
     </section>
 
     <section id="food">
         <h2>在地美食</h2>
         <div class="grid">
-            <div class="card"><h3>美香齋滷味</h3><div class="info">0224263357</div><div class="actions"><a href="tel:0224263357" class="btn btn-call">撥打電話</a><a href="#" class="btn btn-menu">查看菜單</a></div></div>
-            <div class="card"><h3>大碗牛肉麵</h3><div class="info">0224633396</div><div class="actions"><a href="tel:0224633396" class="btn btn-call">撥打電話</a><a href="#" class="btn btn-menu">查看菜單</a></div></div>
-            <div class="card"><h3>蒟蒻屋</h3><div class="info">0224229000</div><div class="actions"><a href="tel:0224229000" class="btn btn-call">撥打電話</a><a href="#" class="btn btn-menu">查看菜單</a></div></div>
-            <div class="card"><h3>老店豆干包</h3><div class="info">0224201711</div><div class="actions"><a href="tel:0224201711" class="btn btn-call">撥打電話</a><a href="#" class="btn btn-menu">查看菜單</a></div></div>
-            <div class="card"><h3>邱記炒麵 (東信店)</h3><div class="info">0224680335</div><div class="actions"><a href="tel:0224680335" class="btn btn-call">撥打電話</a><a href="#" class="btn btn-menu">查看菜單</a></div></div>
-            <div class="card"><h3>廖媽媽麵飯館 (新豐店)</h3><div class="info">0224680789</div><div class="actions"><a href="tel:0224680789" class="btn btn-call">撥打電話</a><a href="#" class="btn btn-menu">查看菜單</a></div></div>
-            <div class="card"><h3>麥克麵線</h3><div class="info">0224236667</div><div class="actions"><a href="tel:0224236667" class="btn btn-call">撥打電話</a><a href="https://maps.app.goo.gl/DNe9c5xbqTsyfBGE7" target="_blank" class="btn btn-menu">查看地圖菜單</a></div></div>
+            <div class="card">
+                <h3>蒟蒻屋</h3><div class="info">0224229000</div>
+                <div class="actions"><a href="tel:0224229000" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1T08WgpxufhYVOJ8sbfc7gvpthvoDaacY/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
+            </div>
+            <div class="card">
+                <h3>大碗牛肉麵</h3><div class="info">0224633396</div>
+                <div class="actions"><a href="tel:0224633396" class="btn btn-call">撥打電話</a><span class="btn btn-menu" style="opacity:0.5">暫無菜單連結</span></div>
+            </div>
+            <div class="card">
+                <h3>麥克麵線</h3><div class="info">0224236667</div>
+                <div class="actions"><a href="tel:0224236667" class="btn btn-call">撥打電話</a><a href="https://maps.app.goo.gl/DNe9c5xbqTsyfBGE7" target="_blank" class="btn btn-menu">開啟地圖菜單</a></div>
+            </div>
+            <div class="card">
+                <h3>豆乾包</h3><div class="info">0224201711</div>
+                <div class="actions"><a href="tel:0224201711" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/18VeBd_w6HFvBD321t7Iu-QaNfko5CljQ/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
+            </div>
+            <div class="card">
+                <h3>美香齋滷味</h3><div class="info">0224263357</div>
+                <div class="actions"><a href="tel:0224263357" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1HRMavIpHZhSVDkrg-zm_cCksy0fPbjRK/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
+            </div>
+            <div class="card">
+                <h3>邱記炒麵（東信店）</h3><div class="info">0224680335</div>
+                <div class="actions"><a href="tel:0224680335" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1zuEI_w-zwS9rIGRcekHsb_QXll1twyg3/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
+            </div>
+            <div class="card">
+                <h3>廖媽媽麵飯館-新豐店</h3><div class="info">0224680789</div>
+                <div class="actions"><a href="tel:0224680789" class="btn btn-call">撥打電話</a><a href="https://drive.google.com/file/d/1j_SjavYZbnJjJHCJNSzVQaAzf_1e5Km0/view?usp=sharing" target="_blank" class="btn btn-menu">開啟菜單</a></div>
+            </div>
         </div>
     </section>
 
 </div>
 
 <footer>
-    <p>© 2026 基隆美食飲料導覽</p>
+    <p>© 2026 基隆美食導覽系統</p>
 </footer>
 
 </body>
