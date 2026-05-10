@@ -1,158 +1,211 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>極星咖啡 - 線上點餐</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <title>咖啡極星智慧點餐統計系統👩🏼‍🍳</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --gold: #c5a059; --dark: #2c2c2c; }
-        body { background: #f8f9fa; font-family: "Microsoft JhengHei", sans-serif; }
-        .header { background: var(--dark); color: white; padding: 25px 15px; border-bottom: 5px solid var(--gold); }
-        .category-header { background: #e9ecef; padding: 10px 15px; border-left: 5px solid var(--gold); margin: 20px 0 10px; font-weight: bold; color: #444; }
-        .menu-card { cursor: pointer; transition: 0.2s; border: 1px solid #ddd; border-radius: 10px; background: white; }
-        .menu-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-color: var(--gold); }
-        .price { color: #d9534f; font-weight: bold; }
-        .cart-box { position: sticky; top: 20px; border-radius: 15px; overflow: hidden; }
+        :root {
+            --neon-blue: #00d4ff; --neon-purple: #9d00ff; --bg-dark: #0a0e14;
+            --card-bg: rgba(22, 33, 46, 0.98); --open: #00ff88; --closed: #ff4d4d;
+            --gold: #f1c40f; --orange: #ff9800; --row-paid: rgba(0, 255, 136, 0.15);
+        }
+        body {
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 2px 2px, rgba(157, 0, 255, 0.1) 1px, transparent 0);
+            background-size: 30px 30px; margin: 0; color: #e0e0e0;
+        }
+        #admin-view, #mobile-view { display: none; }
+        header { background: rgba(10, 14, 20, 0.98); padding: 1.2rem; text-align: center; border-bottom: 2px solid var(--neon-blue); position: sticky; top: 0; z-index: 1000; }
+        h1 { background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; font-size: 1.5rem; }
+        .btn-tech { background: transparent; color: var(--neon-blue); border: 1px solid var(--neon-blue); padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.3s; text-decoration: none; display: inline-block; }
+        .btn-tech:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 15px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 10px; border: 1px solid rgba(157, 0, 255, 0.2); position: relative; }
+        #qr-modal { display: none; position: fixed; right: 20px; bottom: 20px; background: #fff; padding: 10px; border-radius: 10px; border: 3px solid var(--neon-purple); z-index: 9999; text-align: center; color: #000; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .status-badge { position: absolute; top: 15px; right: 15px; padding: 4px 8px; border-radius: 3px; font-size: 0.7rem; font-weight: bold; }
+        .open { color: var(--open); border: 1px solid var(--open); }
+        .closed { color: var(--closed); border: 1px solid var(--closed); }
+        .order-system { background: rgba(22, 33, 46, 0.98); padding: 25px; border-radius: 12px; border: 1px solid var(--neon-purple); }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid rgba(255,255,255,0.05); padding: 10px; text-align: center; }
+        input, select { background: #000; border: 1px solid #333; color: var(--neon-blue); padding: 8px; border-radius: 4px; width: 90%; }
+        .mobile-container { max-width: 400px; margin: 30px auto; padding: 20px; text-align: center; }
+        .mobile-card { background: var(--card-bg); padding: 25px; border-radius: 15px; border: 1px solid var(--neon-purple); }
+        .m-input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid var(--neon-blue); background: #000; color: #fff; box-sizing: border-box; font-size: 1rem; }
+        .m-btn { width: 100%; padding: 15px; background: var(--neon-blue); color: #000; border: none; border-radius: 8px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-<div class="header text-center">
-    <h1>極星咖啡 Polaris Coffee</h1>
-    <p>「在城市的微光中，找到屬於你的極星」</p>
-</div>
+<div id="admin-view">
+    <header><h1>咖啡極星智慧點餐統計系統👩🏼‍🍳</h1></header>
+    
+    <div id="qr-modal">
+        <div id="qrcode"></div>
+        <p style="margin:5px 0 0; font-size:12px; font-weight:bold;">同學掃描點餐</p>
+        <small id="qr-store" style="color:var(--neon-purple)"></small>
+    </div>
 
-<div class="container my-4">
-    <div class="row">
-        <div class="col-md-8">
-            <div id="menu-display">
-                <div class="text-center py-5">菜單載入中...</div>
-            </div>
-        </div>
+    <div class="container">
+        <section><h2>☕️ 極星飲品供應鏈</h2><div id="drinks-grid" class="grid"></div></section>
+        <section><h2>🍰 能量補給甜點站</h2><div id="food-grid" class="grid"></div></section>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm cart-box">
-                <div class="card-header bg-dark text-white fw-bold py-3">我的點餐單</div>
-                <div class="card-body">
-                    <ul id="cart-list" class="list-group list-group-flush mb-3">
-                        <li class="list-group-item text-muted text-center py-4">尚未選擇餐點</li>
-                    </ul>
-                    <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                        <span class="h5 mb-0">總計金額</span>
-                        <span class="h4 text-danger mb-0">$ <span id="total-price">0</span></span>
-                    </div>
-                    <button class="btn btn-warning w-100 mt-4 fw-bold py-3 shadow-sm" onclick="submitOrder()">送出訂單</button>
-                </div>
-            </div>
+        <div class="order-system">
+            <h2 style="color:var(--neon-purple);">📊 即時雲端統計表</h2>
+            正在點：<input type="text" id="target-store-input" style="border:none; border-bottom:2px solid var(--gold); color:var(--gold); font-size:1.2rem; width:50%; background:transparent;" placeholder="請從上方選取類別...">
+            <table id="orderTable">
+                <thead>
+                    <tr><th width="5%">付</th><th width="20%">名單</th><th width="30%">品項備註</th><th width="15%">應付</th><th width="15%">收多少</th><th width="15%">找錢</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button onclick="addNewRow()" class="btn-tech" style="margin-top:15px;">➕ 手動新增一筆</button>
+            <div style="text-align:right; font-size:1.8rem; color:var(--neon-blue); margin-top:20px;">電機科總額：$<span id="finalPrice">0</span></div>
         </div>
     </div>
 </div>
 
-<script>
-    // --- 菜單數據 ---
-    const menuData = [
-        { category: "咖啡 Coffee", items: [
-            { name: "義式濃縮咖啡", price: 100 }, { name: "美式咖啡", price: 100 },
-            { name: "拿鐵", price: 130 }, { name: "摩卡咖啡", price: 150 },
-            { name: "風味拿鐵 (桂花/榛果/玫瑰/香草)", price: 150 }
-        ]},
-        { category: "非咖啡 Non-Coffee", items: [
-            { name: "巧克力麥芽牛奶", price: 130 }, { name: "抹茶風味歐蕾", price: 130 },
-            { name: "鮮奶茶", price: 130 }, { name: "風味鮮奶茶 (桂花/榛果/玫瑰/香草)", price: 150 }
-        ]},
-        { category: "熱茶飲 Taiwan Tea", items: [
-            { name: "日月潭紅玉紅茶 (熱)", price: 130 }, { name: "桂蜜蘋果紅茶 (熱)", price: 140 },
-            { name: "黃金蕎麥 (無咖啡因)", price: 140 }, { name: "洛神玫瑰花茶 (無咖啡因)", price: 140 }
-        ]},
-        { category: "冰茶飲 Taiwan Tea", items: [
-            { name: "日月潭紅玉紅茶 (冰)", price: 120 }, { name: "檸檬紅玉紅茶 (冰)", price: 130 },
-            { name: "蜂蜜紅玉紅茶 (冰)", price: 130 }
-        ]},
-        { category: "點心/甜點 Dessert", items: [
-            { name: "肉桂捲 (2pcs)", price: 130 }, { name: "布朗尼 (2pcs)", price: 120 },
-            { name: "冰火布朗尼", price: 160 }, { name: "蜂蜜小鬆餅", price: 120 },
-            { name: "薯條", price: 70 }, { name: "雞塊 (6個)", price: 70 },
-            { name: "各類厚吐司", price: 70 }, { name: "各類披薩", price: 150 }
-        ]}
-    ];
+<div id="mobile-view">
+    <header><h1>⚡️ 咖啡極星行動點餐</h1></header>
+    <div class="mobile-container">
+        <div class="mobile-card">
+            <p>目前目標店家：</p>
+            <div id="m-target-store" style="color:var(--gold); font-size:1.5rem; font-weight:bold; margin-bottom:20px;">等待老師開啟...</div>
+            <input type="text" id="uName" class="m-input" placeholder="你的姓名 (如: 強哥)">
+            <input type="text" id="uItem" class="m-input" placeholder="品項/甜度/冰塊">
+            <input type="number" id="uPrice" class="m-input" placeholder="金額 $">
+            <button class="m-btn" onclick="submitToCloud()">送出訂單 🚀</button>
+        </div>
+    </div>
+</div>
 
-    let cart = [];
-    let db;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, push, onChildAdded, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 初始化 Firebase (請填入你的 URL)
-    try {
-        const firebaseConfig = { databaseURL: "https://console.firebase.google.com/u/0/project/kfj-or/database/kfj-or-default-rtdb/data/~2F" };
-        firebase.initializeApp(firebaseConfig);
-        db = firebase.database();
-    } catch(e) { console.error("Firebase 未連線"); }
+    const firebaseConfig = {
+        apiKey: "AIzaSyC5kL_EtZ5njzrVF91_AX5GlqZDm7Y4gkg",
+        authDomain: "bvjvj-a2b27.firebaseapp.com",
+        projectId: "bvjvj-a2b27",
+        storageBucket: "bvjvj-a2b27.firebasestorage.app",
+        messagingSenderId: "5684762832",
+        appId: "1:5684762832:web:e324f0c906e4b0313526d5",
+        measurementId: "G-1XDKY396FP",
+        databaseURL: "https://bvjvj-a2b27-default-rtdb.firebaseio.com"
+    };
 
-    // 顯示選單
-    function init() {
-        const display = document.getElementById('menu-display');
-        display.innerHTML = menuData.map(cat => `
-            <div class="category-header">${cat.category}</div>
-            <div class="row">
-                ${cat.items.map(item => `
-                    <div class="col-6 col-md-4 mb-3">
-                        <div class="card menu-card h-100 p-2 shadow-sm" onclick="addToCart('${item.name}', ${item.price})">
-                            <div class="fw-bold small text-dark">${item.name}</div>
-                            <div class="price text-end mt-auto">$${item.price}</div>
-                        </div>
-                    </div>`).join('')}
-            </div>
-        `).join('');
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const isMobile = new URLSearchParams(window.location.search).get('mode') === 'mobile';
 
-    function addToCart(name, price) {
-        cart.push({ name, price });
-        renderCart();
-    }
-
-    function renderCart() {
-        const list = document.getElementById('cart-list');
-        const totalSpan = document.getElementById('total-price');
-        if (cart.length === 0) {
-            list.innerHTML = '<li class="list-group-item text-muted text-center py-4">尚未選擇餐點</li>';
-            totalSpan.innerText = '0';
-            return;
-        }
-        let total = 0;
-        list.innerHTML = cart.map((item, index) => {
-            total += item.price;
-            return `<li class="list-group-item d-flex justify-content-between align-items-center px-0">
-                <span class="small">${item.name}</span>
-                <button class="btn btn-sm btn-link text-danger p-0" onclick="removeItem(${index})">移除</button>
-            </li>`;
-        }).join('');
-        totalSpan.innerText = total;
-    }
-
-    function removeItem(index) {
-        cart.splice(index, 1);
-        renderCart();
-    }
-
-    function submitOrder() {
-        if (!db) return alert("系統連線錯誤，請檢查 Firebase 設定！");
-        if (cart.length === 0) return alert("請先選擇餐點！");
-        
-        const order = {
-            items: cart.map(i => i.name),
-            total: document.getElementById('total-price').innerText,
-            timestamp: Date.now()
+    if (isMobile) {
+        document.getElementById('mobile-view').style.display = 'block';
+        onValue(ref(db, 'currentStore'), (snap) => {
+            const data = snap.val();
+            document.getElementById('m-target-store').innerText = data ? data.name : "尚未選取店家";
+        });
+        window.submitToCloud = () => {
+            const name = document.getElementById('uName').value;
+            const item = document.getElementById('uItem').value;
+            const price = document.getElementById('uPrice').value;
+            if(!name || !item || !price) return alert("請填寫完整！");
+            push(ref(db, 'incomingOrders'), { name, item, price });
+            alert("送出成功！請確認主畫面。");
         };
-
-        db.ref('orders').push(order).then(() => {
-            alert("訂單送出成功！請至櫃檯結帳。");
-            cart = [];
-            renderCart();
+    } else {
+        document.getElementById('admin-view').style.display = 'block';
+        onChildAdded(ref(db, 'incomingOrders'), (snap) => {
+            const data = snap.val();
+            if(data) {
+                appendOrderRow(data.name, data.item, data.price);
+                remove(ref(db, `incomingOrders/${snap.key}`));
+            }
         });
     }
+    window.syncStore = (name) => set(ref(db, 'currentStore'), { name: name });
+</script>
 
-    init();
+<script>
+// 根據圖片完整更新菜單資料
+const stores = [
+    { name: "咖啡極星 (咖啡系列)", tel: "077star.cafe", link: "https://www.instagram.com/p/DXTWpEPAb4d/", cat: "drink", time: { all: ["11:00", "20:00"] } },
+    { name: "咖啡極星 (非咖啡/茶飲)", tel: "077star.cafe", link: "https://www.instagram.com/p/DXTWpEPAb4d/", cat: "drink", time: { all: ["11:00", "20:00"] } },
+    { name: "咖啡極星 (水果醋/兒童)", tel: "077star.cafe", link: "https://www.instagram.com/p/DXTWpEPAb4d/", cat: "drink", time: { all: ["11:00", "20:00"] } },
+    { name: "咖啡極星 (點心/甜點)", tel: "077star.cafe", link: "https://www.instagram.com/p/DXTWpEPAb4d/", cat: "food", time: { all: ["11:00", "20:00"] } },
+    { name: "咖啡極星 (披薩系列)", tel: "077star.cafe", link: "https://www.instagram.com/p/DXTWpEPAb4d/", cat: "food", time: { all: ["11:00", "20:00"] } }
+];
+
+function checkStatus(s) {
+    const now = new Date(); const day = now.getDay(); const currTotal = now.getHours() * 60 + now.getMinutes();
+    let range = s.time[day] !== undefined ? s.time[day] : s.time.all;
+    if (!range) return { s: "休息中", c: "closed", isOpen: false };
+    const [sH, sM] = range[0].split(":").map(Number); const [eH, eM] = range[1].split(":").map(Number);
+    let sT = sH * 60 + sM, eT = eH * 60 + eM;
+    if (currTotal >= sT && currTotal < eT) return { s: "營業中", c: "open", isOpen: true };
+    return { s: "已打烊", c: "closed", isOpen: false };
+}
+
+function handleSelect(storeName) {
+    document.getElementById('target-store-input').value = storeName;
+    if(window.syncStore) window.syncStore(storeName);
+    const qrBox = document.getElementById('qrcode');
+    qrBox.innerHTML = "";
+    const mobileUrl = window.location.origin + window.location.pathname + "?mode=mobile";
+    new QRCode(qrBox, { text: mobileUrl, width: 120, height: 120 });
+    document.getElementById('qr-store').innerText = storeName;
+    document.getElementById('qr-modal').style.display = "block";
+}
+
+function renderStores() {
+    const dG = document.getElementById('drinks-grid'); const fG = document.getElementById('food-grid');
+    dG.innerHTML = ''; fG.innerHTML = '';
+    stores.forEach(s => {
+        const info = checkStatus(s);
+        const card = `<div class="card">
+            <span class="status-badge ${info.c}">${info.s}</span>
+            <h3 style="color:var(--neon-blue);margin:10px 0;">${s.name}</h3>
+            <div style="font-size:0.8rem;color:#aaa;">📞 Instagram: 077star.cafe</div>
+            <div style="margin-top:15px; display:flex; gap:5px;">
+                <button class="btn-tech" style="flex:1" onclick="handleSelect('${s.name}')">選中</button>
+                <a href="${s.link}" target="_blank" class="btn-tech" style="flex:1; border-color:var(--neon-purple); color:var(--neon-purple); text-align:center;">看菜單</a>
+            </div>
+        </div>`;
+        if (s.cat === 'drink') dG.innerHTML += card; else fG.innerHTML += card;
+    });
+}
+
+function appendOrderRow(name, item, price) {
+    const tbody = document.querySelector("#orderTable tbody");
+    const row = tbody.insertRow(0);
+    row.innerHTML = `
+        <td><input type="checkbox"></td>
+        <td><input type="text" value="${name}"></td>
+        <td><input type="text" value="${item}"></td>
+        <td><input type="number" class="price-val" value="${price}" oninput="calculate()"></td>
+        <td><input type="number" class="received-val" oninput="calculate()"></td>
+        <td style="color:var(--orange); font-weight:bold;" class="change-cell">0</td>
+    `;
+    calculate();
+}
+
+function addNewRow() { appendOrderRow("", "", ""); }
+
+function calculate() {
+    let total = 0;
+    document.querySelectorAll("#orderTable tbody tr").forEach(row => {
+        let p = Number(row.querySelector(".price-val").value) || 0;
+        let r = Number(row.querySelector(".received-val").value) || 0;
+        total += p;
+        row.querySelector(".change-cell").innerText = (r - p) > 0 ? (r - p) : 0;
+    });
+    document.getElementById("finalPrice").innerText = total;
+}
+
+window.onload = () => { if(!new URLSearchParams(window.location.search).get('mode')) renderStores(); };
 </script>
 </body>
 </html>
