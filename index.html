@@ -10,43 +10,41 @@
     <style>
         :root { --gold: #c5a059; --dark: #2c2c2c; }
         body { background: #f8f9fa; font-family: "Microsoft JhengHei", sans-serif; }
-        .header { background: var(--dark); color: white; padding: 30px 15px; border-bottom: 5px solid var(--gold); }
-        .category-header { background: #eee; padding: 8px 15px; border-left: 5px solid var(--gold); margin: 20px 0 10px; font-weight: bold; }
-        .menu-card { cursor: pointer; transition: 0.2s; border: none; border-radius: 8px; }
-        .menu-card:hover { background: #fff9ee; transform: scale(1.02); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .sticky-cart { position: sticky; top: 20px; border-top: 5px solid var(--gold); }
+        .header { background: var(--dark); color: white; padding: 25px 15px; border-bottom: 5px solid var(--gold); }
+        .category-header { background: #e9ecef; padding: 10px 15px; border-left: 5px solid var(--gold); margin: 20px 0 10px; font-weight: bold; color: #444; }
+        .menu-card { cursor: pointer; transition: 0.2s; border: 1px solid #ddd; border-radius: 10px; background: white; }
+        .menu-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-color: var(--gold); }
         .price { color: #d9534f; font-weight: bold; }
+        .cart-box { position: sticky; top: 20px; border-radius: 15px; overflow: hidden; }
     </style>
 </head>
 <body>
 
 <div class="header text-center">
-    <h1 class="display-6">極星咖啡 Polaris Coffee</h1>
-    <p class="mb-0">在城市的微光中，找到屬於你的極星</p>
+    <h1>極星咖啡 Polaris Coffee</h1>
+    <p>「在城市的微光中，找到屬於你的極星」</p>
 </div>
 
 <div class="container my-4">
     <div class="row">
         <div class="col-md-8">
-            <div id="menu-display"></div>
+            <div id="menu-display">
+                <div class="text-center py-5">菜單載入中...</div>
+            </div>
         </div>
 
         <div class="col-md-4">
-            <div class="card shadow-sm sticky-cart">
-                <div class="card-header bg-dark text-white fw-bold">我的點餐單</div>
+            <div class="card shadow-sm cart-box">
+                <div class="card-header bg-dark text-white fw-bold py-3">我的點餐單</div>
                 <div class="card-body">
                     <ul id="cart-list" class="list-group list-group-flush mb-3">
-                        <li class="list-group-item text-muted text-center">尚未選擇餐點</li>
+                        <li class="list-group-item text-muted text-center py-4">尚未選擇餐點</li>
                     </ul>
                     <div class="d-flex justify-content-between align-items-center border-top pt-3">
-                        <h5 class="mb-0">應付金額</h5>
-                        <h4 class="text-danger mb-0">$ <span id="total-price">0</span></h4>
+                        <span class="h5 mb-0">總計金額</span>
+                        <span class="h4 text-danger mb-0">$ <span id="total-price">0</span></span>
                     </div>
-                    <button class="btn btn-warning w-100 mt-4 fw-bold py-2" onclick="submitOrder()">送出訂單 (現場付款)</button>
-                </div>
-                <div class="card-footer small text-muted">
-                    * 每人低消一杯飲品，目前僅收現金。<br>
-                    * 店內不開放外食，謝謝體諒。
+                    <button class="btn btn-warning w-100 mt-4 fw-bold py-3 shadow-sm" onclick="submitOrder()">送出訂單</button>
                 </div>
             </div>
         </div>
@@ -54,88 +52,58 @@
 </div>
 
 <script>
-    // --- 1. 請在此填入你的 Firebase URL ---
-    const firebaseConfig = { databaseURL: "你的_FIREBASE_DATABASE_URL" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // --- 2. 完整菜單數據 ---
+    // --- 菜單數據 ---
     const menuData = [
         { category: "咖啡 Coffee", items: [
-            { name: "義式濃縮咖啡 (Hot)", price: 100 },
-            { name: "美式咖啡 (Hot/Ice)", price: 100 },
-            { name: "拿鐵 (Hot/Ice)", price: 130 },
-            { name: "摩卡咖啡 (Hot/Ice)", price: 150 },
+            { name: "義式濃縮咖啡", price: 100 }, { name: "美式咖啡", price: 100 },
+            { name: "拿鐵", price: 130 }, { name: "摩卡咖啡", price: 150 },
             { name: "風味拿鐵 (桂花/榛果/玫瑰/香草)", price: 150 }
         ]},
         { category: "非咖啡 Non-Coffee", items: [
-            { name: "巧克力麥芽牛奶 (Hot/Ice)", price: 130 },
-            { name: "抹茶風味歐蕾 (Hot/Ice)", price: 130 },
-            { name: "鮮奶茶 (Hot/Ice)", price: 130 },
-            { name: "風味鮮奶茶 (桂花/榛果/玫瑰/香草)", price: 150 }
+            { name: "巧克力麥芽牛奶", price: 130 }, { name: "抹茶風味歐蕾", price: 130 },
+            { name: "鮮奶茶", price: 130 }, { name: "風味鮮奶茶 (桂花/榛果/玫瑰/香草)", price: 150 }
         ]},
-        { category: "台灣熱茶 (可回沖)", items: [
-            { name: "日月潭紅玉紅茶", price: 130 },
-            { name: "桂蜜蘋果紅茶", price: 140 },
-            { name: "黃金蕎麥 (無咖啡因)", price: 140 },
-            { name: "洛神玫瑰花茶 (無咖啡因)", price: 140 }
+        { category: "熱茶飲 Taiwan Tea", items: [
+            { name: "日月潭紅玉紅茶 (熱)", price: 130 }, { name: "桂蜜蘋果紅茶 (熱)", price: 140 },
+            { name: "黃金蕎麥 (無咖啡因)", price: 140 }, { name: "洛神玫瑰花茶 (無咖啡因)", price: 140 }
         ]},
-        { category: "冰茶飲 Taiwan Tea (Ice)", items: [
-            { name: "日月潭紅玉紅茶", price: 120 },
-            { name: "檸檬紅玉紅茶", price: 130 },
-            { name: "蜂蜜紅玉紅茶", price: 130 }
-        ]},
-        { category: "水果醋飲 (Ice Only)", items: [
-            { name: "屏東九如香檬果醋", price: 140 },
-            { name: "南投國姓砂糖橘醋", price: 140 },
-            { name: "彰化二林黑后葡萄醋", price: 140 },
-            { name: "南投埔里蜜香百香果醋", price: 140 },
-            { name: "苗栗銅鑼紅肉李醋", price: 140 },
-            { name: "南投信義鄉黃梅醋", price: 140 }
-        ]},
-        { category: "小朋友專屬 (Ice)", items: [
-            { name: "果汁", price: 80 },
-            { name: "鮮奶", price: 80 }
+        { category: "冰茶飲 Taiwan Tea", items: [
+            { name: "日月潭紅玉紅茶 (冰)", price: 120 }, { name: "檸檬紅玉紅茶 (冰)", price: 130 },
+            { name: "蜂蜜紅玉紅茶 (冰)", price: 130 }
         ]},
         { category: "點心/甜點 Dessert", items: [
-            { name: "白霜高塔肉桂捲 (2pcs)", price: 130 },
-            { name: "深焙巧克力布朗尼 (2pcs)", price: 120 },
-            { name: "冰火布朗尼 (加一球冰淇淋)", price: 160 },
-            { name: "蜂蜜小鬆餅", price: 120 },
-            { name: "薯條", price: 70 },
-            { name: "雞塊 (六個)", price: 70 },
-            { name: "超濃花生厚吐司", price: 70 },
-            { name: "法式香蒜厚吐司", price: 70 },
-            { name: "高鈣起司厚吐司", price: 70 },
-            { name: "牛奶巧克力厚吐司", price: 70 }
-        ]},
-        { category: "PIZZA 披薩 ($150)", items: [
-            { name: "海鮮披薩", price: 150 },
-            { name: "時蔬鮮菇披薩 (素)", price: 150 },
-            { name: "夏威夷披薩", price: 150 }
+            { name: "肉桂捲 (2pcs)", price: 130 }, { name: "布朗尼 (2pcs)", price: 120 },
+            { name: "冰火布朗尼", price: 160 }, { name: "蜂蜜小鬆餅", price: 120 },
+            { name: "薯條", price: 70 }, { name: "雞塊 (6個)", price: 70 },
+            { name: "各類厚吐司", price: 70 }, { name: "各類披薩", price: 150 }
         ]}
     ];
 
     let cart = [];
+    let db;
 
-    // --- 3. 畫面邏輯 ---
+    // 初始化 Firebase (請填入你的 URL)
+    try {
+        const firebaseConfig = { databaseURL: "https://console.firebase.google.com/u/0/project/kfj-or/database/kfj-or-default-rtdb/data/~2F" };
+        firebase.initializeApp(firebaseConfig);
+        db = firebase.database();
+    } catch(e) { console.error("Firebase 未連線"); }
+
+    // 顯示選單
     function init() {
         const display = document.getElementById('menu-display');
-        let html = '';
-        menuData.forEach(cat => {
-            html += `<div class="category-header">${cat.category}</div><div class="row">`;
-            cat.items.forEach(item => {
-                html += `
+        display.innerHTML = menuData.map(cat => `
+            <div class="category-header">${cat.category}</div>
+            <div class="row">
+                ${cat.items.map(item => `
                     <div class="col-6 col-md-4 mb-3">
                         <div class="card menu-card h-100 p-2 shadow-sm" onclick="addToCart('${item.name}', ${item.price})">
-                            <div class="small fw-bold">${item.name}</div>
+                            <div class="fw-bold small text-dark">${item.name}</div>
                             <div class="price text-end mt-auto">$${item.price}</div>
                         </div>
-                    </div>`;
-            });
-            html += `</div>`;
-        });
-        display.innerHTML = html;
+                    </div>`).join('')}
+            </div>
+        `).join('');
     }
 
     function addToCart(name, price) {
@@ -147,14 +115,14 @@
         const list = document.getElementById('cart-list');
         const totalSpan = document.getElementById('total-price');
         if (cart.length === 0) {
-            list.innerHTML = '<li class="list-group-item text-muted text-center">尚未選擇餐點</li>';
+            list.innerHTML = '<li class="list-group-item text-muted text-center py-4">尚未選擇餐點</li>';
             totalSpan.innerText = '0';
             return;
         }
         let total = 0;
         list.innerHTML = cart.map((item, index) => {
             total += item.price;
-            return `<li class="list-group-item d-flex justify-content-between align-items-center">
+            return `<li class="list-group-item d-flex justify-content-between align-items-center px-0">
                 <span class="small">${item.name}</span>
                 <button class="btn btn-sm btn-link text-danger p-0" onclick="removeItem(${index})">移除</button>
             </li>`;
@@ -168,14 +136,17 @@
     }
 
     function submitOrder() {
-        if (cart.length === 0) return alert("請先選購餐點！");
+        if (!db) return alert("系統連線錯誤，請檢查 Firebase 設定！");
+        if (cart.length === 0) return alert("請先選擇餐點！");
+        
         const order = {
             items: cart.map(i => i.name),
             total: document.getElementById('total-price').innerText,
             timestamp: Date.now()
         };
+
         db.ref('orders').push(order).then(() => {
-            alert("訂單已傳送到老闆那囉！請至櫃檯結帳。");
+            alert("訂單送出成功！請至櫃檯結帳。");
             cart = [];
             renderCart();
         });
